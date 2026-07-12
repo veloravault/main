@@ -11,8 +11,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ChevronDownIcon, ChevronRightIcon, FileIcon, Wand2Icon } from "lucide-react";
+import { ChevronDownIcon, ChevronRightIcon, FileIcon, Wand2Icon, MoreHorizontalIcon, PlusIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { categorizeNote, parseBulkNotes } from "@/app/actions";
 import { setCache, invalidateCache } from "@/lib/vaultCache";
 
@@ -199,12 +205,64 @@ export function NotesVault({ masterPassword }: { masterPassword: string }) {
       <div className="flex items-center justify-between gap-3 mb-5 sm:mb-8">
         <h2 className="text-[28px] sm:text-[32px] font-bold tracking-tight">Secure Notes</h2>
         
-        <div className="flex items-center gap-2">
-          <Dialog open={isMagicImportOpen} onOpenChange={setIsMagicImportOpen}>
-            <DialogTrigger className="rounded-full h-9 px-3 sm:px-4 text-purple-600 hover:bg-purple-600/10 font-medium flex items-center gap-1.5 text-[14px]">
-              <Wand2Icon className="w-4 h-4" />
-              <span className="hidden min-[420px]:inline">Magic Import</span>
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="rounded-full w-9 h-9 p-0 text-muted-foreground hover:bg-muted/80 flex items-center justify-center">
+              <MoreHorizontalIcon className="w-5 h-5" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 rounded-xl">
+              <DropdownMenuItem 
+                onClick={() => setIsMagicImportOpen(true)}
+                className="font-medium text-purple-600 focus:text-purple-600 focus:bg-purple-600/10 cursor-pointer"
+              >
+                <Wand2Icon className="w-4 h-4 mr-2" />
+                Magic Import
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+            <DialogTrigger className="rounded-full h-9 px-4 sm:px-5 font-semibold text-[14px] flex items-center gap-1.5 shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 outline-none">
+              <PlusIcon className="w-4 h-4" />
+              <span className="hidden min-[380px]:inline">New</span>
             </DialogTrigger>
+            <DialogContent className="border-border/50 shadow-lg sm:rounded-[20px] max-w-lg">
+              <DialogHeader>
+                <DialogTitle className="text-center font-bold">New Secure Note</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleAddItem} className="space-y-4 mt-2">
+                <div className="space-y-1">
+                  <label className="text-[13px] text-muted-foreground ml-1 uppercase tracking-wider font-medium">Title</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Diary Entry, Server Keys"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[17px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[13px] text-muted-foreground ml-1 uppercase tracking-wider font-medium">Content</label>
+                  <textarea
+                    placeholder="Write your secure note here..."
+                    value={newContent}
+                    onChange={(e) => setNewContent(e.target.value)}
+                    className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[17px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all min-h-[150px] resize-y"
+                    required
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full h-12 rounded-xl font-semibold text-[17px] mt-4 bg-primary hover:bg-primary/90 text-primary-foreground"
+                >
+                  Save Note
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={isMagicImportOpen} onOpenChange={setIsMagicImportOpen}>
             <DialogContent className="border-border/50 shadow-lg sm:rounded-[20px] max-w-lg">
               <DialogHeader>
                 <DialogTitle className="text-center font-bold flex items-center justify-center gap-2">
@@ -244,47 +302,6 @@ export function NotesVault({ masterPassword }: { masterPassword: string }) {
                     </>
                   )}
                 </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-
-          <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-            <DialogTrigger className="rounded-full h-9 px-3 sm:px-4 text-primary hover:bg-primary/10 hover:text-primary font-medium flex items-center gap-1.5 text-[14px]">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                Add
-            </DialogTrigger>
-          <DialogContent className="border-border/50 shadow-lg sm:rounded-[20px] max-w-lg">
-            <DialogHeader>
-              <DialogTitle className="text-center font-bold">New Secure Note</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleAddItem} className="space-y-4 mt-2">
-              <div className="space-y-1">
-                <label className="text-[13px] text-muted-foreground ml-1 uppercase tracking-wider font-medium">Title</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Diary Entry, Server Keys"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[17px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[13px] text-muted-foreground ml-1 uppercase tracking-wider font-medium">Content</label>
-                <textarea
-                  placeholder="Write your secure note here..."
-                  value={newContent}
-                  onChange={(e) => setNewContent(e.target.value)}
-                  className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[17px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all min-h-[150px] resize-y"
-                  required
-                />
-              </div>
-              <Button 
-                type="submit" 
-                className="w-full h-12 rounded-xl font-semibold text-[17px] mt-4 bg-primary hover:bg-primary/90 text-primary-foreground"
-              >
-                Save Note
-              </Button>
               </form>
             </DialogContent>
           </Dialog>

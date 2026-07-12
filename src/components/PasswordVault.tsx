@@ -17,8 +17,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ChevronDownIcon, UploadIcon, TrashIcon, CheckSquareIcon, SquareIcon, StarIcon, Wand2Icon } from "lucide-react";
+import { ChevronDownIcon, UploadIcon, TrashIcon, CheckSquareIcon, SquareIcon, StarIcon, Wand2Icon, MoreHorizontalIcon, PlusIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface VaultItem {
   id: string;
@@ -349,42 +355,84 @@ export function PasswordVault({ masterPassword }: { masterPassword: string }) {
       <div className="flex items-center justify-between gap-3 mb-5 sm:mb-8">
         <h2 className="text-[28px] sm:text-[32px] font-bold tracking-tight">Passwords</h2>
         
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {items.length > 0 && (
-            <Button 
-              variant="ghost" 
-              onClick={() => {
-                setIsSelectionMode(!isSelectionMode);
-                if (isSelectionMode) setSelectedIds(new Set());
-              }}
-              className={`rounded-full h-9 px-3 sm:px-4 font-medium flex items-center gap-1.5 transition-colors ${isSelectionMode ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'}`}
-            >
-              {isSelectionMode ? "Cancel" : "Edit"}
-            </Button>
-          )}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="rounded-full w-9 h-9 p-0 text-muted-foreground hover:bg-muted/80 flex items-center justify-center">
+              <MoreHorizontalIcon className="w-5 h-5" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 rounded-xl">
+              {items.length > 0 && (
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setIsSelectionMode(!isSelectionMode);
+                    if (isSelectionMode) setSelectedIds(new Set());
+                  }}
+                  className="font-medium cursor-pointer"
+                >
+                  {isSelectionMode ? "Cancel Editing" : "Select Passwords"}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem 
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isImporting}
+                className="font-medium cursor-pointer"
+              >
+                <UploadIcon className="w-4 h-4 mr-2" />
+                {isImporting ? "Importing CSV..." : "Import CSV"}
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setIsMagicImportOpen(true)}
+                className="font-medium text-purple-600 focus:text-purple-600 focus:bg-purple-600/10 cursor-pointer"
+              >
+                <Wand2Icon className="w-4 h-4 mr-2" />
+                Magic Import
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-          <Button 
-            variant="ghost" 
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isImporting}
-            className="rounded-full h-9 px-3 sm:px-4 text-muted-foreground hover:bg-muted font-medium flex items-center gap-1.5"
-          >
-            <UploadIcon className="w-4 h-4" />
-            <span className="hidden min-[380px]:inline">{isImporting ? "Importing..." : "Import"}</span>
-          </Button>
-          <input 
-            type="file" 
-            accept=".csv" 
-            ref={fileInputRef} 
-            className="hidden" 
-            onChange={handleImportCSV} 
-          />
+          <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+            <DialogTrigger className="rounded-full h-9 px-4 sm:px-5 font-semibold text-[14px] flex items-center gap-1.5 shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 outline-none">
+              <PlusIcon className="w-4 h-4" />
+              <span className="hidden min-[380px]:inline">New</span>
+            </DialogTrigger>
+            <DialogContent className="border-border/50 shadow-lg sm:rounded-[20px] max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="text-center font-bold">New Password</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleAddItem} className="space-y-4 mt-2">
+              <div className="space-y-1">
+                <label className="text-[13px] text-muted-foreground ml-1 uppercase tracking-wider font-medium">Title</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Netflix, Bank"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[17px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  required
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[13px] text-muted-foreground ml-1 uppercase tracking-wider font-medium">Password</label>
+                <input
+                  type="password"
+                  placeholder="••••••••••••"
+                  value={newSecret}
+                  onChange={(e) => setNewSecret(e.target.value)}
+                  className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[17px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  required
+                />
+              </div>
+              <Button 
+                type="submit" 
+                className="w-full h-12 rounded-xl font-semibold text-[17px] mt-4 bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                Save Password
+              </Button>
+            </form>
+            </DialogContent>
+          </Dialog>
 
           <Dialog open={isMagicImportOpen} onOpenChange={setIsMagicImportOpen}>
-            <DialogTrigger className="rounded-full h-9 px-3 sm:px-4 text-purple-600 hover:bg-purple-600/10 font-medium flex items-center gap-1.5 text-[14px]">
-              <Wand2Icon className="w-4 h-4" />
-              <span className="hidden min-[420px]:inline">Magic Import</span>
-            </DialogTrigger>
             <DialogContent className="border-border/50 shadow-lg sm:rounded-[20px] max-w-lg">
               <DialogHeader>
                 <DialogTitle className="text-center font-bold flex items-center justify-center gap-2">
@@ -428,47 +476,13 @@ export function PasswordVault({ masterPassword }: { masterPassword: string }) {
             </DialogContent>
           </Dialog>
 
-          <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-            <DialogTrigger className="rounded-full h-9 px-3 sm:px-4 text-primary hover:bg-primary/10 hover:text-primary font-medium flex items-center gap-1.5 text-[14px]">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                Add
-            </DialogTrigger>
-            <DialogContent className="border-border/50 shadow-lg sm:rounded-[20px] max-w-sm">
-            <DialogHeader>
-              <DialogTitle className="text-center font-bold">New Password</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleAddItem} className="space-y-4 mt-2">
-              <div className="space-y-1">
-                <label className="text-[13px] text-muted-foreground ml-1 uppercase tracking-wider font-medium">Title</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Netflix, Bank"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[17px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[13px] text-muted-foreground ml-1 uppercase tracking-wider font-medium">Password</label>
-                <input
-                  type="password"
-                  placeholder="••••••••••••"
-                  value={newSecret}
-                  onChange={(e) => setNewSecret(e.target.value)}
-                  className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[17px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  required
-                />
-              </div>
-              <Button 
-                type="submit" 
-                className="w-full h-12 rounded-xl font-semibold text-[17px] mt-4 bg-primary hover:bg-primary/90 text-primary-foreground"
-              >
-                Save Password
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+          <input 
+            type="file" 
+            accept=".csv" 
+            ref={fileInputRef} 
+            className="hidden" 
+            onChange={handleImportCSV} 
+          />
         </div>
       </div>
 
@@ -547,10 +561,12 @@ export function PasswordVault({ masterPassword }: { masterPassword: string }) {
                               )}
                             </div>
 
-                            {/* Title + masked password */}
+                            {/* Title + Subtitle */}
                             <div className="flex-1 min-w-0">
                               <div className="text-[15px] font-medium text-foreground truncate leading-snug">{item.title}</div>
-                              <div className="text-[13px] text-muted-foreground tracking-[0.18em] leading-tight mt-0.5">••••••••</div>
+                              <div className={`text-[13px] text-muted-foreground truncate leading-tight mt-0.5 ${!item.username ? 'tracking-[0.18em]' : ''}`}>
+                                {item.username || "••••••••"}
+                              </div>
                             </div>
 
                             {/* Right accessories */}
