@@ -332,7 +332,7 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
   return (
     <div className="apple-surface w-full relative" style={{ perspective: "1500px" }}>
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-          <DialogContent className="apple-bottom-sheet border-border/50 shadow-lg sm:rounded-[20px] max-w-md">
+          <DialogContent className="responsive-form-sheet sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="text-center font-bold">New Card</DialogTitle>
             </DialogHeader>

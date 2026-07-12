@@ -313,7 +313,7 @@ export function DocumentVault({ masterPassword, focusedItemId }: { masterPasswor
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
               Upload
             </DialogTrigger>
-          <DialogContent className="apple-bottom-sheet border-border/50 shadow-lg sm:rounded-[20px] max-w-sm">
+          <DialogContent className="responsive-form-sheet sm:max-w-sm">
             <DialogHeader>
               <DialogTitle className="text-center font-bold">Secure File Upload</DialogTitle>
             </DialogHeader>

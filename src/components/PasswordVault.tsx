@@ -512,7 +512,7 @@ export function PasswordVault({ masterPassword, focusedItemId }: { masterPasswor
               <PlusIcon className="w-4 h-4" />
               <span className="hidden min-[380px]:inline">New</span>
             </DialogTrigger>
-            <DialogContent className="apple-bottom-sheet border-border/50 shadow-lg sm:rounded-[20px] max-w-sm">
+            <DialogContent className="responsive-form-sheet sm:max-w-sm">
             <DialogHeader>
               <DialogTitle className="text-center font-bold">New Password</DialogTitle>
             </DialogHeader>
