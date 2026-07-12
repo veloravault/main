@@ -613,26 +613,76 @@ export function PasswordVault({ masterPassword }: { masterPassword: string }) {
                                   </button>
                                 </div>
 
-                                {/* Password value — selectable mono field */}
-                                <div className="w-full bg-secondary rounded-xl px-4 py-3 font-mono text-[15px] text-foreground tracking-wide break-all select-all border border-border/50">
-                                  {item.plaintext}
-                                </div>
-
-                                {/* Action buttons — iOS style blue text + destructive */}
-                                <div className="flex gap-2">
-                                  <button
-                                    onClick={() => copyToClipboard(item.plaintext)}
-                                    className="flex-1 py-2.5 rounded-xl text-[15px] font-semibold bg-primary text-white hover:bg-primary/90 active:scale-[0.98] transition-all"
-                                  >
-                                    Copy Password
-                                  </button>
-                                  <button
-                                    onClick={(e) => handleDeleteItem(item.id, e)}
-                                    className="px-5 py-2.5 rounded-xl text-[15px] font-semibold text-destructive bg-destructive/10 hover:bg-destructive/18 active:scale-[0.98] transition-all"
-                                  >
-                                    Delete
-                                  </button>
-                                </div>
+                                {/* Password value & actions */}
+                                {(() => {
+                                  if (item.plaintext.startsWith("Username: ") && item.plaintext.includes("\nPassword: ")) {
+                                    const [userPart, passPart] = item.plaintext.split("\n");
+                                    const username = userPart.replace("Username: ", "");
+                                    const password = passPart.replace("Password: ", "");
+                                    return (
+                                      <div className="space-y-3">
+                                        <div>
+                                          <label className="text-[12px] text-muted-foreground uppercase tracking-wider font-semibold mb-1 block pl-1">Username</label>
+                                          <div className="flex gap-2">
+                                            <div className="flex-1 bg-secondary rounded-xl px-4 py-3 font-mono text-[15px] text-foreground tracking-wide break-all select-all border border-border/50">
+                                              {username}
+                                            </div>
+                                            <button
+                                              onClick={() => copyToClipboard(username, "Username")}
+                                              className="px-4 rounded-xl font-semibold bg-secondary hover:bg-secondary/80 active:scale-[0.98] transition-all border border-border/50 text-foreground"
+                                            >
+                                              Copy
+                                            </button>
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <label className="text-[12px] text-muted-foreground uppercase tracking-wider font-semibold mb-1 block pl-1">Password</label>
+                                          <div className="flex gap-2">
+                                            <div className="flex-1 bg-secondary rounded-xl px-4 py-3 font-mono text-[15px] text-foreground tracking-wide break-all select-all border border-border/50">
+                                              {password}
+                                            </div>
+                                            <button
+                                              onClick={() => copyToClipboard(password, "Password")}
+                                              className="px-4 rounded-xl font-semibold bg-primary text-white hover:bg-primary/90 active:scale-[0.98] transition-all"
+                                            >
+                                              Copy
+                                            </button>
+                                          </div>
+                                        </div>
+                                        <div className="pt-2">
+                                          <button
+                                            onClick={(e) => handleDeleteItem(item.id, e)}
+                                            className="w-full py-2.5 rounded-xl text-[15px] font-semibold bg-destructive/10 text-destructive hover:bg-destructive/20 active:scale-[0.98] transition-all"
+                                          >
+                                            Delete Password
+                                          </button>
+                                        </div>
+                                      </div>
+                                    );
+                                  }
+                                  
+                                  return (
+                                    <>
+                                      <div className="w-full bg-secondary rounded-xl px-4 py-3 font-mono text-[15px] text-foreground tracking-wide break-all select-all border border-border/50 whitespace-pre-wrap">
+                                        {item.plaintext}
+                                      </div>
+                                      <div className="flex gap-2 mt-4">
+                                        <button
+                                          onClick={() => copyToClipboard(item.plaintext)}
+                                          className="flex-1 py-2.5 rounded-xl text-[15px] font-semibold bg-primary text-white hover:bg-primary/90 active:scale-[0.98] transition-all"
+                                        >
+                                          Copy Password
+                                        </button>
+                                        <button
+                                          onClick={(e) => handleDeleteItem(item.id, e)}
+                                          className="px-5 py-2.5 rounded-xl text-[15px] font-semibold bg-destructive/10 text-destructive hover:bg-destructive/20 active:scale-[0.98] transition-all"
+                                        >
+                                          Delete
+                                        </button>
+                                      </div>
+                                    </>
+                                  );
+                                })()}
                               </div>
                             </motion.div>
                           )}
