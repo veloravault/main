@@ -201,12 +201,12 @@ export function Profile({ onLogout }: ProfileProps) {
                   aria-checked={theme === "dark"}
                   aria-label="Toggle dark mode"
                   onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                  className={`relative inline-flex h-[30px] w-[50px] shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 ${
+                  className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 ${
                     theme === "dark" ? "bg-primary" : "bg-muted-foreground/30"
                   }`}
                 >
                   <span
-                    className={`pointer-events-none inline-block h-[26px] w-[26px] transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                    className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
                       theme === "dark" ? "translate-x-5" : "translate-x-0"
                     }`}
                   />
