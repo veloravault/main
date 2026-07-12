@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Wand2Icon, Loader2Icon, XIcon, CheckIcon } from "lucide-react";
+import { Wand2Icon, Loader2Icon, XIcon, CheckIcon, SparklesIcon } from "lucide-react";
 import { parseGlobalBulkData, GlobalImportResult } from "@/app/actions";
 import { supabase } from "@/lib/supabase";
 import { encryptText } from "@/lib/crypto";
@@ -258,20 +258,23 @@ export function GlobalMagicImport({ isOpen, onOpenChange, masterPassword, onSucc
         <button
           onClick={handleClose}
           disabled={isWorking}
-          className="absolute top-5 right-5 z-50 w-8 h-8 rounded-full bg-secondary/80 hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+          className="magic-import-close absolute top-5 right-5 z-50 w-8 h-8 rounded-full bg-secondary/80 hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           aria-label="Close"
         >
           <XIcon className="w-4 h-4" strokeWidth={2.5} />
         </button>
 
-        <div className="relative z-10 p-8">
+        <div className="magic-import-scroll relative z-10 p-8">
           <DialogHeader className="mb-8 space-y-3 flex flex-col items-center text-center">
-            <div className="w-16 h-16 rounded-full bg-[#007aff]/10 dark:bg-[#0a84ff]/20 flex items-center justify-center mb-2">
-              {phase === "done" ? (
-                <CheckIcon className="w-8 h-8 text-green-500" strokeWidth={2.5} />
-              ) : (
-                <Wand2Icon className={`w-8 h-8 text-[#007aff] dark:text-[#0a84ff] ${isWorking ? "animate-pulse" : ""}`} strokeWidth={1.5} />
-              )}
+            <div className="relative flex items-center justify-center mb-4">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-orange-500 blur-xl opacity-30 rounded-full" />
+              <div className="relative w-16 h-16 bg-background/80 backdrop-blur-sm border border-border/50 shadow-sm rounded-full flex items-center justify-center">
+                {phase === "done" ? (
+                  <CheckIcon className="w-7 h-7 text-green-500" strokeWidth={2.5} />
+                ) : (
+                  <SparklesIcon className={`w-7 h-7 text-foreground ${isWorking ? "animate-pulse" : ""}`} strokeWidth={1.5} />
+                )}
+              </div>
             </div>
             <DialogTitle className="text-[24px] font-semibold tracking-tight text-foreground">
               {phase === "done" ? "Import Complete" : "Magic Import"}
@@ -382,7 +385,7 @@ export function GlobalMagicImport({ isOpen, onOpenChange, masterPassword, onSucc
                 transition={{ type: "spring", bounce: 0, duration: 0.4 }}
               >
                 <textarea
-                  placeholder={`e.g.\nInstagram:\ntejastelkar9 = Shelar9*\n\nHDFC Bank\nCustomer ID = 12345\nPassword = mypass`}
+                  placeholder={`Paste your passwords, notes, or bank details here...\n\ne.g.\nNetflix: user@email.com | pass123\nWiFi: MyNetwork - secret456`}
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   className="w-full h-48 sm:h-56 p-5 rounded-[20px] bg-secondary/30 border border-border/50 resize-none text-[15px] leading-relaxed focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/30 transition-all placeholder:text-muted-foreground/60"

@@ -45,7 +45,7 @@ import {
   BuildingIcon,
   MoreHorizontalIcon,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
 type Tab = "dashboard" | "passwords" | "documents" | "notes" | "wallet" | "banks" | "profile";
 
@@ -109,6 +109,7 @@ const ALL_TABS_WITH_PROFILE = [
 const SESSION_MASTER_KEY = "vault_session_master";
 
 export default function Home() {
+  const prefersReducedMotion = useReducedMotion();
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const [sessionUser, setSessionUser] = useState<User | null>(null);
   const [masterPassword, setMasterPassword] = useState<string | null>(null);
@@ -461,11 +462,13 @@ export default function Home() {
               {/* Search panel */}
               <motion.div
                 key="search-panel"
-                initial={{ opacity: 0, y: -10, scale: 0.96 }}
-                animate={{ opacity: 1, y: 0,   scale: 1    }}
-                exit={{   opacity: 0, y: -6,   scale: 0.97 }}
-                transition={{ type: "spring", bounce: 0.15, duration: 0.3 }}
+                initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -10, scale: 0.96 }}
+                animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+                exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -6, scale: 0.97 }}
+                transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", bounce: 0.15, duration: 0.3 }}
                 className="vault-command-palette"
+                role="dialog"
+                aria-modal="true"
                 aria-label="Search the vault"
               >
                 <div
