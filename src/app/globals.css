@@ -296,6 +296,12 @@ body {
 .vault-command-palette { position: fixed; z-index: 50; top: 76px; left: 50%; width: min(540px,calc(100vw - 32px)); transform: translateX(-50%); }
 .vault-command-surface { overflow: hidden; border: 1px solid var(--separator); border-radius: 20px; background: var(--elevated-bg); box-shadow: 0 26px 70px rgba(0,0,0,.22); }
 
+@media (min-width: 768px) and (max-width: 1099px) {
+  .vault-header { grid-template-columns: minmax(80px,1fr) minmax(180px,320px) minmax(210px,1fr); gap: 8px; padding-inline: 12px; }
+  .vault-header-actions { gap: 6px; }
+  .vault-header-import { padding-inline: 10px; }
+}
+
 [data-slot="dialog-content"].responsive-form-sheet,
 [data-slot="dialog-content"].responsive-import-sheet { width: calc(100% - 32px); max-height: 84dvh; overflow-y: auto; border: 1px solid var(--separator); border-radius: 24px; background: var(--elevated-bg); box-shadow: 0 28px 80px rgba(0,0,0,.22); }
 
