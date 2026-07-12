@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckSquareIcon, SquareIcon } from "lucide-react";
+import { CheckSquareIcon, CopyIcon, SquareIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { CardNetworkLogo, getCardNetwork } from "@/components/CardLogos";
 
@@ -53,7 +53,7 @@ export function PaymentCard({
         damping: 28,
         delay: Math.min(index * 0.035, 0.16),
       }}
-      className="wallet-card-wrap"
+      className="wallet-card-wrap relative"
     >
       <button
         type="button"
@@ -76,7 +76,7 @@ export function PaymentCard({
           </span>
           <CardNetworkLogo network={network} />
         </span>
-        <span className="wallet-card-number">{formattedNumber}</span>
+        <span className="wallet-card-number pr-12 sm:pr-14">{formattedNumber}</span>
         <span className="wallet-card-bottom">
           <span>
             <small>Cardholder</small>
@@ -90,14 +90,14 @@ export function PaymentCard({
       </button>
       <button
         type="button"
-        className="wallet-card-copy"
+        className="wallet-card-copy absolute right-4 top-1/2 z-20 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/25 text-white shadow-sm backdrop-blur-md transition-colors hover:bg-black/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
         onClick={(event) => {
           event.stopPropagation();
           onCopyNumber(number);
         }}
         aria-label={`Copy card number for ${title}`}
       >
-        Copy card number
+        <CopyIcon className="size-4" aria-hidden="true" />
       </button>
     </motion.article>
   );
