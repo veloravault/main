@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ChevronDownIcon, ChevronRightIcon, FileIcon, Wand2Icon, MoreHorizontalIcon, PlusIcon } from "lucide-react";
+import { ChevronDownIcon, ChevronRightIcon, FileIcon, MoreHorizontalIcon, PlusIcon, CheckSquareIcon, SquareIcon, TrashIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   DropdownMenu,
@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { categorizeNote, parseBulkNotes } from "@/app/actions";
-import { setCache, invalidateCache } from "@/lib/vaultCache";
+import { setCache, getCache, invalidateCache } from "@/lib/vaultCache";
 
 interface SecureNote {
   id: string;
@@ -38,7 +38,7 @@ interface DecryptedNote {
   category?: string;
 }
 
-export function NotesVault({ masterPassword }: { masterPassword: string }) {
+export function NotesVault({ masterPassword, focusedItemId }: { masterPassword: string, focusedItemId?: string | null }) {
   const [items, setItems] = useState<DecryptedNote[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -48,12 +48,27 @@ export function NotesVault({ masterPassword }: { masterPassword: string }) {
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
 
-  // Magic Import State
-  const [isMagicImportOpen, setIsMagicImportOpen] = useState(false);
-  const [magicNotesText, setMagicNotesText] = useState("");
-  const [isMagicImporting, setIsMagicImporting] = useState(false);
+  // Bulk State
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+
+
+  useEffect(() => {
+    if (focusedItemId) {
+      setExpandedId(focusedItemId);
+      setTimeout(() => {
+        const el = document.getElementById(`item-${focusedItemId}`);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    }
+  }, [focusedItemId]);
 
   const fetchItems = useCallback(async () => {
+    // Serve cache instantly — no skeleton flash on repeat visits
+    const cached = getCache<DecryptedNote>("secure_notes");
+    if (cached) { setItems(cached); setLoading(false); return; }
+
     setLoading(true);
     const { data, error } = await supabase
       .from("secure_notes")
@@ -135,55 +150,7 @@ export function NotesVault({ masterPassword }: { masterPassword: string }) {
     }
   };
 
-  const handleMagicImport = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!magicNotesText) return;
-    setIsMagicImporting(true);
-    
-    try {
-      const parsedNotes = await parseBulkNotes(magicNotesText);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
 
-      if (!parsedNotes || parsedNotes.length === 0) {
-        alert("Could not find any notes in the text.");
-        setIsMagicImporting(false);
-        return;
-      }
-
-      let importedCount = 0;
-      for (const item of parsedNotes) {
-        if (!item.content) continue;
-        
-        const title = item.title || "Unknown Note";
-        const contentText = item.content;
-        
-        const encrypted = await encryptText(contentText, masterPassword);
-
-        const { error } = await supabase.from("secure_notes").insert({
-          user_id: user.id,
-          title: title,
-          encrypted_content: encrypted.ciphertext,
-          iv: encrypted.iv,
-          salt: encrypted.salt,
-          category: item.category || "Uncategorized",
-        });
-        if (!error) importedCount++;
-      }
-
-      alert(`Magic imported ${importedCount} notes!`);
-      setMagicNotesText("");
-      setIsMagicImportOpen(false);
-      invalidateCache("secure_notes");
-      fetchItems();
-
-    } catch (err) {
-      console.error("Magic import failed", err);
-      alert("Failed to parse notes.");
-    } finally {
-      setIsMagicImporting(false);
-    }
-  };
 
   const handleDeleteItem = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -200,10 +167,42 @@ export function NotesVault({ masterPassword }: { masterPassword: string }) {
     navigator.clipboard.writeText(text);
   };
 
+  const toggleSelection = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedIds(newSet);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    const idsToDelete = Array.from(selectedIds);
+    const { error } = await supabase.from("secure_notes").delete().in("id", idsToDelete);
+    if (!error) {
+      setSelectedIds(new Set());
+      setIsSelectionMode(false);
+      invalidateCache("secure_notes");
+      fetchItems();
+    } else {
+      alert("Failed to delete items");
+    }
+  };
+
   return (
     <div className="w-full">
       <div className="flex items-center justify-between gap-3 mb-5 sm:mb-8">
-        <h2 className="text-[28px] sm:text-[32px] font-bold tracking-tight">Secure Notes</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-[28px] sm:text-[32px] font-bold tracking-tight">Secure Notes</h2>
+          {isSelectionMode && (
+            <span className="text-[13px] font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
+              {selectedIds.size} selected
+            </span>
+          )}
+        </div>
         
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <DropdownMenu>
@@ -211,14 +210,34 @@ export function NotesVault({ masterPassword }: { masterPassword: string }) {
               <MoreHorizontalIcon className="w-5 h-5" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48 rounded-xl">
-              <DropdownMenuItem 
-                onClick={() => setIsMagicImportOpen(true)}
-                className="font-medium text-purple-600 focus:text-purple-600 focus:bg-purple-600/10 cursor-pointer"
-              >
-                <Wand2Icon className="w-4 h-4 mr-2" />
-                Magic Import
-              </DropdownMenuItem>
-            </DropdownMenuContent>
+              {items.length > 0 && (
+                <>
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      setIsSelectionMode(!isSelectionMode);
+                      if (isSelectionMode) setSelectedIds(new Set());
+                    }}
+                    className="font-medium cursor-pointer"
+                  >
+                    {isSelectionMode ? "Cancel Editing" : "Select Notes"}
+                  </DropdownMenuItem>
+                  {isSelectionMode && (
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        if (selectedIds.size === items.length) {
+                          setSelectedIds(new Set());
+                        } else {
+                          setSelectedIds(new Set(items.map(i => i.id)));
+                        }
+                      }}
+                      className="font-medium cursor-pointer"
+                    >
+                      {selectedIds.size === items.length ? "Deselect All" : "Select All"}
+                    </DropdownMenuItem>
+                  )}
+                </>
+              )}
+              </DropdownMenuContent>
           </DropdownMenu>
 
           <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
@@ -262,49 +281,7 @@ export function NotesVault({ masterPassword }: { masterPassword: string }) {
             </DialogContent>
           </Dialog>
 
-          <Dialog open={isMagicImportOpen} onOpenChange={setIsMagicImportOpen}>
-            <DialogContent className="border-border/50 shadow-lg sm:rounded-[20px] max-w-lg">
-              <DialogHeader>
-                <DialogTitle className="text-center font-bold flex items-center justify-center gap-2">
-                  <Wand2Icon className="w-5 h-5 text-purple-600" />
-                  Magic Import Notes
-                </DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleMagicImport} className="space-y-4 mt-2">
-                <div className="space-y-1">
-                  <p className="text-[14px] text-muted-foreground text-center mb-4">
-                    Paste your huge unstructured notes dump (from Apple Notes, Keep, etc.). Our AI will securely split them into separate, categorized notes!
-                  </p>
-                  <textarea
-                    placeholder="Note 1: My ideas...&#10;&#10;Note 2: Things to buy...&#10;..."
-                    value={magicNotesText}
-                    onChange={(e) => setMagicNotesText(e.target.value)}
-                    className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all min-h-[200px] resize-y"
-                    required
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  disabled={isMagicImporting || !magicNotesText}
-                  className="w-full h-12 rounded-xl font-semibold text-[17px] mt-4 bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2 justify-center"
-                >
-                  {isMagicImporting ? (
-                    <>
-                      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
-                        <Wand2Icon className="w-5 h-5" />
-                      </motion.div>
-                      Analyzing Notes...
-                    </>
-                  ) : (
-                    <>
-                      <Wand2Icon className="w-5 h-5" />
-                      Extract & Import
-                    </>
-                  )}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
+
         </div>
       </div>
 
@@ -325,9 +302,28 @@ export function NotesVault({ masterPassword }: { masterPassword: string }) {
               }, {} as Record<string, DecryptedNote[]>)
             ).sort(([a], [b]) => a.localeCompare(b)).map(([category, categoryItems]) => (
               <motion.div layout key={category} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-[0.06em] mb-2 px-1">
-                  {category}
-                </p>
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-[0.06em]">
+                    {category}
+                  </p>
+                  {isSelectionMode && (
+                    <button
+                      onClick={() => {
+                        const allInCategorySelected = categoryItems.every(i => selectedIds.has(i.id));
+                        const newSet = new Set(selectedIds);
+                        if (allInCategorySelected) {
+                          categoryItems.forEach(i => newSet.delete(i.id));
+                        } else {
+                          categoryItems.forEach(i => newSet.add(i.id));
+                        }
+                        setSelectedIds(newSet);
+                      }}
+                      className="text-[12px] font-semibold text-primary hover:opacity-80 transition-opacity"
+                    >
+                      {categoryItems.every(i => selectedIds.has(i.id)) ? "Deselect All" : "Select All"}
+                    </button>
+                  )}
+                </div>
                 <div className="bg-card rounded-2xl border border-border overflow-hidden">
                   <AnimatePresence initial={false}>
                   {categoryItems
@@ -335,10 +331,12 @@ export function NotesVault({ masterPassword }: { masterPassword: string }) {
                     .map((item, i, arr) => {
                   const isExpanded = expandedId === item.id;
                   const isLast = i === arr.length - 1;
+                  const isSelected = selectedIds.has(item.id);
 
               return (
                   <motion.div 
                     layout
+                    id={`item-${item.id}`}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0, height: 0 }}
@@ -346,10 +344,17 @@ export function NotesVault({ masterPassword }: { masterPassword: string }) {
                     className={`bg-card transition-all duration-300 overflow-hidden ${!isLast ? 'border-b border-border' : ''}`}
                   >
                     <button
-                      onClick={() => setExpandedId(isExpanded ? null : item.id)}
+                      onClick={(e) => isSelectionMode ? toggleSelection(item.id, e) : setExpandedId(isExpanded ? null : item.id)}
                       className="flex items-center justify-between p-4 sm:p-5 w-full focus:outline-none cursor-default group"
                     >
                     <div className="flex items-center gap-4 min-w-0">
+                      {isSelectionMode && (
+                        <div className="shrink-0 text-primary">
+                          {isSelected
+                            ? <CheckSquareIcon strokeWidth={2.5} className="w-5 h-5" />
+                            : <SquareIcon strokeWidth={2} className="w-5 h-5 text-muted-foreground/50" />}
+                        </div>
+                      )}
                       <div className="w-10 h-10 bg-gradient-to-b from-orange-500 to-destructive rounded-xl flex items-center justify-center shrink-0 shadow-sm">
                         <FileIcon strokeWidth={2.5} className="w-5 h-5 text-white" />
                       </div>
@@ -414,6 +419,39 @@ export function NotesVault({ masterPassword }: { masterPassword: string }) {
           </motion.div>
         )}
       </div>
+      {/* Floating Action Bar for Bulk Selection */}
+      {isSelectionMode && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-popover/95 backdrop-blur-xl border border-border shadow-2xl rounded-2xl px-5 py-3.5 flex items-center gap-4 animate-in slide-in-from-bottom-4 duration-300 z-50">
+          <button
+            onClick={() => { setIsSelectionMode(false); setSelectedIds(new Set()); }}
+            className="text-[14px] font-semibold text-muted-foreground hover:text-foreground transition-colors px-2"
+          >
+            Cancel
+          </button>
+          <div className="w-px h-5 bg-border" />
+          <span className="text-[14px] font-semibold text-foreground">{selectedIds.size} selected</span>
+          <div className="w-px h-5 bg-border" />
+          <button
+            onClick={() => setSelectedIds(new Set(items.map(i => i.id)))}
+            className="text-[14px] font-semibold text-primary hover:opacity-80 transition-opacity"
+          >
+            Select All
+          </button>
+          {selectedIds.size > 0 && (
+            <>
+              <div className="w-px h-5 bg-border" />
+              <Button 
+                variant="destructive" 
+                onClick={handleBulkDelete}
+                className="rounded-full px-4 h-9 text-[14px] font-semibold shadow-sm flex items-center gap-2"
+              >
+                <TrashIcon className="w-3.5 h-3.5" />
+                Delete {selectedIds.size}
+              </Button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

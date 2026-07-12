@@ -2,7 +2,7 @@
 import { motion } from "framer-motion";
 import { KeyRoundIcon, FileTextIcon, FileIcon, CreditCardIcon } from "lucide-react";
 
-type VaultType = "passwords" | "documents" | "notes" | "wallet";
+type VaultType = "passwords" | "documents" | "notes" | "wallet" | "bank";
 
 const CONFIG = {
   passwords: {
@@ -26,8 +26,14 @@ const CONFIG = {
   wallet: {
     icon: CreditCardIcon,
     title: "No Cards",
-    subtitle: "Saved cards and bank accounts will appear here.",
+    subtitle: "Saved cards will appear here.",
     cta: "Add Card",
+  },
+  bank: {
+    icon: CreditCardIcon,
+    title: "No Bank Accounts",
+    subtitle: "Saved bank accounts will appear here.",
+    cta: "Add Account",
   },
 };
 

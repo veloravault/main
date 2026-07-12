@@ -2,13 +2,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import { SearchIcon, KeyRoundIcon, FileTextIcon, FileIcon, CreditCardIcon, XIcon } from "lucide-react";
+import { SearchIcon, KeyRoundIcon, FileTextIcon, FileIcon, CreditCardIcon, BuildingIcon, XIcon } from "lucide-react";
 
 interface SearchResult {
   id: string;
   title: string;
   subtitle?: string;
-  vault: "passwords" | "documents" | "notes" | "wallet";
+  vault: "passwords" | "documents" | "notes" | "wallet" | "banks";
 }
 
 const VAULT_META = {
@@ -16,10 +16,11 @@ const VAULT_META = {
   documents:  { icon: FileTextIcon,     label: "Document",   color: "text-purple-500", bg: "bg-purple-500/10" },
   notes:      { icon: FileIcon,         label: "Note",       color: "text-amber-500",  bg: "bg-amber-500/10" },
   wallet:     { icon: CreditCardIcon,   label: "Wallet",     color: "text-emerald-500",bg: "bg-emerald-500/10" },
+  banks:      { icon: BuildingIcon,     label: "Bank",       color: "text-indigo-500", bg: "bg-indigo-500/10" },
 };
 
 interface GlobalSearchProps {
-  onNavigate: (tab: string) => void;
+  onNavigate: (tab: string, id?: string) => void;
   autoFocus?: boolean;
 }
 
@@ -56,7 +57,8 @@ export function GlobalSearch({ onNavigate, autoFocus }: GlobalSearchProps) {
       ...(passRes.data || []).map(r => ({ id: r.id, title: r.title, subtitle: r.category, vault: "passwords" as const })),
       ...(docRes.data  || []).map(r => ({ id: r.id, title: r.title, vault: "documents" as const })),
       ...(noteRes.data || []).map(r => ({ id: r.id, title: r.title, vault: "notes" as const })),
-      ...(walletRes.data || []).map(r => ({ id: r.id, title: r.title, subtitle: r.type?.replace("_", " "), vault: "wallet" as const })),
+      ...(walletRes.data || []).filter(r => r.type !== "bank_account").map(r => ({ id: r.id, title: r.title, subtitle: r.type?.replace("_", " "), vault: "wallet" as const })),
+      ...(walletRes.data || []).filter(r => r.type === "bank_account").map(r => ({ id: r.id, title: r.title, subtitle: "Bank Account", vault: "banks" as const })),
     ];
 
     setResults(combined);
@@ -84,7 +86,7 @@ export function GlobalSearch({ onNavigate, autoFocus }: GlobalSearchProps) {
   }, []);
 
   const handleSelect = (result: SearchResult) => {
-    onNavigate(result.vault);
+    onNavigate(result.vault, result.id);
     setOpen(false);
     setQuery("");
     setResults([]);

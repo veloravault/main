@@ -13,7 +13,11 @@ import {
   CreditCardIcon,
   StarIcon,
   BuildingIcon,
-  ActivityIcon
+  ActivityIcon,
+  PencilIcon,
+  CheckIcon,
+  XIcon,
+  Loader2Icon
 } from "lucide-react";
 import { FaceIdIcon } from "@/components/Icons";
 
@@ -74,8 +78,14 @@ export function Dashboard({ masterPassword }: DashboardProps) {
   const [recentWallet, setRecentWallet] = useState<DashboardWalletItem[]>([]);
   const [recentNotes, setRecentNotes] = useState<DashboardNote[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userName, setUserName] = useState("User");
+  const [fullName, setFullName] = useState("User");
   const [showBioBanner, setShowBioBanner] = useState(false);
+
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState("");
+  const [isSavingName, setIsSavingName] = useState(false);
+
+  const firstName = fullName.split(' ')[0] || "User";
 
   useEffect(() => {
     if (isBiometricsSupported() && !hasBiometricsEnabled()) {
@@ -89,7 +99,7 @@ export function Dashboard({ masterPassword }: DashboardProps) {
     // Get user info
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      setUserName(user.user_metadata?.full_name || user.email?.split('@')[0] || "User");
+      setFullName(user.user_metadata?.full_name || user.email?.split('@')[0] || "User");
     }
 
     try {
@@ -164,6 +174,23 @@ export function Dashboard({ masterPassword }: DashboardProps) {
     });
   }, [fetchDashboardData]);
 
+  const handleSaveName = async () => {
+    if (!editNameValue.trim()) return;
+    setIsSavingName(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: { full_name: editNameValue.trim() }
+      });
+      if (error) throw error;
+      setFullName(editNameValue.trim());
+      setIsEditingName(false);
+    } catch (err: any) {
+      alert(err.message || "Failed to update name");
+    } finally {
+      setIsSavingName(false);
+    }
+  };
+
   if (loading) {
     return <DashboardSkeleton />;
   }
@@ -176,8 +203,48 @@ export function Dashboard({ masterPassword }: DashboardProps) {
         <p className="text-[13px] sm:text-[14px] text-muted-foreground font-medium mb-0.5">
           {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
         </p>
-        <h1 className="text-[30px] sm:text-[32px] font-bold tracking-tight text-foreground">
-          {userName}
+        <h1 className="text-[30px] sm:text-[32px] font-bold tracking-tight text-foreground flex items-center gap-3">
+          {isEditingName ? (
+            <div className="flex items-center gap-2 mt-1">
+              <input
+                type="text"
+                value={editNameValue}
+                onChange={(e) => setEditNameValue(e.target.value)}
+                className="bg-transparent border-b-2 border-primary outline-none focus:border-primary/80 transition-colors w-40 sm:w-60 text-foreground text-[26px] sm:text-[30px]"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void handleSaveName();
+                  if (e.key === "Escape") setIsEditingName(false);
+                }}
+              />
+              {isSavingName ? (
+                <Loader2Icon className="w-5 h-5 animate-spin text-muted-foreground ml-2" />
+              ) : (
+                <div className="flex items-center gap-1 ml-2">
+                  <button onClick={handleSaveName} className="p-1.5 hover:bg-primary/10 rounded-lg text-primary transition-colors">
+                    <CheckIcon className="w-5 h-5" />
+                  </button>
+                  <button onClick={() => setIsEditingName(false)} className="p-1.5 hover:bg-muted rounded-lg text-muted-foreground transition-colors">
+                    <XIcon className="w-5 h-5" />
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="group flex items-center gap-2">
+              <span>Hello {firstName}</span>
+              <button 
+                onClick={() => {
+                  setEditNameValue(fullName);
+                  setIsEditingName(true);
+                }}
+                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-muted rounded-lg text-muted-foreground transition-all"
+                aria-label="Edit name"
+              >
+                <PencilIcon className="w-5 h-5" />
+              </button>
+            </div>
+          )}
         </h1>
       </div>
 

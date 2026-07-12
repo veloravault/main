@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
-import { UserIcon, CameraIcon, Loader2Icon, CheckIcon, LogOutIcon, MoonIcon, SunIcon } from "lucide-react";
+import { UserIcon, CameraIcon, Loader2Icon, CheckIcon, LogOutIcon, MoonIcon, SunIcon, Trash2Icon, AlertTriangleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 
@@ -19,6 +19,12 @@ export function Profile({ onLogout }: ProfileProps) {
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Danger zone state
+  const [showDeleteDataConfirm, setShowDeleteDataConfirm] = useState(false);
+  const [showDeleteAccountConfirm, setShowDeleteAccountConfirm] = useState(false);
+  const [dangerInput, setDangerInput] = useState("");
+  const [dangerLoading, setDangerLoading] = useState(false);
   
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -68,33 +74,62 @@ export function Profile({ onLogout }: ProfileProps) {
       const fileExt = file.name.split('.').pop();
       const fileName = `${user?.id}/avatar-${Date.now()}.${fileExt}`;
 
-      // Upload image to Supabase Storage 'avatars' bucket
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, file, { upsert: true });
 
-      if (uploadError) {
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(fileName);
 
-      // Update user metadata
       const { error: updateError } = await supabase.auth.updateUser({
         data: { avatar_url: publicUrl }
       });
 
       if (updateError) throw updateError;
-
       setAvatarUrl(publicUrl);
     } catch (error: unknown) {
       console.error("Error uploading avatar:", error);
       alert(error instanceof Error ? error.message : "Failed to upload avatar.");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleDeleteAllData = async () => {
+    if (dangerInput !== "DELETE") return;
+    setDangerLoading(true);
+    try {
+      await supabase.from("vault_items").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      await supabase.from("secure_notes").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      await supabase.from("secure_wallet").delete().neq("id", "00000000-0000-0000-0000-000000000000");
+      setShowDeleteDataConfirm(false);
+      setDangerInput("");
+      alert("All vault data has been permanently deleted.");
+    } catch (err) {
+      console.error("Delete data error:", err);
+      alert("Failed to delete data. Please try again.");
+    } finally {
+      setDangerLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (dangerInput !== "DELETE") return;
+    setDangerLoading(true);
+    try {
+      const res = await fetch("/api/delete-account", { method: "POST" });
+      const json = await res.json() as { error?: string };
+      if (!res.ok) throw new Error(json.error || "Failed to delete account");
+      // Sign out and reload
+      await supabase.auth.signOut();
+      window.location.href = "/";
+    } catch (err) {
+      console.error("Delete account error:", err);
+      alert(err instanceof Error ? err.message : "Failed to delete account.");
+      setDangerLoading(false);
     }
   };
 
@@ -224,6 +259,97 @@ export function Profile({ onLogout }: ProfileProps) {
             </button>
           )}
         </div>
+      </div>
+      {/* Danger Zone */}
+      <div className="bg-card rounded-3xl p-8 border border-destructive/30 shadow-sm">
+        <div className="flex items-center gap-3 mb-2">
+          <AlertTriangleIcon className="w-5 h-5 text-destructive" />
+          <h3 className="text-xl font-semibold tracking-tight text-destructive">Danger Zone</h3>
+        </div>
+        <p className="text-[14px] text-muted-foreground mb-6">These actions are permanent and cannot be undone.</p>
+
+        <div className="space-y-3">
+          {/* Delete All Data */}
+          <div className="flex items-center justify-between p-4 rounded-2xl border border-border bg-muted/30">
+            <div>
+              <p className="text-[15px] font-semibold text-foreground">Delete All Vault Data</p>
+              <p className="text-[13px] text-muted-foreground mt-0.5">Permanently erase all passwords, notes, cards and bank accounts. Your account stays active.</p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => { setShowDeleteDataConfirm(true); setDangerInput(""); setShowDeleteAccountConfirm(false); }}
+              className="ml-4 shrink-0 border-destructive/40 text-destructive hover:bg-destructive hover:text-white rounded-xl"
+            >
+              <Trash2Icon className="w-4 h-4 mr-2" />
+              Clear Data
+            </Button>
+          </div>
+
+          {/* Delete Account */}
+          <div className="flex items-center justify-between p-4 rounded-2xl border border-destructive/20 bg-destructive/5">
+            <div>
+              <p className="text-[15px] font-semibold text-foreground">Delete Account</p>
+              <p className="text-[13px] text-muted-foreground mt-0.5">Permanently delete your account and ALL data. This cannot be reversed.</p>
+            </div>
+            <Button
+              variant="destructive"
+              onClick={() => { setShowDeleteAccountConfirm(true); setDangerInput(""); setShowDeleteDataConfirm(false); }}
+              className="ml-4 shrink-0 rounded-xl"
+            >
+              <Trash2Icon className="w-4 h-4 mr-2" />
+              Delete Account
+            </Button>
+          </div>
+        </div>
+
+        {/* Confirmation Panel */}
+        {(showDeleteDataConfirm || showDeleteAccountConfirm) && (
+          <div className="mt-5 p-5 rounded-2xl border border-destructive/40 bg-destructive/5 space-y-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangleIcon className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+              <div>
+                <p className="text-[14px] font-semibold text-foreground">
+                  {showDeleteAccountConfirm
+                    ? "This will permanently delete your account and ALL vault data."
+                    : "This will permanently erase all your vault data."}
+                </p>
+                <p className="text-[13px] text-muted-foreground mt-1">Type <span className="font-mono font-bold text-destructive">DELETE</span> below to confirm.</p>
+              </div>
+            </div>
+            <input
+              type="text"
+              value={dangerInput}
+              onChange={(e) => setDangerInput(e.target.value)}
+              placeholder="Type DELETE to confirm"
+              className="w-full bg-background border border-destructive/40 rounded-xl px-4 py-3 text-[15px] font-mono focus:outline-none focus:ring-2 focus:ring-destructive/30 transition-all"
+              autoFocus
+            />
+            <div className="flex gap-3">
+              <Button
+                variant="ghost"
+                onClick={() => { setShowDeleteDataConfirm(false); setShowDeleteAccountConfirm(false); setDangerInput(""); }}
+                className="flex-1 rounded-xl"
+                disabled={dangerLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                disabled={dangerInput !== "DELETE" || dangerLoading}
+                onClick={showDeleteAccountConfirm ? handleDeleteAccount : handleDeleteAllData}
+                className="flex-1 rounded-xl font-semibold"
+              >
+                {dangerLoading ? (
+                  <Loader2Icon className="w-4 h-4 animate-spin" />
+                ) : showDeleteAccountConfirm ? (
+                  "Delete My Account"
+                ) : (
+                  "Delete All Data"
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

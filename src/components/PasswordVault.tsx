@@ -17,7 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ChevronDownIcon, UploadIcon, TrashIcon, CheckSquareIcon, SquareIcon, StarIcon, Wand2Icon, MoreHorizontalIcon, PlusIcon } from "lucide-react";
+import { ChevronDownIcon, UploadIcon, TrashIcon, CheckSquareIcon, SquareIcon, StarIcon, MoreHorizontalIcon, PlusIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   DropdownMenu,
@@ -48,7 +48,37 @@ interface DecryptedItem {
 
 type CsvPasswordRow = Record<string, string | undefined>;
 
-export function PasswordVault({ masterPassword }: { masterPassword: string }) {
+// Parses plaintext stored in vault_items — supports JSON (Magic Import) and legacy text format
+function parsePlaintext(plaintext: string): { isJson: boolean; username: string | null; password: string | null; notes: string | null; domain: string | null } {
+  try {
+    const obj = JSON.parse(plaintext);
+    if (obj && typeof obj === 'object') {
+      return {
+        isJson: true,
+        username: (obj.username && obj.username !== '') ? obj.username : (obj.user && obj.user !== '') ? obj.user : (obj.email && obj.email !== '') ? obj.email : null,
+        password: (obj.password && obj.password !== '') ? obj.password : (obj.pass && obj.pass !== '') ? obj.pass : null,
+        notes: obj.notes || obj.extra_details || null,
+        domain: obj.domain || null,
+      };
+    }
+  } catch {
+    // not JSON — fall through to regex
+  }
+  const userMatch = plaintext.match(/Username:\s*([^\n]+)/i);
+  const passMatch = plaintext.match(/Password:\s*([^\n]+)/i);
+  let extra = plaintext;
+  if (userMatch) extra = extra.replace(userMatch[0], '');
+  if (passMatch) extra = extra.replace(passMatch[0], '');
+  return {
+    isJson: false,
+    username: userMatch ? userMatch[1].trim() : null,
+    password: passMatch ? passMatch[1].trim() : null,
+    notes: extra.trim() || null,
+    domain: null,
+  };
+}
+
+export function PasswordVault({ masterPassword, focusedItemId }: { masterPassword: string, focusedItemId?: string | null }) {
   const toast = useToast();
   const [items, setItems] = useState<DecryptedItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,11 +94,16 @@ export function PasswordVault({ masterPassword }: { masterPassword: string }) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
-  
-  // Magic Import State
-  const [isMagicImportOpen, setIsMagicImportOpen] = useState(false);
-  const [magicNotesText, setMagicNotesText] = useState("");
-  const [isMagicImporting, setIsMagicImporting] = useState(false);
+
+  useEffect(() => {
+    if (focusedItemId) {
+      setExpandedId(focusedItemId);
+      setTimeout(() => {
+        const el = document.getElementById(`item-${focusedItemId}`);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    }
+  }, [focusedItemId]);
 
   const fetchItems = useCallback(async (force = false) => {
     // Check cache first
@@ -165,88 +200,7 @@ export function PasswordVault({ masterPassword }: { masterPassword: string }) {
     }
   };
 
-  const handleMagicImport = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!magicNotesText) return;
-    setIsMagicImporting(true);
-    
-    try {
-      const parsedPasswords = await parseNotesToPasswords(magicNotesText);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
 
-      if (!parsedPasswords || parsedPasswords.length === 0) {
-        toast("Could not find any passwords in the text.", "error");
-        setIsMagicImporting(false);
-        return;
-      }
-
-      let importedCount = 0;
-      let updatedCount = 0;
-      for (const item of parsedPasswords) {
-        if (!item.password && !item.extra_details) continue;
-        
-        const title = item.title || "Unknown Service";
-        const parsedUsername = item.username ? item.username.trim() : null;
-        
-        let secretText = "";
-        if (item.username && item.password) {
-          secretText = `Username: ${item.username}\nPassword: ${item.password}`;
-        } else if (item.username) {
-          secretText = `Username: ${item.username}`;
-        } else if (item.password) {
-          secretText = `Password: ${item.password}`;
-        }
-        
-        if (item.extra_details) {
-          secretText += secretText ? `\n\n${item.extra_details}` : item.extra_details;
-        }
-        
-        const encrypted = await encryptText(secretText, masterPassword);
-
-        const duplicate = items.find(existing => {
-          if (existing.title.toLowerCase() !== title.toLowerCase()) return false;
-          const isCombo = existing.plaintext.startsWith("Username: ") && existing.plaintext.includes("\nPassword: ");
-          const existingUsername = isCombo ? existing.plaintext.split("\n")[0].replace("Username: ", "").trim() : null;
-          return (existingUsername || "").toLowerCase() === (parsedUsername || "").toLowerCase();
-        });
-
-        if (duplicate) {
-          const { error } = await supabase.from("vault_items").update({
-            encrypted_data: encrypted.ciphertext,
-            iv: encrypted.iv,
-            salt: encrypted.salt,
-            category: item.category || duplicate.category,
-            domain: item.url || duplicate.domain,
-          }).eq("id", duplicate.id);
-          if (!error) updatedCount++;
-        } else {
-          const { error } = await supabase.from("vault_items").insert({
-            user_id: user.id,
-            title: title,
-            encrypted_data: encrypted.ciphertext,
-            iv: encrypted.iv,
-            salt: encrypted.salt,
-            category: item.category || "Uncategorized",
-            domain: item.url || null,
-          });
-          if (!error) importedCount++;
-        }
-      }
-
-      toast(`Magic imported ${importedCount} new, updated ${updatedCount} passwords!`, "success");
-      setMagicNotesText("");
-      setIsMagicImportOpen(false);
-      invalidateCache("vault_items");
-      fetchItems(true);
-
-    } catch (err) {
-      console.error("Magic import failed", err);
-      toast("Failed to parse notes.", "error");
-    } finally {
-      setIsMagicImporting(false);
-    }
-  };
 
   const handleDeleteItem = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -434,6 +388,20 @@ export function PasswordVault({ masterPassword }: { masterPassword: string }) {
                   {isSelectionMode ? "Cancel Editing" : "Select Passwords"}
                 </DropdownMenuItem>
               )}
+              {isSelectionMode && items.length > 0 && (
+                <DropdownMenuItem 
+                  onClick={() => {
+                    if (selectedIds.size === items.length) {
+                      setSelectedIds(new Set());
+                    } else {
+                      setSelectedIds(new Set(items.map(i => i.id)));
+                    }
+                  }}
+                  className="font-medium cursor-pointer"
+                >
+                  {selectedIds.size === items.length ? "Deselect All" : "Select All"}
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem 
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isImporting}
@@ -441,13 +409,6 @@ export function PasswordVault({ masterPassword }: { masterPassword: string }) {
               >
                 <UploadIcon className="w-4 h-4 mr-2" />
                 {isImporting ? "Importing CSV..." : "Import CSV"}
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => setIsMagicImportOpen(true)}
-                className="font-medium text-purple-600 focus:text-purple-600 focus:bg-purple-600/10 cursor-pointer"
-              >
-                <Wand2Icon className="w-4 h-4 mr-2" />
-                Magic Import
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -494,49 +455,7 @@ export function PasswordVault({ masterPassword }: { masterPassword: string }) {
             </DialogContent>
           </Dialog>
 
-          <Dialog open={isMagicImportOpen} onOpenChange={setIsMagicImportOpen}>
-            <DialogContent className="border-border/50 shadow-lg sm:rounded-[20px] max-w-lg">
-              <DialogHeader>
-                <DialogTitle className="text-center font-bold flex items-center justify-center gap-2">
-                  <Wand2Icon className="w-5 h-5 text-purple-600" />
-                  Magic Import
-                </DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleMagicImport} className="space-y-4 mt-2">
-                <div className="space-y-1">
-                  <p className="text-[14px] text-muted-foreground text-center mb-4">
-                    Paste your unstructured notes containing passwords (from Apple Notes, Keep, etc.). Our AI will securely parse and import them for you!
-                  </p>
-                  <textarea
-                    placeholder="Netflix - myemail@gmail.com - mypass123&#10;Bank: 1234&#10;..."
-                    value={magicNotesText}
-                    onChange={(e) => setMagicNotesText(e.target.value)}
-                    className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-purple-600/20 focus:border-purple-600 transition-all min-h-[200px] resize-y"
-                    required
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  disabled={isMagicImporting || !magicNotesText}
-                  className="w-full h-12 rounded-xl font-semibold text-[17px] mt-4 bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-2 justify-center"
-                >
-                  {isMagicImporting ? (
-                    <>
-                      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }}>
-                        <Wand2Icon className="w-5 h-5" />
-                      </motion.div>
-                      Analyzing Notes...
-                    </>
-                  ) : (
-                    <>
-                      <Wand2Icon className="w-5 h-5" />
-                      Extract & Import
-                    </>
-                  )}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
+
 
           <input 
             type="file" 
@@ -570,10 +489,29 @@ export function PasswordVault({ masterPassword }: { masterPassword: string }) {
             }).map(([category, categoryItems]) => (
               <motion.div layout key={category} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
 
-                {/* Section header — iOS caps style */}
-                <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-[0.06em] mb-2 px-1">
-                  {category}
-                </p>
+                {/* Section header */}
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-[0.06em]">
+                    {category}
+                  </p>
+                  {isSelectionMode && (
+                    <button
+                      onClick={() => {
+                        const allInCategorySelected = categoryItems.every(i => selectedIds.has(i.id));
+                        const newSet = new Set(selectedIds);
+                        if (allInCategorySelected) {
+                          categoryItems.forEach(i => newSet.delete(i.id));
+                        } else {
+                          categoryItems.forEach(i => newSet.add(i.id));
+                        }
+                        setSelectedIds(newSet);
+                      }}
+                      className="text-[12px] font-semibold text-primary hover:opacity-80 transition-opacity"
+                    >
+                      {categoryItems.every(i => selectedIds.has(i.id)) ? "Deselect All" : "Select All"}
+                    </button>
+                  )}
+                </div>
 
                 {/* Inset grouped list card */}
                 <div className="bg-card rounded-2xl border border-border overflow-hidden">
@@ -588,6 +526,7 @@ export function PasswordVault({ masterPassword }: { masterPassword: string }) {
                       return (
                         <motion.div
                           layout
+                          id={`item-${item.id}`}
                           key={item.id}
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
@@ -608,30 +547,35 @@ export function PasswordVault({ masterPassword }: { masterPassword: string }) {
                               </div>
                             )}
 
-                            {/* Favicon icon — bg-secondary with favicon overlay, bold letter fallback */}
+                            {/* Favicon icon */}
                             <div className="w-10 h-10 rounded-[10px] bg-secondary flex items-center justify-center shrink-0 border border-border overflow-hidden relative">
                               <span className="text-[17px] font-bold text-foreground/50">
                                 {item.title.charAt(0).toUpperCase()}
                               </span>
-                              {item.domain && (
-                                <img
-                                  src={`https://unavatar.io/${item.domain}?fallback=false`}
-                                  alt=""
-                                  className="absolute inset-0 w-full h-full object-contain bg-white dark:bg-transparent"
-                                  onError={e => { e.currentTarget.style.display = "none"; }}
-                                />
-                              )}
+                              {(() => {
+                                const parsed = parsePlaintext(item.plaintext);
+                                const faviconDomain = item.domain || parsed.domain;
+                                if (!faviconDomain) return null;
+                                return (
+                                  <img
+                                    src={`https://www.google.com/s2/favicons?domain=${faviconDomain}&sz=64`}
+                                    alt=""
+                                    className="absolute inset-0 w-full h-full object-contain p-1.5 bg-white dark:bg-[#1c1c1e]"
+                                    onError={e => { e.currentTarget.style.display = "none"; }}
+                                  />
+                                );
+                              })()}
                             </div>
 
                             {/* Title + Subtitle */}
                             <div className="flex-1 min-w-0">
                               <div className="text-[15px] font-medium text-foreground truncate leading-snug">{item.title}</div>
                               {(() => {
-                                const isCombo = item.plaintext.startsWith("Username: ") && item.plaintext.includes("\nPassword: ");
-                                const username = isCombo ? item.plaintext.split("\n")[0].replace("Username: ", "") : null;
+                                const parsed = parsePlaintext(item.plaintext);
+                                const subtitle = parsed.username;
                                 return (
-                                  <div className={`text-[13px] text-muted-foreground truncate leading-tight mt-0.5 ${!username ? 'tracking-[0.18em]' : ''}`}>
-                                    {username || "••••••••"}
+                                  <div className={`text-[13px] text-muted-foreground truncate leading-tight mt-0.5 ${!subtitle ? 'tracking-[0.18em]' : ''}`}>
+                                    {subtitle || "••••••••"}
                                   </div>
                                 );
                               })()}
@@ -699,50 +643,54 @@ export function PasswordVault({ masterPassword }: { masterPassword: string }) {
 
                                 {/* Password value & actions */}
                                 {(() => {
-                                  if (item.plaintext.startsWith("Username: ") && item.plaintext.includes("\nPassword: ")) {
-                                    const [userPart, passPart, ...rest] = item.plaintext.split("\n");
-                                    const username = userPart.replace("Username: ", "");
-                                    const password = passPart.replace("Password: ", "");
-                                    const extraDetails = rest.join("\n").trim();
+                                  const parsed = parsePlaintext(item.plaintext);
+                                  const { username, password, notes } = parsed;
+                                  const hasStructured = parsed.isJson || username || password;
+
+                                  if (hasStructured) {
                                     return (
                                       <div className="space-y-3">
-                                        <div>
-                                          <label className="text-[12px] text-muted-foreground uppercase tracking-wider font-semibold mb-1 block pl-1">Username</label>
-                                          <div className="flex gap-2">
-                                            <div className="flex-1 bg-secondary rounded-xl px-4 py-3 font-mono text-[15px] text-foreground tracking-wide break-all select-all border border-border/50">
-                                              {username}
+                                        {username && (
+                                          <div>
+                                            <label className="text-[12px] text-muted-foreground uppercase tracking-wider font-semibold mb-1 block pl-1">Username</label>
+                                            <div className="flex gap-2">
+                                              <div className="flex-1 bg-secondary rounded-xl px-4 py-3 font-mono text-[15px] text-foreground tracking-wide break-all select-all border border-border/50">
+                                                {username}
+                                              </div>
+                                              <button
+                                                onClick={() => copyToClipboard(username, "Username")}
+                                                className="px-4 rounded-xl font-semibold bg-secondary hover:bg-secondary/80 active:scale-[0.98] transition-all border border-border/50 text-foreground"
+                                              >
+                                                Copy
+                                              </button>
                                             </div>
-                                            <button
-                                              onClick={() => copyToClipboard(username, "Username")}
-                                              className="px-4 rounded-xl font-semibold bg-secondary hover:bg-secondary/80 active:scale-[0.98] transition-all border border-border/50 text-foreground"
-                                            >
-                                              Copy
-                                            </button>
                                           </div>
-                                        </div>
-                                        <div>
-                                          <label className="text-[12px] text-muted-foreground uppercase tracking-wider font-semibold mb-1 block pl-1">Password</label>
-                                          <div className="flex gap-2">
-                                            <div className="flex-1 bg-secondary rounded-xl px-4 py-3 font-mono text-[15px] text-foreground tracking-wide break-all select-all border border-border/50">
-                                              {password}
+                                        )}
+                                        {password && (
+                                          <div>
+                                            <label className="text-[12px] text-muted-foreground uppercase tracking-wider font-semibold mb-1 block pl-1">Password</label>
+                                            <div className="flex gap-2">
+                                              <div className="flex-1 bg-secondary rounded-xl px-4 py-3 font-mono text-[15px] text-foreground tracking-wide break-all select-all border border-border/50">
+                                                {password}
+                                              </div>
+                                              <button
+                                                onClick={() => copyToClipboard(password, "Password")}
+                                                className="px-4 rounded-xl font-semibold bg-primary text-white hover:bg-primary/90 active:scale-[0.98] transition-all"
+                                              >
+                                                Copy
+                                              </button>
                                             </div>
-                                            <button
-                                              onClick={() => copyToClipboard(password, "Password")}
-                                              className="px-4 rounded-xl font-semibold bg-primary text-white hover:bg-primary/90 active:scale-[0.98] transition-all"
-                                            >
-                                              Copy
-                                            </button>
                                           </div>
-                                        </div>
-                                        {extraDetails && (
+                                        )}
+                                        {notes && (
                                           <div>
                                             <label className="text-[12px] text-muted-foreground uppercase tracking-wider font-semibold mb-1 block pl-1">Extra Details</label>
                                             <div className="flex gap-2">
                                               <div className="flex-1 bg-secondary rounded-xl px-4 py-3 font-mono text-[14px] text-foreground tracking-wide whitespace-pre-wrap break-words select-all border border-border/50">
-                                                {extraDetails}
+                                                {notes}
                                               </div>
                                               <button
-                                                onClick={() => copyToClipboard(extraDetails, "Extra Details")}
+                                                onClick={() => copyToClipboard(notes, "Extra Details")}
                                                 className="px-4 rounded-xl font-semibold bg-secondary hover:bg-secondary/80 active:scale-[0.98] transition-all border border-border/50 text-foreground"
                                               >
                                                 Copy

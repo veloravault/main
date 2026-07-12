@@ -14,7 +14,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ChevronDownIcon, ChevronRightIcon, FileIcon, DownloadIcon, XIcon, SparklesIcon } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDownIcon, ChevronRightIcon, FileIcon, DownloadIcon, XIcon, SparklesIcon, MoreHorizontalIcon, CheckSquareIcon, SquareIcon, TrashIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface VaultDocument {
@@ -26,7 +32,7 @@ interface VaultDocument {
   category?: string;
 }
 
-export function DocumentVault({ masterPassword }: { masterPassword: string }) {
+export function DocumentVault({ masterPassword, focusedItemId }: { masterPassword: string, focusedItemId?: string | null }) {
   const [documents, setDocuments] = useState<VaultDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -38,6 +44,20 @@ export function DocumentVault({ masterPassword }: { masterPassword: string }) {
   const [previewModal, setPreviewModal] = useState<{ isOpen: boolean, doc: VaultDocument | null, url: string, loading: boolean }>({ isOpen: false, doc: null, url: '', loading: false });
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
+
+  // Bulk State
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (focusedItemId) {
+      setExpandedId(focusedItemId);
+      setTimeout(() => {
+        const el = document.getElementById(`item-${focusedItemId}`);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    }
+  }, [focusedItemId]);
 
   const fetchDocuments = useCallback(async () => {
     setLoading(true);
@@ -209,16 +229,87 @@ export function DocumentVault({ masterPassword }: { masterPassword: string }) {
     }
   };
 
+  const toggleSelection = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedIds(newSet);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    const docsToDelete = documents.filter(d => selectedIds.has(d.id));
+    const pathsToRemove = docsToDelete.map(d => d.storage_path);
+    
+    await supabase.storage.from("vault_documents").remove(pathsToRemove);
+    const { error } = await supabase.from("vault_documents").delete().in("id", Array.from(selectedIds));
+    
+    if (!error) {
+      setSelectedIds(new Set());
+      setIsSelectionMode(false);
+      invalidateCache("vault_documents");
+      fetchDocuments();
+    } else {
+      alert("Failed to delete items");
+    }
+  };
+
   return (
     <div className="w-full">
       <div className="flex items-center justify-between gap-3 mb-5 sm:mb-8">
-        <h2 className="text-[28px] sm:text-[32px] font-bold tracking-tight">Documents</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-[28px] sm:text-[32px] font-bold tracking-tight">Documents</h2>
+          {isSelectionMode && (
+            <span className="text-[13px] font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
+              {selectedIds.size} selected
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="rounded-full w-9 h-9 p-0 text-muted-foreground hover:bg-muted/80 flex items-center justify-center">
+              <MoreHorizontalIcon className="w-5 h-5" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 rounded-xl">
+              {documents.length > 0 && (
+                <>
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      setIsSelectionMode(!isSelectionMode);
+                      if (isSelectionMode) setSelectedIds(new Set());
+                    }}
+                    className="font-medium cursor-pointer"
+                  >
+                    {isSelectionMode ? "Cancel Editing" : "Select Documents"}
+                  </DropdownMenuItem>
+                  {isSelectionMode && (
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        if (selectedIds.size === documents.length) {
+                          setSelectedIds(new Set());
+                        } else {
+                          setSelectedIds(new Set(documents.map(d => d.id)));
+                        }
+                      }}
+                      className="font-medium cursor-pointer"
+                    >
+                      {selectedIds.size === documents.length ? "Deselect All" : "Select All"}
+                    </DropdownMenuItem>
+                  )}
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-          <DialogTrigger render={<Button variant="ghost" className="rounded-full h-9 px-3 sm:px-4 text-primary hover:bg-primary/10 hover:text-primary font-medium flex items-center gap-1.5" />}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-            Upload
-          </DialogTrigger>
+          <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+            <DialogTrigger render={<Button variant="ghost" className="rounded-full h-9 px-3 sm:px-4 text-primary hover:bg-primary/10 hover:text-primary font-medium flex items-center gap-1.5" />}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              Upload
+            </DialogTrigger>
           <DialogContent className="border-border/50 shadow-lg sm:rounded-[20px] max-w-sm">
             <DialogHeader>
               <DialogTitle className="text-center font-bold">Secure File Upload</DialogTitle>
@@ -254,6 +345,7 @@ export function DocumentVault({ masterPassword }: { masterPassword: string }) {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <div className="w-full">
@@ -273,9 +365,28 @@ export function DocumentVault({ masterPassword }: { masterPassword: string }) {
               }, {} as Record<string, VaultDocument[]>)
             ).sort(([a], [b]) => a.localeCompare(b)).map(([category, categoryDocs]) => (
               <motion.div layout key={category} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-[0.06em] mb-2 px-1">
-                  {category}
-                </p>
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-[0.06em]">
+                    {category}
+                  </p>
+                  {isSelectionMode && (
+                    <button
+                      onClick={() => {
+                        const allInCategorySelected = categoryDocs.every(d => selectedIds.has(d.id));
+                        const newSet = new Set(selectedIds);
+                        if (allInCategorySelected) {
+                          categoryDocs.forEach(d => newSet.delete(d.id));
+                        } else {
+                          categoryDocs.forEach(d => newSet.add(d.id));
+                        }
+                        setSelectedIds(newSet);
+                      }}
+                      className="text-[12px] font-semibold text-primary hover:opacity-80 transition-opacity"
+                    >
+                      {categoryDocs.every(d => selectedIds.has(d.id)) ? "Deselect All" : "Select All"}
+                    </button>
+                  )}
+                </div>
                 <div className="bg-card rounded-2xl border border-border overflow-hidden">
                   <AnimatePresence initial={false}>
                   {categoryDocs
@@ -283,21 +394,30 @@ export function DocumentVault({ masterPassword }: { masterPassword: string }) {
                     .map((doc, i, arr) => {
                   const isExpanded = expandedId === doc.id;
                   const isLast = i === arr.length - 1;
+                  const isSelected = selectedIds.has(doc.id);
 
               return (
                   <motion.div 
                     layout
+                    id={`item-${doc.id}`}
+                    key={doc.id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0, height: 0 }}
-                    key={doc.id} 
                     className={`bg-card transition-all duration-300 overflow-hidden ${!isLast ? 'border-b border-border' : ''}`}
                   >
                     <button
-                      onClick={() => setExpandedId(isExpanded ? null : doc.id)}
+                      onClick={(e) => isSelectionMode ? toggleSelection(doc.id, e) : setExpandedId(isExpanded ? null : doc.id)}
                       className="flex items-center justify-between p-4 sm:p-5 w-full focus:outline-none cursor-default group"
                     >
                     <div className="flex items-center gap-4 min-w-0">
+                      {isSelectionMode && (
+                        <div className="shrink-0 text-primary">
+                          {isSelected
+                            ? <CheckSquareIcon strokeWidth={2.5} className="w-5 h-5" />
+                            : <SquareIcon strokeWidth={2} className="w-5 h-5 text-muted-foreground/50" />}
+                        </div>
+                      )}
                       <div className="w-10 h-10 bg-gradient-to-b from-blue-400 to-primary rounded-xl flex items-center justify-center shrink-0 shadow-sm">
                         <FileIcon strokeWidth={2.5} className="w-5 h-5 text-white" />
                       </div>
@@ -431,6 +551,38 @@ export function DocumentVault({ masterPassword }: { masterPassword: string }) {
           </div>
         </DialogContent>
       </Dialog>
+      {isSelectionMode && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-popover/95 backdrop-blur-xl border border-border shadow-2xl rounded-2xl px-5 py-3.5 flex items-center gap-4 animate-in slide-in-from-bottom-4 duration-300 z-50">
+          <button
+            onClick={() => { setIsSelectionMode(false); setSelectedIds(new Set()); }}
+            className="text-[14px] font-semibold text-muted-foreground hover:text-foreground transition-colors px-2"
+          >
+            Cancel
+          </button>
+          <div className="w-px h-5 bg-border" />
+          <span className="text-[14px] font-semibold text-foreground">{selectedIds.size} selected</span>
+          <div className="w-px h-5 bg-border" />
+          <button
+            onClick={() => setSelectedIds(new Set(documents.map(d => d.id)))}
+            className="text-[14px] font-semibold text-primary hover:opacity-80 transition-opacity"
+          >
+            Select All
+          </button>
+          {selectedIds.size > 0 && (
+            <>
+              <div className="w-px h-5 bg-border" />
+              <Button 
+                variant="destructive" 
+                onClick={handleBulkDelete}
+                className="rounded-full px-4 h-9 text-[14px] font-semibold shadow-sm flex items-center gap-2"
+              >
+                <TrashIcon className="w-3.5 h-3.5" />
+                Delete {selectedIds.size}
+              </Button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

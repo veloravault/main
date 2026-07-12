@@ -11,7 +11,9 @@ import { PasswordVault } from "@/components/PasswordVault";
 import { DocumentVault } from "@/components/DocumentVault";
 import { NotesVault } from "@/components/NotesVault";
 import { WalletVault } from "@/components/WalletVault";
+import { BankVault } from "@/components/BankVault";
 import { Profile } from "@/components/Profile";
+import { GlobalMagicImport } from "@/components/GlobalMagicImport";
 import { clearAllCaches, getCache } from "@/lib/vaultCache";
 import { clearKeyCache } from "@/lib/keyCache";
 import { aiSearchVault } from "./actions";
@@ -29,14 +31,15 @@ import {
   XIcon,
   SunIcon,
   MoonIcon,
-  SparklesIcon,
+  Wand2Icon,
   Loader2Icon,
   ArrowRightIcon,
   HashIcon,
+  BuildingIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-type Tab = "dashboard" | "passwords" | "documents" | "notes" | "wallet" | "profile";
+type Tab = "dashboard" | "passwords" | "documents" | "notes" | "wallet" | "banks" | "profile";
 
 type SearchableVaultItem = {
   id: string;
@@ -83,6 +86,7 @@ const NAV_SECTIONS = [
       { tab: "documents" as Tab, icon: FileTextIcon,    label: "Documents"  },
       { tab: "notes"     as Tab, icon: FileIcon,        label: "Notes"      },
       { tab: "wallet"    as Tab, icon: CreditCardIcon,  label: "Wallet"     },
+      { tab: "banks"     as Tab, icon: BuildingIcon,    label: "Bank Accounts" },
     ],
   },
 ];
@@ -111,6 +115,8 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [aiSearching, setAiSearching] = useState(false);
   const [aiMatch, setAiMatch] = useState<{ id: string, title: string, type: Tab } | null>(null);
+  const [focusedItemId, setFocusedItemId] = useState<string | null>(null);
+  const [isGlobalImportOpen, setIsGlobalImportOpen] = useState(false);
   const headerSearchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -189,11 +195,12 @@ export default function Home() {
     sessionStorage.removeItem(SESSION_MASTER_KEY);
   };
 
-  const handleNavigate = useCallback((tab: Tab) => {
+  const handleNavigate = useCallback((tab: Tab, id?: string) => {
     setActiveTab(tab);
     setSearchOpen(false);
     setSearchQuery("");
     setAiMatch(null);
+    setFocusedItemId(id || null);
   }, []);
 
   const collectSearchItems = useCallback(async (): Promise<SearchableVaultItem[]> => {
@@ -206,7 +213,7 @@ export default function Home() {
       ...cachedPasswords.map((p) => ({ id: p.id, type: "passwords" as Tab, title: p.title, category: p.category })),
       ...cachedDocuments.map((d) => ({ id: d.id, type: "documents" as Tab, title: d.title, category: d.category })),
       ...cachedNotes.map((n) => ({ id: n.id, type: "notes" as Tab, title: n.title, category: n.category })),
-      ...cachedWallet.map((w) => ({ id: w.id, type: "wallet" as Tab, title: w.title || w.type || "Wallet item", category: "Wallet" })),
+      ...cachedWallet.map((w) => ({ id: w.id, type: (w.type === "bank_account" ? "banks" : "wallet") as Tab, title: w.title || w.type || "Wallet item", category: w.type === "bank_account" ? "Bank Accounts" : "Wallet" })),
     ];
 
     if (items.length > 0) return items;
@@ -222,7 +229,7 @@ export default function Home() {
       ...(passwords.data || []).map((p) => ({ id: p.id, type: "passwords" as Tab, title: p.title, category: p.category })),
       ...(documents.data || []).map((d) => ({ id: d.id, type: "documents" as Tab, title: d.title, category: d.category })),
       ...(notes.data || []).map((n) => ({ id: n.id, type: "notes" as Tab, title: n.title, category: n.category })),
-      ...(wallet.data || []).map((w) => ({ id: w.id, type: "wallet" as Tab, title: w.title || w.type || "Wallet item", category: "Wallet" })),
+      ...(wallet.data || []).map((w) => ({ id: w.id, type: (w.type === "bank_account" ? "banks" : "wallet") as Tab, title: w.title || w.type || "Wallet item", category: w.type === "bank_account" ? "Bank Accounts" : "Wallet" })),
     ];
   }, []);
 
@@ -290,7 +297,7 @@ export default function Home() {
     return <Auth onLogin={handleLogin} initialSessionActive={!!sessionUser} initialEmail={sessionUser?.email} />;
   }
 
-  const sharedProps = { masterPassword };
+  const sharedProps = { masterPassword, focusedItemId };
 
 
 
@@ -413,6 +420,15 @@ export default function Home() {
 
           <div className="flex-1" />
 
+          {/* Magic Import Button */}
+          <button
+            onClick={() => setIsGlobalImportOpen(true)}
+            className="hidden sm:flex items-center gap-2 h-[32px] px-3 rounded-[9px] bg-primary/10 text-primary hover:bg-primary/20 transition-colors border border-primary/20 mr-2"
+          >
+            <Wand2Icon className="w-3.5 h-3.5 shrink-0" />
+            <span className="text-[13px] font-medium hidden lg:block">Magic Import</span>
+          </button>
+
           {/* Search -- pill on sm+ */}
           <button
             onClick={() => setSearchOpen(true)}
@@ -423,6 +439,15 @@ export default function Home() {
             <span className="text-[11px] font-medium hidden lg:flex items-center gap-0.5 ml-1 opacity-50 bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded">
               ⌘K
             </span>
+          </button>
+
+          {/* Mobile: Magic Import icon button */}
+          <button
+            onClick={() => setIsGlobalImportOpen(true)}
+            className="sm:hidden w-10 h-10 flex items-center justify-center rounded-full text-primary hover:bg-primary/10 active:scale-90 transition-all mr-1"
+            aria-label="Magic Import"
+          >
+            <Wand2Icon className="w-[19px] h-[19px]" />
           </button>
 
           {/* Mobile: search icon button 44px */}
@@ -553,7 +578,7 @@ export default function Home() {
                     {aiSearching && (
                       <div className="px-4 py-4 flex items-center gap-3">
                         <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                          <SparklesIcon className="w-4 h-4 text-primary" strokeWidth={2} />
+                          <Wand2Icon className="w-4 h-4 text-primary" strokeWidth={2} />
                         </div>
                         <div>
                           <p className="text-[14px] font-medium text-foreground">Searching with AI&hellip;</p>
@@ -578,11 +603,11 @@ export default function Home() {
                       return (
                         <div className="px-3 py-3">
                           <div className="flex items-center gap-2 px-1 mb-2">
-                            <SparklesIcon className="w-3.5 h-3.5 text-primary" strokeWidth={2} />
+                            <Wand2Icon className="w-3.5 h-3.5 text-primary" strokeWidth={2} />
                             <span className="text-[11px] font-semibold text-primary uppercase tracking-widest">AI Match</span>
                           </div>
                           <button
-                            onClick={() => handleNavigate(aiMatch.type)}
+                            onClick={() => handleNavigate(aiMatch.type, aiMatch.id)}
                             className="w-full flex items-center gap-3.5 px-3.5 py-3 rounded-xl hover:bg-muted/60 active:scale-[0.98] transition-all text-left group"
                             style={{ background: "var(--card)", border: "1px solid var(--border)" }}
                           >
@@ -667,27 +692,19 @@ export default function Home() {
           )}
         </AnimatePresence>
 
-        {/* ── Scrollable content -- padded at bottom for mobile tab bar */}
+        {/* ── Scrollable content — all tabs always mounted, hidden via display:none */}
         <div className="ios-content-scroll flex-1 overflow-auto">
           <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 md:px-7 py-4 sm:py-5 pb-32 md:pb-8">
-            <AnimatePresence>
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{   opacity: 0, y: -4 }}
-                transition={{ duration: 0.16, ease: [0.25, 0.46, 0.45, 0.94] }}
-              >
-                {activeTab === "dashboard" && <Dashboard  {...sharedProps} />}
-                {activeTab === "passwords" && <PasswordVault {...sharedProps} />}
-                {activeTab === "documents" && <DocumentVault {...sharedProps} />}
-                {activeTab === "notes"     && <NotesVault {...sharedProps} />}
-                {activeTab === "wallet"    && <WalletVault {...sharedProps} />}
-                {activeTab === "profile"   && <Profile onLogout={handleLogout} />}
-              </motion.div>
-            </AnimatePresence>
+            <div style={{ display: activeTab === "dashboard" ? undefined : "none" }}><Dashboard  {...sharedProps} /></div>
+            <div style={{ display: activeTab === "passwords" ? undefined : "none" }}><PasswordVault {...sharedProps} /></div>
+            <div style={{ display: activeTab === "documents" ? undefined : "none" }}><DocumentVault {...sharedProps} /></div>
+            <div style={{ display: activeTab === "notes"     ? undefined : "none" }}><NotesVault {...sharedProps} /></div>
+            <div style={{ display: activeTab === "wallet"    ? undefined : "none" }}><WalletVault {...sharedProps} /></div>
+            <div style={{ display: activeTab === "banks"     ? undefined : "none" }}><BankVault {...sharedProps} /></div>
+            <div style={{ display: activeTab === "profile"   ? undefined : "none" }}><Profile onLogout={handleLogout} /></div>
           </div>
         </div>
+
       </main>
 
       {/* ── Mobile bottom tab bar ────────────────────────── */}
@@ -733,6 +750,21 @@ export default function Home() {
           })}
         </div>
       </nav>
+
+      {/* Global AI Magic Import Modal */}
+      <GlobalMagicImport 
+        isOpen={isGlobalImportOpen} 
+        onOpenChange={setIsGlobalImportOpen} 
+        masterPassword={masterPassword} 
+        onSuccess={() => {
+          // Force remount of active vault by briefly switching away and back
+          setActiveTab(prev => {
+            const saved = prev;
+            setTimeout(() => setActiveTab(saved), 50);
+            return "dashboard";
+          });
+        }}
+      />
     </div>
   );
 }
