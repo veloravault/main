@@ -101,6 +101,7 @@ const ALL_TABS_WITH_PROFILE = [
 const SESSION_MASTER_KEY = "vault_session_master";
 
 export default function Home() {
+  const contentScrollRef = useRef<HTMLDivElement>(null);
   const [sessionUser, setSessionUser] = useState<User | null>(null);
   const [masterPassword, setMasterPassword] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -202,6 +203,10 @@ export default function Home() {
     setAiMatch(null);
     setFocusedItemId(id || null);
   }, []);
+
+  useEffect(() => {
+    contentScrollRef.current?.scrollTo({ top: 0, behavior: "auto" });
+  }, [activeTab]);
 
   const collectSearchItems = useCallback(async (): Promise<SearchableVaultItem[]> => {
     const cachedPasswords = getCache<CachedPassword>("vault_items") || [];
@@ -665,8 +670,8 @@ export default function Home() {
         </AnimatePresence>
 
         {/* ── Scrollable content — all tabs always mounted, hidden via display:none */}
-        <div className="ios-content-scroll flex-1 overflow-auto">
-          <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 md:px-7 py-4 sm:py-5 pb-32 md:pb-8">
+        <div ref={contentScrollRef} className="ios-content-scroll flex-1 overflow-auto">
+          <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 md:px-7 py-4 sm:py-5 pb-32 md:pb-8">
             <h1 className="apple-large-title md:hidden mb-5">
               {ALL_TABS_WITH_PROFILE.find(t => t.tab === activeTab)?.label ?? "Home"}
             </h1>

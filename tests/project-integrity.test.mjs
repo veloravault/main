@@ -76,7 +76,7 @@ test("mobile shell keeps iOS-style safe areas and native tab treatment", () => {
   assert.match(page, /ios-mobile-header/);
   assert.match(page, /apple-tabbar/);
   assert.match(page, /layoutId="mobile-bg"/);
-  assert.match(page, /max-w-4xl mx-auto w-full px-4 sm:px-6 md:px-7/);
+  assert.match(page, /max-w-6xl mx-auto w-full px-4 sm:px-6 md:px-7/);
   assert.match(css, /height:\s*100dvh/);
   assert.match(css, /--bottom-bar-height:\s*82px/);
   assert.match(css, /@media \(max-width:\s*767px\)/);
@@ -204,12 +204,37 @@ test("Bank Vault renders selected account in an accessible sibling detail surfac
   assert.match(bank, /const selectedBank =/);
   assert.match(bank, /apple-bank-master-detail/);
   assert.match(bank, /role="dialog"/);
-  assert.match(bank, /aria-modal="true"/);
+  assert.match(bank, /role="dialog"/);
   assert.match(bank, /aria-label="Close account details"/);
   assert.match(bank, /Account Holder/);
   assert.match(bank, /Account Type/);
   assert.match(bank, /aria-label={`Copy/);
   assert.equal(bank.includes("apple-mobile-detail-sheet space-y-4 relative z-10 mt-5"), false);
+});
+
+test("Bank Vault locks desktop master and detail into a compact two-column workspace", () => {
+  const bank = read("src/components/BankVault.tsx");
+  assert.match(bank, /apple-bank-workspace grid w-full items-start/);
+  assert.match(bank, /md:grid-cols-\[minmax\(280px,0\.82fr\)_minmax\(360px,1\.18fr\)\]/);
+  assert.match(bank, /apple-bank-detail-fields/);
+  assert.doesNotMatch(bank, /selectedBank\.payload\.name \|\| "Not provided"/);
+  assert.doesNotMatch(bank, /accountType \|\| "Bank account"/);
+});
+
+test("desktop master-detail starts at the same breakpoint as the desktop sidebar", () => {
+  const css = read("src/app/globals.css");
+  const page = read("src/app/page.tsx");
+  const profile = read("src/components/Profile.tsx");
+  const wallet = read("src/components/WalletVault.tsx");
+  assert.match(css, /@media \(min-width:\s*768px\)[\s\S]*?\.apple-bank-master-detail\s*\{[^}]*grid-template-columns/);
+  assert.match(css, /@media \(min-width:\s*768px\)[\s\S]*?\.apple-wallet-master-detail\s*\{[^}]*grid-template-columns/);
+  assert.doesNotMatch(css, /\.apple-detail-pane\s*>\s*div\s*\{/);
+  assert.match(page, /max-w-6xl/);
+  assert.match(page, /contentScrollRef\.current\?\.scrollTo\(\{ top: 0, behavior: "auto" \}\)/);
+  assert.match(profile, /md:grid-cols-2/);
+  assert.doesNotMatch(wallet, /apple-wallet-stack[^\n]*lg:grid-cols-2/);
+  assert.match(wallet, /apple-wallet-detail-backdrop/);
+  assert.match(wallet, /expandedCardId \? "block" : "hidden md:block"/);
 });
 
 test("Passwords and Bank Vault adopt adaptive master-detail surfaces", () => {

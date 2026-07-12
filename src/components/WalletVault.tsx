@@ -19,7 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BuildingIcon, TrashIcon, CopyIcon, CameraIcon, Loader2Icon, MoreHorizontalIcon, CheckSquareIcon, SquareIcon } from "lucide-react";
+import { BuildingIcon, TrashIcon, CopyIcon, CameraIcon, Loader2Icon, MoreHorizontalIcon, CheckSquareIcon, SquareIcon, XIcon } from "lucide-react";
 import { CardNetworkLogo, getCardNetwork } from "@/components/CardLogos";
 import { PaymentCard } from "@/components/PaymentCard";
 import { SelectionToolbar } from "@/components/SelectionToolbar";
@@ -543,7 +543,7 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
         const filteredCards = items.filter(item => walletFilter === "all" || inferSubtype(item) === walletFilter);
 
         const CardGrid = ({ cards }: { cards: DecryptedWallet[] }) => (
-          <motion.div layout className="apple-wallet-stack grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-6">
+          <motion.div layout className="apple-wallet-stack grid grid-cols-1 gap-0">
             <AnimatePresence>
             {cards.map((item) => (
               <motion.div
@@ -655,7 +655,8 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
             {activeCard ? (
               <div className="apple-wallet-master-detail">
                 <CardGrid cards={filteredCards} />
-                <aside className="apple-wallet-detail-pane apple-group" aria-label={`${activeCard.title} details`}>
+                {expandedCardId && <button type="button" className="apple-wallet-detail-backdrop md:hidden" aria-label="Close card details" onClick={() => setExpandedCardId(null)} />}
+                <aside className={`apple-wallet-detail-pane apple-group ${expandedCardId ? "block" : "hidden md:block"}`} aria-label={`${activeCard.title} details`}>
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
                       <p className="type-group-label">Selected card</p>
@@ -664,6 +665,7 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
                     <div className="flex h-9 min-w-20 justify-end">
                       <CardNetworkLogo network={getCardNetwork(activeCard.payload.number || "")} />
                     </div>
+                    <button type="button" className="apple-wallet-detail-close md:hidden" aria-label="Close card details" onClick={() => setExpandedCardId(null)}><XIcon className="h-4 w-4" /></button>
                   </div>
 
                   <dl className="mt-5 divide-y divide-border/70">

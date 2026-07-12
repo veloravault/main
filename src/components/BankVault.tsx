@@ -454,7 +454,7 @@ export function BankVault({ masterPassword, focusedItemId }: { masterPassword: s
         </div>
       </div>
 
-      <div className="apple-master-detail apple-bank-master-detail w-full">
+      <div className="apple-master-detail apple-bank-master-detail apple-bank-workspace grid w-full items-start gap-5 md:grid-cols-[minmax(280px,0.82fr)_minmax(360px,1.18fr)] md:gap-6">
         {loading ? (
           <WalletSkeleton />
         ) : items.length === 0 ? (
@@ -509,20 +509,20 @@ export function BankVault({ masterPassword, focusedItemId }: { masterPassword: s
         {selectedBank && (
           <>
             <button type="button" className="apple-bank-detail-backdrop" aria-label="Close account details" onClick={() => setExpandedBankId(null)} />
-            <aside id={`bank-detail-${selectedBank.id}`} className="apple-bank-detail apple-detail-pane" role="dialog" aria-modal="true" aria-labelledby={`bank-detail-title-${selectedBank.id}`}>
+            <aside id={`bank-detail-${selectedBank.id}`} className="apple-bank-detail apple-detail-pane min-w-0" role="dialog" aria-labelledby={`bank-detail-title-${selectedBank.id}`}>
               <div className="apple-sheet-grabber" />
-              <header className="flex items-start justify-between gap-4 border-b border-border/60 pb-4">
-                <div className="flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10"><BuildingIcon className="h-5 w-5 text-primary" /></span><div><p className="type-group-label">Bank account</p><h3 id={`bank-detail-title-${selectedBank.id}`} className="type-section-title mt-1">{selectedBank.title}</h3></div></div>
-                <button type="button" aria-label="Close account details" onClick={() => setExpandedBankId(null)} className="grid h-9 w-9 place-items-center rounded-full bg-muted text-muted-foreground hover:text-foreground"><XIcon className="h-4 w-4" /></button>
+              <header className="flex items-center justify-between gap-4 px-1 pb-4">
+                <div className="flex min-w-0 items-center gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10"><BuildingIcon className="h-5 w-5 text-primary" /></span><div className="min-w-0"><p className="type-group-label">Bank account</p><h3 id={`bank-detail-title-${selectedBank.id}`} className="mt-0.5 truncate text-[20px] font-semibold tracking-[-0.025em]">{selectedBank.title}</h3></div></div>
+                <button type="button" aria-label="Close account details" onClick={() => setExpandedBankId(null)} className="grid h-9 w-9 place-items-center rounded-full bg-muted text-muted-foreground hover:text-foreground md:hidden"><XIcon className="h-4 w-4" /></button>
               </header>
-              <div className="divide-y divide-border/60">
-                <DetailRow label="Account Holder" value={selectedBank.payload.name || "Not provided"} />
-                <DetailRow label="Account Type" value={accountType || "Bank account"} />
-                <DetailRow label="IFSC / Routing Code" value={selectedBank.payload.routing || "—"} copy />
-                <DetailRow label="Account Number" value={selectedBank.payload.account || "—"} copy />
+              <div className="apple-bank-detail-fields overflow-hidden rounded-2xl border border-border/60 bg-background/55 px-4">
+                {selectedBank.payload.name && <DetailRow label="Account Holder" value={selectedBank.payload.name} />}
+                {accountType && <DetailRow label="Account Type" value={accountType} />}
+                {selectedBank.payload.routing && <DetailRow label="IFSC / Routing Code" value={selectedBank.payload.routing} copy />}
+                {selectedBank.payload.account && <DetailRow label="Account Number" value={selectedBank.payload.account} copy />}
               </div>
-              {selectedBank.payload.extra_details && <div className="mt-4 rounded-2xl bg-muted/45 p-4"><p className="type-group-label mb-2">Additional Info</p><p className="whitespace-pre-wrap text-[13px] text-muted-foreground">{selectedBank.payload.extra_details}</p></div>}
-              <Button variant="ghost" onClick={(e) => handleDeleteItem(selectedBank.id, e)} className="mt-5 w-full rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive"><TrashIcon className="h-4 w-4" /> Delete Account</Button>
+              {selectedBank.payload.extra_details && <div className="mt-3 rounded-2xl bg-muted/45 px-4 py-3"><p className="type-group-label mb-1.5">Additional Info</p><p className="whitespace-pre-wrap text-[13px] leading-5 text-muted-foreground">{selectedBank.payload.extra_details}</p></div>}
+              <Button variant="ghost" onClick={(e) => handleDeleteItem(selectedBank.id, e)} className="mt-3 h-11 w-full rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive"><TrashIcon className="h-4 w-4" /> Delete Account</Button>
             </aside>
           </>
         )}
@@ -548,6 +548,6 @@ export function BankVault({ masterPassword, focusedItemId }: { masterPassword: s
   );
 
   function DetailRow({ label, value, copy = false }: { label: string; value: string; copy?: boolean }) {
-    return <div className="flex min-h-16 items-center justify-between gap-4 py-3"><div className="min-w-0"><p className="type-group-label">{label}</p><p className={`mt-1 truncate text-[15px] font-medium ${copy ? "font-mono" : ""}`}>{value}</p></div>{copy && <button type="button" aria-label={`Copy ${label}`} onClick={() => copyToClipboard(value)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary hover:bg-primary/15"><CopyIcon className="h-4 w-4" /></button>}</div>;
+    return <div className="flex min-h-[58px] items-center justify-between gap-4 border-b border-border/50 py-2.5 last:border-b-0"><div className="min-w-0"><p className="type-group-label">{label}</p><p className={`mt-1 truncate text-[15px] font-medium ${copy ? "font-mono tracking-[0.025em]" : ""}`}>{value}</p></div>{copy && <button type="button" aria-label={`Copy ${label}`} onClick={() => copyToClipboard(value)} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary hover:bg-primary/15"><CopyIcon className="h-3.5 w-3.5" /></button>}</div>;
   }
 }

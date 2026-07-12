@@ -142,8 +142,8 @@ export function Profile({ onLogout }: ProfileProps) {
         <p className="mt-1 text-[14px] text-muted-foreground">Your account, security and vault preferences.</p>
       </header>
 
-      <div className="grid gap-5 lg:grid-cols-2">
-        <section data-settings-section="account" className="apple-group bg-card rounded-[22px] border border-border shadow-sm lg:col-span-2 overflow-hidden">
+      <div className="grid gap-5 md:grid-cols-2">
+        <section data-settings-section="account" className="apple-group bg-card rounded-[22px] border border-border shadow-sm md:col-span-2 overflow-hidden">
           <p className="type-group-label px-5 pt-5">Account</p>
           <div className="grid gap-5 p-5 sm:grid-cols-[88px_1fr] sm:items-start">
             <button type="button" className="group justify-self-start text-left" onClick={() => fileInputRef.current?.click()} aria-label="Change profile photo">
