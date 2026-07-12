@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
-import { motion, useMotionValue, useTransform, useSpring, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { encryptText, decryptText } from "@/lib/crypto";
 import { setCache, getCache, invalidateCache } from "@/lib/vaultCache";
@@ -11,17 +11,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { BuildingIcon, TrashIcon, CopyIcon, CameraIcon, Loader2Icon, MoreHorizontalIcon, CheckSquareIcon, SquareIcon, XIcon } from "lucide-react";
-import { CardNetworkLogo, getCardNetwork } from "@/components/CardLogos";
+import { TrashIcon, CameraIcon, Loader2Icon } from "lucide-react";
 import { PaymentCard } from "@/components/PaymentCard";
+import { WalletCardDetails } from "@/components/WalletCardDetails";
 import { SelectionToolbar } from "@/components/SelectionToolbar";
 interface SecureWallet {
   id: string;
@@ -71,51 +64,12 @@ type ScanResponse = {
   error?: string;
 };
 
-const TiltCard = ({ children, className }: { children: React.ReactNode, className?: string }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
-  const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["15deg", "-15deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-15deg", "15deg"]);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    const xPct = mouseX / rect.width - 0.5;
-    const yPct = mouseY / rect.height - 0.5;
-    x.set(xPct);
-    y.set(yPct);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
-  return (
-    <motion.div
-      ref={ref}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        rotateX,
-        rotateY,
-        transformStyle: "preserve-3d",
-      }}
-      className={`relative rounded-[24px] ${className} transition-shadow duration-300`}
-    >
-      <div 
-        style={{ transform: "translateZ(20px)" }} 
-        className="w-full h-full relative"
-      >
-        {children}
-      </div>
-    </motion.div>
-  );
+const inferSubtype = (item: DecryptedWallet): "credit" | "debit" | "other" => {
+  if (item.payload.subtype) return item.payload.subtype;
+  const title = item.title.toLowerCase();
+  if (title.includes("credit")) return "credit";
+  if (title.includes("debit")) return "debit";
+  return "other";
 };
 
 export function WalletVault({ masterPassword, focusedItemId }: { masterPassword: string, focusedItemId?: string | null }) {
@@ -134,8 +88,8 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
   const [ccUpiPin, setCcUpiPin] = useState("");
   const [cardSubtype, setCardSubtype] = useState<"credit" | "debit">("debit");
 
-  // Expanded card detail panel state
-  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
   const [walletFilter, setWalletFilter] = useState<WalletFilter>("all");
 
   const [isScanning, setIsScanning] = useState(false);
@@ -145,8 +99,23 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
+  const filteredCards = items.filter((item) =>
+    walletFilter === "all" || inferSubtype(item) === walletFilter
+  );
+  const selectedCard = filteredCards.find((item) => item.id === selectedCardId)
+    ?? filteredCards[0]
+    ?? null;
+
+  useEffect(() => {
+    if (!filteredCards.length) setSelectedCardId(null);
+    else if (!filteredCards.some((item) => item.id === selectedCardId)) {
+      setSelectedCardId(filteredCards[0].id);
+    }
+  }, [filteredCards, selectedCardId]);
+
   useEffect(() => {
     if (focusedItemId) {
+      setSelectedCardId(focusedItemId);
       setTimeout(() => {
         const el = document.getElementById(`item-${focusedItemId}`);
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -340,54 +309,29 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
     navigator.clipboard.writeText(text);
   };
 
+  const activateCard = (id: string) => {
+    setSelectedCardId(id);
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      setMobileDetailsOpen(true);
+    }
+  };
+
+  const selectedDetails = selectedCard ? {
+    title: selectedCard.title,
+    number: selectedCard.payload.number || "",
+    name: selectedCard.payload.name,
+    expiry: selectedCard.payload.expiry,
+    cvv: selectedCard.payload.cvv,
+    pin: selectedCard.payload.pin,
+    upiPin: selectedCard.payload.upi_pin,
+    extraDetails: selectedCard.payload.extra_details,
+    onCopy: (value: string, _label: string) => copyToClipboard(value),
+    onDelete: () => handleDelete(selectedCard.id),
+  } : null;
+
   return (
     <div className="apple-surface w-full relative" style={{ perspective: "1500px" }}>
-      <div className="flex items-center justify-between gap-3 mb-5 sm:mb-8">
-        <h2 className="hidden md:block type-section-title">Digital Wallet</h2>
-        
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          {items.length > 0 && (
-            <DropdownMenu>
-            <DropdownMenuTrigger className="rounded-full w-9 h-9 p-0 text-muted-foreground hover:bg-muted/80 flex items-center justify-center">
-              <MoreHorizontalIcon className="w-5 h-5" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 rounded-xl">
-              {items.length > 0 && (
-                <>
-                  <DropdownMenuItem 
-                    onClick={() => {
-                      setIsSelectionMode(!isSelectionMode);
-                      if (isSelectionMode) setSelectedIds(new Set());
-                    }}
-                    className="font-medium cursor-pointer"
-                  >
-                    {isSelectionMode ? "Cancel Editing" : "Select Cards"}
-                  </DropdownMenuItem>
-                  {isSelectionMode && (
-                    <DropdownMenuItem 
-                      onClick={() => {
-                        if (selectedIds.size === items.length) {
-                          setSelectedIds(new Set());
-                        } else {
-                          setSelectedIds(new Set(items.map(i => i.id)));
-                        }
-                      }}
-                      className="font-medium cursor-pointer"
-                    >
-                      {selectedIds.size === items.length ? "Deselect All" : "Select All"}
-                    </DropdownMenuItem>
-                  )}
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          )}
-
-          <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-            <DialogTrigger className="rounded-full h-9 px-3 sm:px-4 text-primary hover:bg-primary/10 hover:text-primary font-medium flex items-center gap-1.5 text-[14px] shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                Add Card
-            </DialogTrigger>
+      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogContent className="apple-bottom-sheet border-border/50 shadow-lg sm:rounded-[20px] max-w-md">
             <DialogHeader>
               <DialogTitle className="text-center font-bold">New Card</DialogTitle>
@@ -522,190 +466,97 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
             </form>
           </DialogContent>
         </Dialog>
-        </div>
-      </div>
 
-      <div className="w-full">
-        {loading ? (
-          <WalletSkeleton />
-        ) : items.length === 0 ? (
-          <EmptyState type="wallet" onCta={() => setIsAddOpen(true)} />
-        ) : null}
-      </div>
-      {loading ? null : items.length > 0 ? (() => {
-        // Detect subtype: use payload.subtype, else infer from title
-        const inferSubtype = (item: DecryptedWallet): "credit" | "debit" | "other" => {
-          if (item.payload.subtype) return item.payload.subtype;
-          const t = item.title.toLowerCase();
-          if (t.includes("credit")) return "credit";
-          if (t.includes("debit")) return "debit";
-          return "other";
-        };
-
-        const filteredCards = items.filter(item => walletFilter === "all" || inferSubtype(item) === walletFilter);
-
-        const CardGrid = ({ cards }: { cards: DecryptedWallet[] }) => (
-          <motion.div layout className="apple-wallet-stack grid grid-cols-1 gap-0">
-            <AnimatePresence>
-            {cards.map((item) => (
-              <motion.div
-                layout
-                id={`item-${item.id}`}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
-                key={item.id}
-              >
-                <PaymentCard
-                  id={item.id}
-                  title={item.title}
-                  number={item.payload.number || ""}
-                  name={item.payload.name}
-                  expiry={item.payload.expiry}
-                  cvv={item.payload.cvv}
-                  subtype={item.payload.subtype}
-                  colorClass={getCardColor(item.payload.number || "")}
-                  selected={selectedIds.has(item.id)}
-                  selectionMode={isSelectionMode}
-                  expanded={expandedCardId === item.id}
-                  stackIndex={cards.indexOf(item)}
-                  stacked={cards.length > 1}
-                  active={expandedCardId === item.id || (!expandedCardId && cards.indexOf(item) === cards.length - 1)}
-                  hasDetails={Boolean(item.payload.pin || item.payload.upi_pin || item.payload.extra_details)}
-                  onSelect={(event) => toggleSelection(item.id, event)}
-                  onToggle={() => setExpandedCardId(expandedCardId === item.id ? null : item.id)}
-                  onDelete={() => handleDelete(item.id)}
-                  onCopy={copyToClipboard}
-                />
-                {false && (
-                <TiltCard className="w-full group cursor-default">
-                  <div
-                    className={`w-full aspect-[1.586/1] rounded-[24px] bg-gradient-to-br ${getCardColor(item.payload.number || "")} p-6 sm:p-8 flex flex-col justify-between text-white shadow-2xl relative overflow-hidden ${isSelectionMode ? 'cursor-pointer' : ''}`}
-                    onClick={(e) => { if (isSelectionMode) toggleSelection(item.id, e); }}
-                  >
-                    {isSelectionMode && (
-                      <div className="absolute top-4 left-4 z-20 text-white">
-                        {selectedIds.has(item.id)
-                          ? <CheckSquareIcon strokeWidth={2.5} className="w-6 h-6 drop-shadow-md" />
-                          : <SquareIcon strokeWidth={2} className="w-6 h-6 opacity-50 drop-shadow-md" />}
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-50" />
-                    <div className="flex justify-between items-start relative z-10">
-                      <div className="flex flex-col gap-0.5">
-                        <span className={`text-[20px] font-semibold tracking-tight text-white/90 ${isSelectionMode ? 'ml-8' : ''}`}>{item.title}</span>
-                      </div>
-                      <div className="flex items-center justify-end min-w-[60px] h-9 mr-8">
-                        {(() => {
-                          const network = getCardNetwork(item.payload.number || "");
-                          return <CardNetworkLogo network={network} />;
-                        })()}
-                      </div>
-                    </div>
-                    <div className="relative z-10">
-                      <div
-                        className="font-mono text-[22px] sm:text-[26px] tracking-[0.15em] sm:tracking-[0.2em] mb-4 text-white/95 cursor-pointer hover:text-white transition-colors"
-                        onClick={() => copyToClipboard(item.payload.number || "")}
-                        title="Click to copy"
-                      >
-                        {(item.payload.number || "").replace(/(\d{4})/g, '$1 ').trim()}
-                      </div>
-                      <div className="flex justify-between items-end">
-                        <div className="flex flex-col uppercase tracking-wider">
-                          <span className="text-[10px] text-white/60 mb-0.5">Cardholder Name</span>
-                          <span className="font-semibold text-[15px] text-white/90">{item.payload.name || ""}</span>
-                        </div>
-                        <div className="flex gap-6">
-                          <div className="flex flex-col uppercase tracking-wider">
-                            <span className="text-[10px] text-white/60 mb-0.5">Valid Thru</span>
-                            <span className="font-semibold font-mono text-[15px] text-white/90">{item.payload.expiry || ""}</span>
-                          </div>
-                          <div className="flex flex-col uppercase tracking-wider group/cvv relative cursor-pointer" onClick={() => copyToClipboard(item.payload.cvv || "")}>
-                            <span className="text-[10px] text-white/60 mb-0.5">CVV</span>
-                            <span className="font-semibold font-mono text-[15px] text-white/90 group-hover/cvv:opacity-0 transition-opacity">***</span>
-                            <span className="font-semibold font-mono text-[15px] text-white/90 absolute bottom-0 right-0 opacity-0 group-hover/cvv:opacity-100 transition-opacity">{item.payload.cvv || ""}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
-                      className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/20 text-white/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-500/80 hover:text-white z-20 backdrop-blur-md"
-                      title="Delete Card"
-                    >
-                      <TrashIcon className="w-4 h-4" />
-                    </button>
-                  </div>
-                </TiltCard>
-                )}
-
-              </motion.div>
-
-            ))}
-            </AnimatePresence>
-          </motion.div>
-        );
-
-        const activeCard = filteredCards.find(item => item.id === expandedCardId) ?? filteredCards.at(-1);
-
-        return (
-          <div className="space-y-5">
-            <div className="mx-auto flex w-full max-w-sm rounded-xl bg-secondary/70 p-1" role="tablist" aria-label="Card type">
-              {(["all", "credit", "debit"] as WalletFilter[]).map(filter => <button key={filter} onClick={() => setWalletFilter(filter)} className={`apple-pressed min-h-9 flex-1 rounded-[10px] text-[13px] font-semibold capitalize ${walletFilter === filter ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}>{filter === "all" ? "All" : filter === "credit" ? "Credit" : "Debit"}</button>)}
+      {loading ? (
+        <WalletSkeleton />
+      ) : items.length === 0 ? (
+        <EmptyState type="wallet" onCta={() => setIsAddOpen(true)} />
+      ) : (
+        <section className="wallet-page">
+          <header className="wallet-page-header">
+            <div>
+              <p className="wallet-page-eyebrow">{items.length} saved cards</p>
+              <h2 className="wallet-page-title">Digital Wallet</h2>
             </div>
-            {activeCard ? (
-              <div className="apple-wallet-master-detail">
-                <CardGrid cards={filteredCards} />
-                {expandedCardId && <button type="button" className="apple-wallet-detail-backdrop md:hidden" aria-label="Close card details" onClick={() => setExpandedCardId(null)} />}
-                <aside className={`apple-wallet-detail-pane apple-group ${expandedCardId ? "block" : "hidden md:block"}`} aria-label={`${activeCard.title} details`}>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <p className="type-group-label">Selected card</p>
-                      <h3 className="mt-1 truncate text-[21px] font-semibold tracking-[-0.025em]">{activeCard.title}</h3>
-                    </div>
-                    <div className="flex h-9 min-w-20 justify-end">
-                      <CardNetworkLogo network={getCardNetwork(activeCard.payload.number || "")} />
-                    </div>
-                    <button type="button" className="apple-wallet-detail-close md:hidden" aria-label="Close card details" onClick={() => setExpandedCardId(null)}><XIcon className="h-4 w-4" /></button>
-                  </div>
+            <div className="wallet-page-actions">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSelectionMode((value) => !value);
+                  if (isSelectionMode) setSelectedIds(new Set());
+                }}
+              >
+                {isSelectionMode ? "Cancel" : "Select"}
+              </button>
+              <button type="button" onClick={() => setIsAddOpen(true)}>Add card</button>
+            </div>
+          </header>
 
-                  <dl className="mt-5 divide-y divide-border/70">
-                    <div className="py-3">
-                      <dt className="type-metadata">Card number</dt>
-                      <dd className="mt-1 flex items-center justify-between gap-3">
-                        <span className="truncate font-mono text-[15px] tabular-nums">{(activeCard.payload.number || "").replace(/(\d{4})/g, "$1 ").trim()}</span>
-                        <button type="button" className="apple-pressed min-h-9 rounded-full bg-secondary px-3 text-[13px] font-semibold text-primary" onClick={() => copyToClipboard(activeCard.payload.number || "")}>Copy</button>
-                      </dd>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 py-3">
-                      <div><dt className="type-metadata">Cardholder</dt><dd className="mt-1 truncate text-[15px] font-medium">{activeCard.payload.name || "Card holder"}</dd></div>
-                      <div><dt className="type-metadata">Expires</dt><dd className="mt-1 font-mono text-[15px] tabular-nums">{activeCard.payload.expiry || "••/••"}</dd></div>
-                    </div>
-                  </dl>
-
-                  {expandedCardId === activeCard.id && (activeCard.payload.pin || activeCard.payload.upi_pin || activeCard.payload.extra_details) && (
-                    <div className="mt-3 rounded-2xl bg-secondary/60 p-4" aria-live="polite">
-                      <p className="type-group-label mb-3">Secure details</p>
-                      <div className="space-y-3 text-[14px]">
-                        {activeCard.payload.pin && <button type="button" className="flex min-h-9 w-full items-center justify-between" onClick={() => copyToClipboard(activeCard.payload.pin || "")}><span>Card PIN</span><span className="font-mono">•••• · Copy</span></button>}
-                        {activeCard.payload.upi_pin && <button type="button" className="flex min-h-9 w-full items-center justify-between" onClick={() => copyToClipboard(activeCard.payload.upi_pin || "")}><span>UPI PIN</span><span className="font-mono">•••• · Copy</span></button>}
-                        {activeCard.payload.extra_details && <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">{activeCard.payload.extra_details}</p>}
-                      </div>
-                    </div>
-                  )}
-
-                  <button type="button" onClick={() => handleDelete(activeCard.id)} className="apple-pressed mt-5 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-destructive/10 px-4 text-[14px] font-semibold text-destructive">
-                    <TrashIcon className="h-4 w-4" /> Delete Card
-                  </button>
-                </aside>
-              </div>
-            ) : (
-              <div className="py-12 text-center text-[14px] text-muted-foreground">No cards match this filter.</div>
-            )}
+          <div className="wallet-segmented" role="tablist" aria-label="Card type">
+            {(["all", "credit", "debit"] as WalletFilter[]).map((filter) => (
+              <button
+                key={filter}
+                type="button"
+                role="tab"
+                aria-selected={walletFilter === filter}
+                onClick={() => setWalletFilter(filter)}
+              >
+                {filter === "all" ? "All" : filter === "credit" ? "Credit" : "Debit"}
+              </button>
+            ))}
           </div>
-        );
-      })() : null}
+
+          {filteredCards.length ? (
+            <div className="wallet-workspace">
+              <motion.div layout className="wallet-deck">
+                <AnimatePresence initial={false}>
+                  {filteredCards.map((item, index) => {
+                    const subtype = inferSubtype(item);
+                    return (
+                      <PaymentCard
+                        key={item.id}
+                        id={item.id}
+                        title={item.title}
+                        number={item.payload.number || ""}
+                        name={item.payload.name}
+                        expiry={item.payload.expiry}
+                        subtype={subtype === "other" ? undefined : subtype}
+                        colorClass={getCardColor(item.payload.number || "")}
+                        selected={selectedCard?.id === item.id}
+                        selectionMode={isSelectionMode}
+                        checked={selectedIds.has(item.id)}
+                        index={index}
+                        onActivate={() => activateCard(item.id)}
+                        onToggleChecked={(event) => toggleSelection(item.id, event)}
+                        onCopyNumber={copyToClipboard}
+                      />
+                    );
+                  })}
+                </AnimatePresence>
+              </motion.div>
+              {selectedCard && (
+                <aside className="wallet-inspector">
+                  {selectedDetails && <WalletCardDetails {...selectedDetails} />}
+                </aside>
+              )}
+            </div>
+          ) : (
+            <div className="wallet-filter-empty">
+              <p>No cards in this category.</p>
+              <button type="button" onClick={() => setWalletFilter("all")}>Show all cards</button>
+            </div>
+          )}
+        </section>
+      )}
+
+      <Dialog open={mobileDetailsOpen} onOpenChange={setMobileDetailsOpen}>
+        <DialogContent className="wallet-mobile-sheet md:hidden">
+          <DialogTitle className="sr-only">{selectedCard?.title ?? "Card details"}</DialogTitle>
+          {selectedDetails && (
+            <WalletCardDetails {...selectedDetails} onClose={() => setMobileDetailsOpen(false)} />
+          )}
+        </DialogContent>
+      </Dialog>
       {/* Floating Action Bar for Bulk Selection */}
       {isSelectionMode && selectedIds.size > 0 && (
         <>
