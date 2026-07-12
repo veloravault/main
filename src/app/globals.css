@@ -300,6 +300,25 @@ body {
 .vault-command-palette { position: fixed; z-index: 50; top: 76px; left: 50%; width: min(540px,calc(100vw - 32px)); transform: translateX(-50%); }
 .vault-command-surface { overflow: hidden; border: 1px solid var(--separator); border-radius: 20px; background: var(--elevated-bg); box-shadow: 0 26px 70px rgba(0,0,0,.22); }
 
+[data-slot="dialog-content"].responsive-form-sheet > form,
+[data-slot="dialog-content"].responsive-form-sheet > [data-slot="dialog-header"] + div,
+[data-slot="dialog-content"].responsive-import-sheet .magic-import-scroll,
+.wallet-mobile-sheet,
+.vault-command-surface * {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+[data-slot="dialog-content"].responsive-form-sheet > form::-webkit-scrollbar,
+[data-slot="dialog-content"].responsive-form-sheet > [data-slot="dialog-header"] + div::-webkit-scrollbar,
+[data-slot="dialog-content"].responsive-import-sheet .magic-import-scroll::-webkit-scrollbar,
+.wallet-mobile-sheet::-webkit-scrollbar,
+.vault-command-surface *::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
 @media (min-width: 768px) and (max-width: 1099px) {
   .vault-header { grid-template-columns: minmax(80px,1fr) minmax(180px,320px) minmax(210px,1fr); gap: 8px; padding-inline: 12px; }
   .vault-header-actions { gap: 6px; }
@@ -352,6 +371,33 @@ body {
   [data-slot="dialog-content"].responsive-form-sheet [data-slot="dialog-close"] { position: absolute; z-index: 3; top: 12px; right: 12px; width: 44px; height: 44px; flex: 0 0 auto; border-radius: 999px; }
   [data-slot="dialog-content"].responsive-import-sheet .magic-import-close { position: absolute; z-index: 3; top: 12px; right: 12px; width: 44px; height: 44px; }
 
+  [data-slot="dialog-content"].responsive-form-sheet,
+  [data-slot="dialog-content"].responsive-import-sheet,
+  [role="dialog"].wallet-mobile-sheet {
+    transform: translate3d(0,0,0) !important;
+    opacity: 1;
+    transition:
+      transform 320ms cubic-bezier(.22,.88,.36,1),
+      opacity 180ms ease-out !important;
+    will-change: transform, opacity;
+  }
+
+  [data-slot="dialog-content"].responsive-form-sheet[data-closed],
+  [data-slot="dialog-content"].responsive-import-sheet[data-closed],
+  [role="dialog"].wallet-mobile-sheet[data-closed] {
+    transform: translate3d(0,100%,0) !important;
+    opacity: 0;
+  }
+
+  @starting-style {
+    [data-slot="dialog-content"].responsive-form-sheet,
+    [data-slot="dialog-content"].responsive-import-sheet,
+    [role="dialog"].wallet-mobile-sheet {
+      transform: translate3d(0,100%,0) !important;
+      opacity: 0;
+    }
+  }
+
   .ios-content-scroll {
     background:
       linear-gradient(
@@ -378,7 +424,13 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .vault-command-palette,
   [data-slot="dialog-content"].responsive-form-sheet,
-  [data-slot="dialog-content"].responsive-import-sheet { transition: none !important; animation: none !important; }
+  [data-slot="dialog-content"].responsive-import-sheet,
+  [role="dialog"].wallet-mobile-sheet {
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+    will-change: auto;
+  }
 }
 
 
