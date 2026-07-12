@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { encryptText, decryptText } from "@/lib/crypto";
@@ -99,9 +99,9 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const filteredCards = items.filter((item) =>
+  const filteredCards = useMemo(() => items.filter((item) =>
     walletFilter === "all" || inferSubtype(item) === walletFilter
-  );
+  ), [items, walletFilter]);
   const selectedCard = filteredCards.find((item) => item.id === selectedCardId)
     ?? filteredCards[0]
     ?? null;
@@ -536,7 +536,9 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
               </motion.div>
               {selectedCard && (
                 <aside className="wallet-inspector">
-                  {selectedDetails && <WalletCardDetails {...selectedDetails} />}
+                  {selectedDetails && (
+                    <WalletCardDetails key={`desktop-${selectedCard.id}`} {...selectedDetails} />
+                  )}
                 </aside>
               )}
             </div>
@@ -552,8 +554,12 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
       <Dialog open={mobileDetailsOpen} onOpenChange={setMobileDetailsOpen}>
         <DialogContent className="wallet-mobile-sheet md:hidden">
           <DialogTitle className="sr-only">{selectedCard?.title ?? "Card details"}</DialogTitle>
-          {selectedDetails && (
-            <WalletCardDetails {...selectedDetails} onClose={() => setMobileDetailsOpen(false)} />
+          {selectedCard && selectedDetails && (
+            <WalletCardDetails
+              key={`mobile-${selectedCard.id}`}
+              {...selectedDetails}
+              onClose={() => setMobileDetailsOpen(false)}
+            />
           )}
         </DialogContent>
       </Dialog>
