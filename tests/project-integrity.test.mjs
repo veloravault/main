@@ -101,3 +101,35 @@ test("wallet presentation is isolated in an accessible PaymentCard", () => {
   assert.match(card, /tabular-nums/);
   assert.match(wallet, /<PaymentCard/);
 });
+
+test("native Apple primitives cover lists, sheets, selection, and tactile states", () => {
+  for (const file of [
+    "src/components/ui/apple-grouped-list.tsx",
+    "src/components/ui/responsive-sheet-frame.tsx",
+    "src/components/SelectionToolbar.tsx",
+  ]) assert.equal(existsSync(new URL(`../${file}`, import.meta.url)), true, `${file} is missing`);
+  const list = read("src/components/ui/apple-grouped-list.tsx");
+  const sheet = read("src/components/ui/responsive-sheet-frame.tsx");
+  const selection = read("src/components/SelectionToolbar.tsx");
+  const css = read("src/app/globals.css");
+  assert.match(list, /AppleGroupedList/);
+  assert.match(list, /AppleGroupedRow/);
+  assert.match(list, /AppleGroupLabel/);
+  assert.match(sheet, /ResponsiveSheetFrame/);
+  assert.match(selection, /SelectionToolbar/);
+  assert.match(selection, /"vibrate" in navigator/);
+  for (const klass of ["apple-grouped-list", "apple-grouped-row", "apple-bottom-sheet", "apple-selection-toolbar", "apple-pressed", "type-large-title", "type-section-title", "type-row-title", "type-supporting", "type-metadata", "type-group-label"]) assert.match(css, new RegExp(`\\.${klass}`));
+});
+
+test("Wallet stack and Settings profile expose native structure", () => {
+  const card = read("src/components/PaymentCard.tsx");
+  const wallet = read("src/components/WalletVault.tsx");
+  const profile = read("src/components/Profile.tsx");
+  const css = read("src/app/globals.css");
+  assert.match(card, /stacked: boolean/);
+  assert.match(card, /active: boolean/);
+  assert.match(wallet, /apple-wallet-stack/);
+  assert.match(css, /\.apple-wallet-card-active/);
+  assert.match(css, /--apple-spring/);
+  for (const label of ["Account", "Security", "Appearance", "Data", "Danger Zone"]) assert.match(profile, new RegExp(label));
+});

@@ -313,7 +313,7 @@ export function BankVault({ masterPassword, focusedItemId }: { masterPassword: s
   return (
     <div className="apple-surface w-full relative" style={{ perspective: "1500px" }}>
       <div className="flex items-center justify-between gap-3 mb-5 sm:mb-8">
-        <h2 className="text-[28px] sm:text-[32px] font-bold tracking-tight">Bank Accounts</h2>
+        <h2 className="hidden md:block type-section-title">Bank Accounts</h2>
         
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <DropdownMenu>
@@ -356,7 +356,7 @@ export function BankVault({ masterPassword, focusedItemId }: { masterPassword: s
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
                 Add Account
             </DialogTrigger>
-          <DialogContent className="border-border/50 shadow-lg sm:rounded-[20px] max-w-md">
+          <DialogContent className="apple-bottom-sheet border-border/50 shadow-lg sm:rounded-[20px] max-w-md">
             <DialogHeader>
               <DialogTitle className="text-center font-bold">New Bank Account</DialogTitle>
             </DialogHeader>

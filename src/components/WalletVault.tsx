@@ -22,6 +22,7 @@ import {
 import { BuildingIcon, TrashIcon, CopyIcon, CameraIcon, Loader2Icon, MoreHorizontalIcon, CheckSquareIcon, SquareIcon } from "lucide-react";
 import { CardNetworkLogo, getCardNetwork } from "@/components/CardLogos";
 import { PaymentCard } from "@/components/PaymentCard";
+import { SelectionToolbar } from "@/components/SelectionToolbar";
 interface SecureWallet {
   id: string;
   title: string;
@@ -340,7 +341,7 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
   return (
     <div className="apple-surface w-full relative" style={{ perspective: "1500px" }}>
       <div className="flex items-center justify-between gap-3 mb-5 sm:mb-8">
-        <h2 className="text-[28px] sm:text-[32px] font-bold tracking-tight">Digital Wallet</h2>
+        <h2 className="hidden md:block type-section-title">Digital Wallet</h2>
         
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <DropdownMenu>
@@ -383,7 +384,7 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
                 Add Card
             </DialogTrigger>
-          <DialogContent className="border-border/50 shadow-lg sm:rounded-[20px] max-w-md">
+          <DialogContent className="apple-bottom-sheet border-border/50 shadow-lg sm:rounded-[20px] max-w-md">
             <DialogHeader>
               <DialogTitle className="text-center font-bold">New Card</DialogTitle>
             </DialogHeader>
@@ -542,7 +543,7 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
         const otherCards  = items.filter(i => inferSubtype(i) === "other");
 
         const CardGrid = ({ cards }: { cards: DecryptedWallet[] }) => (
-          <motion.div layout className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <motion.div layout className="apple-wallet-stack grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-6">
             <AnimatePresence>
             {cards.map((item) => (
               <motion.div
@@ -567,6 +568,8 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
                   selectionMode={isSelectionMode}
                   expanded={expandedCardId === item.id}
                   stackIndex={cards.indexOf(item)}
+                  stacked={cards.length > 1}
+                  active={expandedCardId === item.id}
                   onSelect={(event) => toggleSelection(item.id, event)}
                   onToggle={() => setExpandedCardId(expandedCardId === item.id ? null : item.id)}
                   onDelete={() => handleDelete(item.id)}
@@ -744,7 +747,9 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
       })() : null}
       {/* Floating Action Bar for Bulk Selection */}
       {isSelectionMode && selectedIds.size > 0 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-popover/80 backdrop-blur-xl border border-border shadow-2xl rounded-2xl px-6 py-4 flex items-center gap-6 animate-in slide-in-from-bottom-8 duration-300 z-50">
+        <>
+        <SelectionToolbar count={selectedIds.size} onCancel={() => { setIsSelectionMode(false); setSelectedIds(new Set()); }} onDelete={handleBulkDelete} />
+        <div className="hidden md:flex fixed bottom-8 left-1/2 -translate-x-1/2 bg-popover/80 backdrop-blur-xl border border-border shadow-2xl rounded-2xl px-6 py-4 items-center gap-6 animate-in slide-in-from-bottom-8 duration-300 z-50">
           <span className="text-[15px] font-semibold text-foreground">
             {selectedIds.size} selected
           </span>
@@ -757,7 +762,7 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
             <TrashIcon className="w-4 h-4" />
             Delete
           </Button>
-        </div>
+        </div></>
       )}
     </div>
   );

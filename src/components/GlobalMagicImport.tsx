@@ -235,7 +235,7 @@ export function GlobalMagicImport({ isOpen, onOpenChange, masterPassword, onSucc
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
-      <DialogContent className="apple-sheet sm:max-w-xl p-0 overflow-hidden border-border/50 backdrop-blur-3xl [&>button]:hidden">
+      <DialogContent className="apple-sheet apple-bottom-sheet sm:max-w-xl p-0 overflow-hidden border-border/50 backdrop-blur-3xl [&>button]:hidden">
         {/* Custom close button — always visible unless actively uploading */}
         <button
           onClick={handleClose}

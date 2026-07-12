@@ -203,7 +203,7 @@ export function Dashboard({ masterPassword }: DashboardProps) {
         <p className="text-[13px] sm:text-[14px] text-muted-foreground font-medium mb-0.5">
           {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
         </p>
-        <h1 className="text-[30px] sm:text-[32px] font-bold tracking-tight text-foreground flex items-center gap-3">
+        <h1 className="hidden md:flex type-section-title text-foreground items-center gap-3">
           {isEditingName ? (
             <div className="flex items-center gap-2 mt-1">
               <input

@@ -262,7 +262,7 @@ export function DocumentVault({ masterPassword, focusedItemId }: { masterPasswor
     <div className="apple-surface w-full">
       <div className="flex items-center justify-between gap-3 mb-5 sm:mb-8">
         <div className="flex items-center gap-3">
-          <h2 className="text-[28px] sm:text-[32px] font-bold tracking-tight">Documents</h2>
+          <h2 className="hidden md:block type-section-title">Documents</h2>
           {isSelectionMode && (
             <span className="text-[13px] font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
               {selectedIds.size} selected
@@ -310,7 +310,7 @@ export function DocumentVault({ masterPassword, focusedItemId }: { masterPasswor
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
               Upload
             </DialogTrigger>
-          <DialogContent className="border-border/50 shadow-lg sm:rounded-[20px] max-w-sm">
+          <DialogContent className="apple-bottom-sheet border-border/50 shadow-lg sm:rounded-[20px] max-w-sm">
             <DialogHeader>
               <DialogTitle className="text-center font-bold">Secure File Upload</DialogTitle>
             </DialogHeader>
@@ -387,7 +387,7 @@ export function DocumentVault({ masterPassword, focusedItemId }: { masterPasswor
                     </button>
                   )}
                 </div>
-                <div className="bg-card rounded-2xl border border-border overflow-hidden">
+                <div className="apple-grouped-list">
                   <AnimatePresence initial={false}>
                   {categoryDocs
                     .sort((a, b) => a.title.localeCompare(b.title))

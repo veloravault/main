@@ -196,7 +196,7 @@ export function NotesVault({ masterPassword, focusedItemId }: { masterPassword: 
     <div className="apple-surface w-full">
       <div className="flex items-center justify-between gap-3 mb-5 sm:mb-8">
         <div className="flex items-center gap-3">
-          <h2 className="text-[28px] sm:text-[32px] font-bold tracking-tight">Secure Notes</h2>
+          <h2 className="hidden md:block type-section-title">Secure Notes</h2>
           {isSelectionMode && (
             <span className="text-[13px] font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
               {selectedIds.size} selected
@@ -245,7 +245,7 @@ export function NotesVault({ masterPassword, focusedItemId }: { masterPassword: 
               <PlusIcon className="w-4 h-4" />
               <span className="hidden min-[380px]:inline">New</span>
             </DialogTrigger>
-            <DialogContent className="border-border/50 shadow-lg sm:rounded-[20px] max-w-lg">
+            <DialogContent className="apple-bottom-sheet border-border/50 shadow-lg sm:rounded-[20px] max-w-lg">
               <DialogHeader>
                 <DialogTitle className="text-center font-bold">New Secure Note</DialogTitle>
               </DialogHeader>
@@ -324,7 +324,7 @@ export function NotesVault({ masterPassword, focusedItemId }: { masterPassword: 
                     </button>
                   )}
                 </div>
-                <div className="bg-card rounded-2xl border border-border overflow-hidden">
+                <div className="apple-grouped-list">
                   <AnimatePresence initial={false}>
                   {categoryItems
                     .sort((a, b) => a.title.localeCompare(b.title))

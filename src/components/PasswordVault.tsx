@@ -369,7 +369,7 @@ export function PasswordVault({ masterPassword, focusedItemId }: { masterPasswor
         </div>
       )}
       <div className="flex items-center justify-between gap-3 mb-5 sm:mb-8">
-        <h2 className="text-[28px] sm:text-[32px] font-bold tracking-tight">Passwords</h2>
+        <h2 className="hidden md:block type-section-title">Passwords</h2>
         
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <DropdownMenu>
@@ -418,7 +418,7 @@ export function PasswordVault({ masterPassword, focusedItemId }: { masterPasswor
               <PlusIcon className="w-4 h-4" />
               <span className="hidden min-[380px]:inline">New</span>
             </DialogTrigger>
-            <DialogContent className="border-border/50 shadow-lg sm:rounded-[20px] max-w-sm">
+            <DialogContent className="apple-bottom-sheet border-border/50 shadow-lg sm:rounded-[20px] max-w-sm">
             <DialogHeader>
               <DialogTitle className="text-center font-bold">New Password</DialogTitle>
             </DialogHeader>
@@ -514,7 +514,7 @@ export function PasswordVault({ masterPassword, focusedItemId }: { masterPasswor
                 </div>
 
                 {/* Inset grouped list card */}
-                <div className="bg-card rounded-2xl border border-border overflow-hidden">
+                <div className="apple-grouped-list">
                   <AnimatePresence initial={false}>
                   {categoryItems
                     .sort((a, b) => a.title.localeCompare(b.title))

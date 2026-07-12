@@ -17,6 +17,8 @@ export interface PaymentCardProps {
   selectionMode: boolean;
   expanded: boolean;
   stackIndex: number;
+  stacked: boolean;
+  active: boolean;
   onSelect: (event: React.MouseEvent) => void;
   onToggle: () => void;
   onDelete: () => void;
@@ -25,7 +27,7 @@ export interface PaymentCardProps {
 
 export function PaymentCard({
   id, title, number, name, expiry, cvv, subtype, colorClass, selected,
-  selectionMode, expanded, stackIndex, onSelect, onToggle, onDelete, onCopy,
+  selectionMode, expanded, stackIndex, stacked, active, onSelect, onToggle, onDelete, onCopy,
 }: PaymentCardProps) {
   const network = getCardNetwork(number);
   const formattedNumber = number.replace(/(\d{4})/g, "$1 ").trim();
@@ -37,7 +39,7 @@ export function PaymentCard({
       initial={{ opacity: 0, y: 16, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: "spring", stiffness: 300, damping: 28, delay: Math.min(stackIndex * 0.035, 0.16) }}
-      className="group relative"
+      className={`group relative ${stacked ? "apple-wallet-card-stacked" : ""} ${active ? "apple-wallet-card-active" : ""}`}
     >
       <div
         className={`relative flex aspect-[1.586/1] w-full flex-col justify-between overflow-hidden rounded-[26px] bg-gradient-to-br p-6 text-white shadow-[0_24px_55px_rgba(0,0,0,0.24)] ring-1 ring-white/20 sm:p-7 ${colorClass} ${selectionMode ? "cursor-pointer" : ""}`}

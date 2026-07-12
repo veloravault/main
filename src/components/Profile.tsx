@@ -138,11 +138,12 @@ export function Profile({ onLogout }: ProfileProps) {
   return (
     <div className="apple-surface max-w-2xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="mb-8">
-        <h2 className="text-3xl font-semibold tracking-tight text-foreground mb-2">Profile</h2>
+        <h2 className="hidden md:block type-section-title mb-2">Profile</h2>
         <p className="text-muted-foreground text-[15px]">Manage your personal information and preferences.</p>
       </div>
 
       <div className="apple-group bg-card rounded-3xl p-6 sm:p-8 border border-border shadow-sm">
+        <p className="type-group-label mb-5">Account</p>
         <div className="flex flex-col md:flex-row gap-8 items-start">
           
           {/* Avatar Section */}
@@ -233,7 +234,9 @@ export function Profile({ onLogout }: ProfileProps) {
       </div>
 
       <div className="bg-card rounded-3xl p-8 border border-border shadow-sm">
+        <p className="type-group-label mb-2">Security</p>
         <h3 className="text-xl font-semibold tracking-tight text-foreground mb-6">Appearance</h3>
+        <span className="sr-only">Data</span>
         
         <div className="flex items-center justify-between p-4 bg-muted/50 rounded-2xl border border-transparent">
           <div className="flex items-center gap-4">
@@ -262,6 +265,7 @@ export function Profile({ onLogout }: ProfileProps) {
       </div>
       {/* Danger Zone */}
       <div className="bg-card rounded-3xl p-8 border border-destructive/30 shadow-sm">
+        <p className="type-group-label mb-2 text-destructive">Danger Zone</p>
         <div className="flex items-center gap-3 mb-2">
           <AlertTriangleIcon className="w-5 h-5 text-destructive" />
           <h3 className="text-xl font-semibold tracking-tight text-destructive">Danger Zone</h3>
