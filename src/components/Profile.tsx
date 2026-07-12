@@ -194,7 +194,24 @@ export function Profile({ onLogout }: ProfileProps) {
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10">{mounted && theme === "dark" ? <MoonIcon className="h-5 w-5 text-primary" /> : <SunIcon className="h-5 w-5 text-primary" />}</span>
                 <div><p className="text-[15px] font-medium">Dark Mode</p><p className="text-[13px] text-muted-foreground">Match your preferred vault appearance.</p></div>
               </div>
-              {mounted && <button type="button" aria-label="Toggle dark mode" aria-pressed={theme === "dark"} onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 ${theme === "dark" ? "bg-primary" : "bg-muted-foreground/30"}`}><span className={`h-6 w-6 rounded-full bg-white shadow-md transition-transform ${theme === "dark" ? "translate-x-5" : "translate-x-0.5"}`} /></button>}
+              {mounted && (
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={theme === "dark"}
+                  aria-label="Toggle dark mode"
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className={`relative inline-flex h-[30px] w-[50px] shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 ${
+                    theme === "dark" ? "bg-primary" : "bg-muted-foreground/30"
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-[26px] w-[26px] transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                      theme === "dark" ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              )}
             </div>
           </div>
         </section>
