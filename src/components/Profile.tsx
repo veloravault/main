@@ -156,17 +156,19 @@ export function Profile({ onLogout }: ProfileProps) {
             </button>
             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={uploading} />
 
-            <div className="min-w-0 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-background/70">
-              <div className="grid gap-1 px-4 py-3 sm:grid-cols-[120px_1fr] sm:items-center">
-                <span className="text-[13px] text-muted-foreground">Email</span>
-                <span className="truncate text-[15px] text-foreground">{user?.email}</span>
+            <div className="min-w-0">
+              <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
+                <div className="flex flex-col gap-1 px-4 py-3 sm:grid sm:grid-cols-[120px_1fr] sm:items-center sm:gap-0">
+                  <span className="text-[15px] font-medium text-foreground">Email</span>
+                  <span className="truncate text-[15px] text-muted-foreground">{user?.email}</span>
+                </div>
+                <label className="flex flex-col gap-1 px-4 py-3 sm:grid sm:grid-cols-[120px_1fr] sm:items-center sm:gap-0">
+                  <span className="text-[15px] font-medium text-foreground">Full name</span>
+                  <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your name" className="w-full bg-transparent text-[15px] text-foreground outline-none placeholder:text-muted-foreground/50" />
+                </label>
               </div>
-              <label className="grid gap-1 px-4 py-3 sm:grid-cols-[120px_1fr] sm:items-center">
-                <span className="text-[13px] text-muted-foreground">Full name</span>
-                <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your name" className="min-h-10 w-full rounded-xl border border-border bg-background px-3 text-[15px] outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20" />
-              </label>
-              <div className="flex justify-end px-4 py-3">
-                <Button onClick={handleSave} disabled={saving || uploading} className="min-h-10 rounded-xl px-5 text-[14px] font-semibold">
+              <div className="mt-4 flex justify-end">
+                <Button onClick={handleSave} disabled={saving || uploading} className="min-h-10 rounded-xl px-5 text-[14px] font-semibold shadow-sm">
                   {saving ? <Loader2Icon className="h-4 w-4 animate-spin" /> : success ? <><CheckIcon className="h-4 w-4" /> Saved</> : "Save Changes"}
                 </Button>
               </div>
