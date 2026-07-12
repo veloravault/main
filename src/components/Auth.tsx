@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { Loader2Icon, ShieldCheckIcon, FingerprintIcon } from "lucide-react";
+import { Loader2Icon } from "lucide-react";
+import { FaceIdIcon, PremiumShieldIcon } from "@/components/Icons";
 import { motion, AnimatePresence } from "framer-motion";
 import { savePinForMaster, hasPinLock } from "@/components/PinLock";
 import { isBiometricsSupported, hasBiometricsEnabled, enableBiometrics, unlockWithBiometrics } from "@/lib/biometrics";
@@ -86,8 +87,8 @@ export function Auth({
         if (error) throw error;
       }
       
-      // If no PIN is set yet, offer to set one before unlocking
-      if (!hasPinLock()) {
+      // If no PIN is set yet, OR if biometrics are supported but not set up, offer to set up
+      if (!hasPinLock() || (isBioSupported && !hasBio)) {
         setPendingMaster(masterPassword);
         setPinSetupPhase("prompt");
         setLoading(false);
@@ -154,8 +155,8 @@ export function Auth({
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", bounce: 0.3, duration: 0.5 }}
           >
-            <div className="w-16 h-16 rounded-2xl bg-foreground flex items-center justify-center shadow-lg">
-              <ShieldCheckIcon className="w-8 h-8 text-background" />
+            <div className="w-16 h-16 rounded-[18px] bg-foreground flex items-center justify-center shadow-md">
+              <PremiumShieldIcon className="w-8 h-8 text-background" />
             </div>
             <div>
               <h1 className="text-[24px] font-semibold text-foreground tracking-tight mb-2">Speed up future logins</h1>
@@ -176,7 +177,7 @@ export function Auth({
                   }}
                   className="w-full py-3 rounded-xl bg-foreground text-background font-semibold text-[16px] hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                 >
-                  <FingerprintIcon className="w-5 h-5" />
+                  <FaceIdIcon className="w-[22px] h-[22px]" />
                   Set up Face ID / Touch ID
                 </button>
               )}
@@ -345,7 +346,7 @@ export function Auth({
               type="button"
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-foreground text-background font-medium hover:opacity-90 transition-opacity"
             >
-              <FingerprintIcon className="w-5 h-5" />
+              <FaceIdIcon className="w-[22px] h-[22px]" />
               Sign in with Face ID / Touch ID
             </button>
             

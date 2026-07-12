@@ -13,9 +13,9 @@ import {
   CreditCardIcon,
   StarIcon,
   BuildingIcon,
-  ActivityIcon,
-  FingerprintIcon
+  ActivityIcon
 } from "lucide-react";
+import { FaceIdIcon } from "@/components/Icons";
 
 interface DashboardProps {
   masterPassword: string;
@@ -184,8 +184,8 @@ export function Dashboard({ masterPassword }: DashboardProps) {
       {/* Biometric setup banner */}
       {showBioBanner && (
         <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
-            <FingerprintIcon className="w-5 h-5 text-primary" />
+          <div className="w-10 h-10 rounded-[12px] bg-primary/20 flex items-center justify-center shrink-0">
+            <FaceIdIcon className="w-[22px] h-[22px] text-primary" />
           </div>
           <div className="flex-1">
             <h3 className="text-[15px] font-semibold text-foreground">Enable Face ID / Touch ID</h3>

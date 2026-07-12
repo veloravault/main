@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldCheckIcon, XCircleIcon, FingerprintIcon } from "lucide-react";
+import { XCircleIcon } from "lucide-react";
+import { FaceIdIcon, PremiumShieldIcon } from "@/components/Icons";
 import { hasBiometricsEnabled, unlockWithBiometrics } from "@/lib/biometrics";
 
 const MAX_ATTEMPTS = 3;
@@ -188,8 +189,8 @@ export function PinLock({ onUnlock, onFallback }: PinLockProps) {
       >
         {/* Icon */}
         <div className="flex flex-col items-center gap-3">
-          <div className="w-16 h-16 rounded-2xl bg-foreground flex items-center justify-center shadow-lg">
-            <ShieldCheckIcon className="w-8 h-8 text-background" />
+          <div className="w-16 h-16 rounded-[18px] bg-foreground flex items-center justify-center shadow-md">
+            <PremiumShieldIcon className="w-8 h-8 text-background" />
           </div>
           <h1 className="text-[24px] font-semibold text-foreground tracking-tight">Enter PIN</h1>
           <p className="text-[14px] text-muted-foreground text-center">
@@ -280,7 +281,7 @@ export function PinLock({ onUnlock, onFallback }: PinLockProps) {
               }}
               className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted text-foreground text-[14px] font-medium hover:bg-muted/80 transition-colors"
             >
-              <FingerprintIcon className="w-4 h-4" />
+              <FaceIdIcon className="w-4 h-4" />
               Use Face ID / Touch ID
             </button>
           )}
