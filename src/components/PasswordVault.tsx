@@ -373,16 +373,16 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
     const href = domain ? (/^https?:\/\//i.test(domain) ? domain : `https://${domain}`) : null;
 
     const DetailValue = ({ label, value, copyLabel = label, concealed = false }: { label: string; value: string; copyLabel?: string; concealed?: boolean }) => (
-      <div className="flex items-center justify-between py-3.5 px-5 bg-background md:bg-card">
-        <div className="flex flex-col gap-0.5 min-w-0 pr-4">
-          <span className="text-[12px] font-bold text-muted-foreground uppercase tracking-wider">{label}</span>
-          <span className={`text-[16px] font-semibold text-foreground truncate ${concealed ? "font-mono tracking-wide" : ""}`}>
+      <div className="group flex flex-col py-3.5 px-5 bg-background hover:bg-secondary/60 transition-colors relative">
+        <span className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{label}</span>
+        <div className="flex items-center justify-between gap-4">
+          <span className={`text-[16px] font-medium text-foreground truncate ${concealed ? "font-mono tracking-wide" : ""}`}>
             {value}
           </span>
+          <button type="button" onClick={() => copyToClipboard(value, copyLabel)} className="text-muted-foreground/40 hover:text-primary transition-colors shrink-0" aria-label={`Copy ${label.toLowerCase()}`}>
+            <CopyIcon className="w-[18px] h-[18px]" />
+          </button>
         </div>
-        <button type="button" onClick={() => copyToClipboard(value, copyLabel)} className="shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-secondary/80 text-primary hover:scale-105 active:scale-95 transition-all" aria-label={`Copy ${label.toLowerCase()}`}>
-          <CopyIcon className="w-[18px] h-[18px]" />
-        </button>
       </div>
     );
 
@@ -407,43 +407,43 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
           className="fixed z-[100] inset-x-0 bottom-0 md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-[420px] bg-secondary md:bg-popover/95 md:backdrop-blur-2xl rounded-t-[32px] md:rounded-[28px] md:border border-border/50 shadow-2xl flex flex-col max-h-[90vh] md:max-h-[85vh] overflow-hidden"
         >
+          {/* Top Actions: Favorite & Close */}
+          <div className="absolute top-4 right-4 flex items-center gap-1 z-10">
+            <button type="button" onClick={(e) => handleToggleFavorite(item.id, item.is_favorite, e)} className="p-2.5 text-muted-foreground hover:text-primary transition-colors rounded-full hover:bg-background/50" aria-label="Toggle favorite">
+              <StarIcon className={`w-5 h-5 ${item.is_favorite ? "fill-primary text-primary" : ""}`} />
+            </button>
+            <button type="button" onClick={() => setExpandedId(null)} className="p-2.5 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-background/50 hidden md:flex" aria-label="Close password details">
+              <XIcon className="w-5 h-5" />
+            </button>
+          </div>
+
           {/* Mobile drag indicator */}
-          <div className="w-full flex justify-center pt-4 pb-2 md:hidden">
+          <div className="w-full flex justify-center pt-3 pb-1 md:hidden">
             <div className="w-12 h-1.5 rounded-full bg-border" />
           </div>
 
-          <div className="flex items-start gap-4 px-6 pt-2 md:pt-6 pb-6">
-            <div className="w-14 h-14 rounded-[18px] bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/20 flex items-center justify-center text-2xl font-bold text-primary shrink-0 shadow-sm">
+          {/* Profile-like Header */}
+          <div className="flex flex-col items-center pt-8 md:pt-10 pb-6 px-6">
+            <div className="w-20 h-20 rounded-[24px] bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10 flex items-center justify-center text-[36px] font-bold text-primary shadow-sm mb-4">
               {item.title.charAt(0).toUpperCase()}
             </div>
-            <div className="flex-1 min-w-0 pt-0.5">
-              <h3 id="password-detail-title" className="text-[22px] font-bold tracking-tight truncate text-foreground">{item.title}</h3>
-              <p className="text-[14px] font-medium text-muted-foreground mt-0.5 truncate">{item.category}</p>
-              
-              <div className="flex items-center gap-2 mt-2.5">
-                <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${strength.bg}/15 ${strength.color}`}>{strength.label}</span>
-                {dupeIds.has(item.id) && <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-red-500/15 text-red-500">Reused</span>}
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2 shrink-0">
-              <button type="button" onClick={(e) => handleToggleFavorite(item.id, item.is_favorite, e)} className="w-9 h-9 rounded-full bg-background md:bg-secondary flex items-center justify-center hover:scale-105 active:scale-95 transition-all text-muted-foreground" aria-label="Toggle favorite">
-                <StarIcon className={`w-4 h-4 ${item.is_favorite ? "fill-primary text-primary" : ""}`} />
-              </button>
-              <button type="button" onClick={() => setExpandedId(null)} className="w-9 h-9 rounded-full bg-background md:bg-secondary flex items-center justify-center hover:scale-105 active:scale-95 transition-all text-muted-foreground hidden md:flex" aria-label="Close password details">
-                <XIcon className="w-4 h-4" />
-              </button>
+            <h3 id="password-detail-title" className="text-[24px] font-bold tracking-tight text-foreground text-center leading-tight mb-1">{item.title}</h3>
+            <p className="text-[14.5px] font-medium text-muted-foreground text-center">{item.category}</p>
+            <div className="flex items-center gap-2 mt-3.5">
+              <span className={`text-[12px] font-bold px-3 py-1.5 rounded-full ${strength.bg}/15 ${strength.color}`}>{strength.label}</span>
+              {dupeIds.has(item.id) && <span className="text-[12px] font-bold px-3 py-1.5 rounded-full bg-red-500/15 text-red-500">Reused</span>}
             </div>
           </div>
 
-          <div className="px-6 pb-8 overflow-y-auto">
-            <div className="flex flex-col gap-[1px] bg-border/50 rounded-[24px] overflow-hidden mb-6 shadow-sm ring-1 ring-border/50">
+          {/* Fields */}
+          <div className="px-5 pb-8 overflow-y-auto">
+            <div className="flex flex-col gap-[1px] bg-border/50 rounded-[24px] overflow-hidden shadow-sm ring-1 ring-border/50">
               {parsed.username && <DetailValue label="Username" value={parsed.username} />}
               {password && <DetailValue label="Password" value={password} concealed />}
               {parsed.notes && <DetailValue label="Notes" value={parsed.notes} copyLabel="Notes" />}
             </div>
             
-            <button type="button" onClick={(e) => handleDeleteItem(item.id, e)} className="w-full min-h-[56px] rounded-[20px] bg-destructive/10 text-destructive text-[16px] font-bold hover:bg-destructive/15 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+            <button type="button" onClick={(e) => handleDeleteItem(item.id, e)} className="w-full mt-6 min-h-[56px] rounded-[20px] bg-destructive/10 text-destructive text-[16px] font-bold hover:bg-destructive/15 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
               <TrashIcon className="w-5 h-5" />
               Delete Password
             </button>

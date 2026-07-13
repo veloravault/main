@@ -31,7 +31,13 @@ interface ToastContextValue {
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
-const ICONS = { success: CheckIcon, error: XCircleIcon, info: InfoIcon, warning: AlertTriangleIcon };
+
+const ICONS = { 
+  success: <div className="w-8 h-8 rounded-full bg-green-500/15 text-green-600 dark:text-green-400 flex items-center justify-center shrink-0"><CheckIcon className="w-4 h-4" strokeWidth={3} /></div>, 
+  error: <div className="w-8 h-8 rounded-full bg-red-500/15 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0"><XCircleIcon className="w-4 h-4" strokeWidth={3} /></div>, 
+  info: <div className="w-8 h-8 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0"><InfoIcon className="w-4 h-4" strokeWidth={3} /></div>, 
+  warning: <div className="w-8 h-8 rounded-full bg-orange-500/15 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0"><AlertTriangleIcon className="w-4 h-4" strokeWidth={3} /></div> 
+};
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastRecord[]>([]);
@@ -73,28 +79,29 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div className="vault-toast-region" aria-label="Notifications">
+      <div className="fixed z-[9999] top-4 md:top-8 left-1/2 -translate-x-1/2 flex flex-col gap-3 pointer-events-none w-[90vw] max-w-[360px]" aria-label="Notifications">
         <AnimatePresence mode="popLayout">
           {toasts.map((item) => {
-            const Icon = ICONS[item.type];
             const hasAction = Boolean(item.actionLabel && item.onAction);
             return (
               <motion.div
                 key={item.id}
                 layout={!prefersReducedMotion}
-                initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -22, scale: 0.96 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -12, scale: 0.97 }}
-                transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", bounce: 0.18, duration: 0.36 }}
-                className="vault-toast system-motion"
+                initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -40, scale: 0.9, filter: "blur(8px)" }}
+                animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+                exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -20, scale: 0.9, filter: "blur(8px)" }}
+                transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", bounce: 0.3, duration: 0.5 }}
+                className="pointer-events-auto flex items-center gap-3 p-2.5 pr-4 bg-background/80 backdrop-blur-3xl border border-border/40 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-[100px]"
                 role={item.type === "error" ? "alert" : "status"}
               >
-                <span className={`vault-toast-icon is-${item.type}`}><Icon aria-hidden="true" /></span>
-                <span className="vault-toast-message">{item.message}</span>
+                {ICONS[item.type]}
+                <span className="flex-1 text-[13.5px] font-semibold text-foreground tracking-tight leading-tight pt-0.5">
+                  {item.message}
+                </span>
                 {hasAction && (
                   <button
                     type="button"
-                    className="vault-toast-action system-interactive"
+                    className="text-[13px] font-bold text-primary hover:text-primary/80 transition-colors px-2"
                     onClick={async () => {
                       await item.onAction?.();
                       dismiss(item.id);
@@ -103,12 +110,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                     {item.actionLabel}
                   </button>
                 )}
-                <button type="button" className="vault-toast-close system-interactive" onClick={() => dismiss(item.id)} aria-label="Dismiss notification">
-                  <XIcon aria-hidden="true" />
+                <button type="button" className="text-muted-foreground/40 hover:text-foreground transition-colors p-1" onClick={() => dismiss(item.id)} aria-label="Dismiss notification">
+                  <XIcon className="w-[18px] h-[18px]" strokeWidth={2.5} />
                 </button>
-                {item.durationMs !== null && !prefersReducedMotion && (
-                  <span className="vault-toast-deadline" style={{ animationDuration: `${item.durationMs}ms` }} />
-                )}
               </motion.div>
             );
           })}
