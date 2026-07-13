@@ -450,7 +450,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
           </div>
 
           {/* Fields */}
-          <div className="px-5 pb-8 overflow-y-auto">
+          <div className="px-5 pb-8 overflow-y-auto scrollbar-hide">
             <div className="flex flex-col gap-[1px] bg-border/50 rounded-[24px] overflow-hidden shadow-sm ring-1 ring-border/50">
               {parsed.username && <DetailValue label="Username" value={parsed.username} />}
               {password && <DetailValue label="Password" value={password} concealed />}

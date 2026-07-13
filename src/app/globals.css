@@ -682,7 +682,8 @@ body {
 [data-slot="dialog-content"].responsive-form-sheet > [data-slot="dialog-header"] + div,
 [data-slot="dialog-content"].responsive-import-sheet .magic-import-scroll,
 .wallet-mobile-sheet .wallet-details-body,
-.vault-command-surface * {
+.vault-command-surface *,
+.scrollbar-hide {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -691,7 +692,8 @@ body {
 [data-slot="dialog-content"].responsive-form-sheet > [data-slot="dialog-header"] + div::-webkit-scrollbar,
 [data-slot="dialog-content"].responsive-import-sheet .magic-import-scroll::-webkit-scrollbar,
 .wallet-mobile-sheet .wallet-details-body::-webkit-scrollbar,
-.vault-command-surface *::-webkit-scrollbar {
+.vault-command-surface *::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
   width: 0;
   height: 0;
   display: none;
