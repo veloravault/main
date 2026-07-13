@@ -77,7 +77,7 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Error fetching vault documents:", error);
+      console.error("Error fetching vault documents:", error.message, error.details, error.hint, JSON.stringify(error));
     } else {
       setDocuments(data || []);
       setCache("vault_documents", data || []);
@@ -267,7 +267,7 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
   };
 
   return (
-    <div className="apple-surface vault-system-surface w-full">
+    <div className="apple-surface vault-material-scope w-full">
       <div className="vault-section-toolbar">
         <div className="vault-section-heading">
           <h2 className="type-section-title">Documents</h2>

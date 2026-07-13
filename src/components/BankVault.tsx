@@ -337,7 +337,7 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
     ?.split(":").slice(1).join(":").trim();
 
   return (
-    <div className="apple-surface vault-system-surface w-full relative" style={{ perspective: "1500px" }}>
+    <div className="apple-surface vault-material-scope w-full relative" style={{ perspective: "1500px" }}>
       <div className="vault-section-toolbar">
         <div className="vault-section-heading">
           <h2 className="type-section-title">Bank Accounts</h2>

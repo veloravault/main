@@ -24,6 +24,7 @@ export function Auth({
   const [masterPassword, setMasterPassword] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [forgotSent, setForgotSent] = useState(false);
   const { setTheme, resolvedTheme } = useTheme();
 
@@ -99,6 +100,7 @@ export function Auth({
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccessMessage(null);
 
     if (!masterPassword || masterPassword.length < 8) {
       setError("Master key must be at least 8 characters long.");
@@ -108,9 +110,14 @@ export function Auth({
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        setError("✅ Check your email for the confirmation link!");
+        
+        if (data?.user?.identities && data.user.identities.length === 0) {
+          throw new Error("An account with this email already exists. Please sign in instead.");
+        }
+
+        setSuccessMessage("We've sent a secure link to confirm your account. Please click it to continue.");
         setLoading(false);
         return;
       }
@@ -322,10 +329,10 @@ export function Auth({
   }
 
   return (
-    <div className="apple-app apple-surface flex h-screen w-full items-center justify-center px-4 sm:px-0 font-sans relative">
+    <div className="flex h-screen w-full items-center justify-center bg-background px-4 sm:px-0 font-sans relative">
       {themeToggleButton}
       <motion.div 
-        className="apple-material w-full max-w-sm rounded-[28px] p-5 sm:p-6"
+        className="w-full max-w-sm"
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.5, type: "spring", bounce: 0.3 }}
@@ -349,6 +356,29 @@ export function Auth({
           </AnimatePresence>
         </div>
         
+        {successMessage ? (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-col items-center justify-center space-y-6 py-6"
+          >
+            <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+            </div>
+            <div className="text-center space-y-2">
+              <h2 className="text-[20px] font-semibold text-foreground">Check your email</h2>
+              <p className="text-[14px] text-muted-foreground leading-relaxed px-4">{successMessage}</p>
+            </div>
+            <button 
+              type="button"
+              onClick={() => { setSuccessMessage(null); setIsSignUp(false); }}
+              className="mt-6 w-full py-3.5 rounded-xl bg-foreground text-background font-semibold text-[15px] hover:opacity-90 transition-opacity"
+            >
+              Back to Sign In
+            </button>
+          </motion.div>
+        ) : (
+          <>
         {/* Sign In / Create Account toggle — hidden when session already exists */}
         {!initialSessionActive && (
           <div className="flex bg-muted/50 p-1 rounded-xl mx-auto w-fit mb-6">
@@ -527,6 +557,8 @@ export function Auth({
             </div>
           )}
         </div>
+          </>
+        )}
       </motion.div>
     </div>
   );

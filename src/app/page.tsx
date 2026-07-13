@@ -50,6 +50,7 @@ import {
   MoreHorizontalIcon,
 } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { createPortal } from "react-dom";
 
 type Tab = "dashboard" | "passwords" | "documents" | "notes" | "wallet" | "banks" | "profile";
 
@@ -454,22 +455,12 @@ export default function Home() {
             </button>
             <button type="button" onClick={() => setSearchOpen(true)} className="vault-header-icon vault-header-mobile-search" aria-label="Search"><SearchIcon /></button>
             <div className="md:hidden"><MobileVaultMenu theme={theme} setTheme={setTheme} onNavigateBanks={() => handleNavigate("banks")} onNavigateSettings={() => handleNavigate("profile")} onMagicImport={() => setIsGlobalImportOpen(true)} onLock={handleLockVault} /></div>
-            <div className="hidden md:block">
-              <DropdownMenu>
-                <DropdownMenuTrigger className="vault-header-icon vault-header-more md:!grid" aria-label="More actions"><MoreHorizontalIcon /></DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="vault-header-menu">
-                  <DropdownMenuItem onClick={() => setIsGlobalImportOpen(true)}><Wand2Icon />Magic Import</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>{resolvedTheme === "dark" ? <SunIcon /> : <MoonIcon />}{resolvedTheme === "dark" ? "Light appearance" : "Dark appearance"}</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => handleNavigate("profile")}><UserCircleIcon />Settings</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+
           </div>
         </header>
 
         {/* ── Search overlay ─────────────────────────────────── */}
-        <AnimatePresence>
+        {typeof document !== "undefined" && createPortal(<AnimatePresence>
           {searchOpen && (
             <>
               {/* Backdrop */}
@@ -653,7 +644,7 @@ export default function Home() {
               </motion.div>
             </>
           )}
-        </AnimatePresence>
+        </AnimatePresence>, document.body)}
 
         {/* ── Scrollable content — all tabs always mounted, hidden via display:none */}
         <div ref={contentScrollRef} className="ios-content-scroll flex-1 overflow-auto">

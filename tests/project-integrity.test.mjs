@@ -181,6 +181,7 @@ test("Digital Wallet uses one filterable card stack", () => {
   assert.match(wallet, /!expandedCardId\s*&&\s*cards\.indexOf\(item\)\s*===\s*cards\.length\s*-\s*1/);
   assert.match(card, /apple-wallet-card-header/);
   assert.match(card, /apple-wallet-card-body/);
+  assert.match(card, /apple-wallet-card-details[^\n]*md:hidden/);
   assert.match(card, /onClick=\{selectionMode \? onSelect : onToggle\}/);
   assert.match(card, /hasDetails\s*&&/);
   assert.match(wallet, /apple-wallet-master-detail/);

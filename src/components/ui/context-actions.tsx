@@ -86,15 +86,17 @@ export function ContextActions(props: {
     },
   };
 
+  const trigger = props.children(bindings);
+
   return (
     <>
-      {props.children(bindings)}
+      {trigger}
       {point && (
-        <div className="vault-context-menu" role="menu" style={{ left: point.x, top: point.y }} onPointerDown={(event) => event.stopPropagation()}>
+        <div key="context-menu" className="vault-context-menu" role="menu" style={{ left: point.x, top: point.y }} onPointerDown={(event) => event.stopPropagation()}>
           {props.actions.map((action) => <ContextActionButton key={action.id} action={action} onSelect={() => run(action)} />)}
         </div>
       )}
-      <AdaptiveSheet open={sheetOpen} onOpenChange={setSheetOpen} title={props.title ?? "Actions"} size="sm" className="vault-context-sheet">
+      <AdaptiveSheet key="context-sheet" open={sheetOpen} onOpenChange={setSheetOpen} title={props.title ?? "Actions"} size="sm" className="vault-context-sheet">
         <AdaptiveSheetBody className="vault-context-actions">
           {props.actions.map((action) => <ContextActionButton key={action.id} action={action} onSelect={() => run(action)} />)}
         </AdaptiveSheetBody>

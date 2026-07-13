@@ -430,7 +430,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
   };
 
   return (
-    <div className="apple-surface vault-system-surface w-full relative pb-20">
+    <div className="apple-surface vault-material-scope w-full relative pb-20">
       {/* Vault Health Banner */}
       {items.length >= 3 && (health.weak > 0 || health.reused > 0) && (
         <div className="mb-6 flex items-center gap-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl px-5 py-4">
@@ -618,6 +618,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
                         >
                           {/* Row */}
                           <button
+                            key="row-btn"
                             onClick={(e) => isSelectionMode ? toggleSelection(item.id, e) : setExpandedId(isExpanded ? null : item.id)}
                             className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-colors"
                           >
@@ -679,7 +680,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
                           </button>
 
                           {/* Expanded detail — Apple Passwords style */}
-                          <AnimatePresence initial={false}>
+                          <AnimatePresence key="details-presence" initial={false}>
                           {false && isExpanded && !isSelectionMode && (
                             <motion.div
                               initial={{ height: 0, opacity: 0 }}

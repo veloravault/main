@@ -16,7 +16,7 @@ export function Settings({ masterPassword, onLock }: SettingsProps) {
   const meta = SETTINGS_SECTIONS.find((section) => section.id === active)!;
 
   return (
-    <div className={`vault-settings vault-system-surface ${selected ? "has-mobile-selection" : ""}`}>
+    <div className={`vault-settings vault-material-scope ${selected ? "has-mobile-selection" : ""}`}>
       <header className="settings-page-header"><p className="type-group-label">Telkar Vault</p><h1>Settings</h1><p>Account, security and preferences for this device.</p></header>
       <div className="settings-layout">
         <aside className="settings-sidebar"><SettingsNavigation selected={active} onSelect={setSelected} /></aside>

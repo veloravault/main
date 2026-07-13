@@ -202,7 +202,7 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
   };
 
   return (
-    <div className="apple-surface vault-system-surface w-full">
+    <div className="apple-surface vault-material-scope w-full">
       <div className="vault-section-toolbar">
         <div className="vault-section-heading">
           <h2 className="type-section-title">Secure Notes</h2>

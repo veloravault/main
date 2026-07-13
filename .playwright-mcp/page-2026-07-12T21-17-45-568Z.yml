@@ -1,0 +1,65 @@
+- generic [ref=f2e1]:
+  - generic [ref=f2e2]:
+    - main [ref=f2e3]:
+      - generic [ref=f2e4]:
+        - generic [ref=f2e5]: Telkar Vault
+        - generic [ref=f2e11]:
+          - button "Magic Import" [ref=f2e12]
+          - button "Search" [ref=f2e16]
+          - button "Profile" [ref=f2e20]
+      - generic [ref=f2e23]:
+        - heading "Wallet" [level=1] [ref=f2e180]
+        - generic [ref=f2e182]:
+          - generic [ref=f2e184]:
+            - button [ref=f2e185]
+            - button "Add Card" [ref=f2e190]
+          - generic [ref=f2e192]:
+            - tablist "Card type" [ref=f2e194]:
+              - button "All" [ref=f2e195]
+              - button "Credit" [ref=f2e196]
+              - button "Debit" [ref=f2e197]
+            - generic [ref=f2e199]:
+              - article [ref=f2e201]:
+                - button "Kotak Debit Card card, collapsed" [ref=f2e202] [cursor=pointer]:
+                  - generic [ref=f2e203]:
+                    - heading "Kotak Debit Card" [level=3] [ref=f2e205]
+                    - img "Visa" [ref=f2e207]
+                  - button "Delete Kotak Debit Card" [ref=f2e209]
+              - article [ref=f2e214]:
+                - button "HDFC Credit Card card, collapsed" [ref=f2e215] [cursor=pointer]:
+                  - generic [ref=f2e216]:
+                    - heading "HDFC Credit Card" [level=3] [ref=f2e218]
+                    - img "RuPay" [ref=f2e220]
+                  - button "Delete HDFC Credit Card" [ref=f2e235]
+              - article [ref=f2e240]:
+                - button "HDFC Debit Card card, expanded" [expanded] [ref=f2e241] [cursor=pointer]:
+                  - generic [ref=f2e242]:
+                    - generic [ref=f2e243]:
+                      - paragraph [ref=f2e244]: debit card
+                      - heading "HDFC Debit Card" [level=3] [ref=f2e245]
+                    - img "Mastercard" [ref=f2e247]
+                  - generic [ref=f2e251]:
+                    - button "Copy card number" [ref=f2e252]: 5260 9901 3358 1328
+                    - generic [ref=f2e253]:
+                      - generic [ref=f2e254]:
+                        - paragraph [ref=f2e255]: Cardholder
+                        - paragraph [ref=f2e256]: Card holder
+                      - generic [ref=f2e257]:
+                        - generic [ref=f2e258]:
+                          - paragraph [ref=f2e259]: Expires
+                          - paragraph [ref=f2e260]: 03/33
+                        - button "Copy CVV" [ref=f2e261]:
+                          - paragraph [ref=f2e262]: CVV
+                          - paragraph [ref=f2e263]: •••
+                  - button "Delete HDFC Debit Card" [ref=f2e264]
+                - button "Show secure details" [ref=f2e268]
+    - navigation "Primary navigation" [ref=f2e43]:
+      - generic [ref=f2e44]:
+        - button "Dashboard" [ref=f2e45]:
+          - generic [ref=f2e53]: Home
+        - button "Passwords" [ref=f2e54]
+        - button "Documents" [ref=f2e60]
+        - button "Notes" [ref=f2e66]
+        - button "Wallet" [active] [ref=f2e72]
+  - button "Open Next.js Dev Tools" [ref=f2e82] [cursor=pointer]
+  - alert [ref=f2e86]
