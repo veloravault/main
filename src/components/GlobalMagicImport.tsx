@@ -1,417 +1,156 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+"use client";
+
+import { useEffect, useReducer, useRef, useState } from "react";
+import { Loader2Icon } from "lucide-react";
+import { AdaptiveSheet, AdaptiveSheetBody, AdaptiveSheetFooter } from "@/components/ui/adaptive-sheet";
 import { Button } from "@/components/ui/button";
-import { Wand2Icon, Loader2Icon, XIcon, CheckIcon, SparklesIcon } from "lucide-react";
-import { parseGlobalBulkData, GlobalImportResult } from "@/app/actions";
+import { ImportSourceStep } from "@/components/import/ImportSourceStep";
+import { ImportReviewStep } from "@/components/import/ImportReviewStep";
+import { ImportProgressStep } from "@/components/import/ImportProgressStep";
+import { ImportResultsStep } from "@/components/import/ImportResultsStep";
+import { extractGlobalImportDrafts } from "@/app/actions";
+import { parseImportCsv } from "@/lib/import/csv";
+import { classifyDuplicates, type ExistingImportItem } from "@/lib/import/duplicates";
+import { isGlobalImportResult, normalizeImportResult } from "@/lib/import/normalize";
+import { loadImportHistory, undoImport, type ImportHistoryEntry } from "@/lib/import/history";
+import { saveImportDrafts, type ImportSaveFailure } from "@/lib/import/save";
+import type { ImportDraft, ImportSource } from "@/lib/import/types";
+import { decryptText } from "@/lib/crypto";
+import { getCache } from "@/lib/vaultCache";
 import { supabase } from "@/lib/supabase";
-import { encryptText } from "@/lib/crypto";
-import { invalidateCache } from "@/lib/vaultCache";
 
-interface GlobalMagicImportProps {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  masterPassword: string | null;
-  onSuccess: () => void;
+interface GlobalMagicImportProps { isOpen: boolean; onOpenChange: (open: boolean) => void; masterPassword: string | null; onSuccess: () => void; }
+type State =
+  | { phase: "source" }
+  | { phase: "analyzing"; source: ImportSource }
+  | { phase: "review"; source: ImportSource; drafts: ImportDraft[] }
+  | { phase: "saving"; source: ImportSource; drafts: ImportDraft[]; completed: number; total: number; title: string }
+  | { phase: "results"; source: ImportSource; drafts: ImportDraft[]; history: ImportHistoryEntry; failures: ImportSaveFailure[] };
+type Action = { type: "RESET" } | { type: "ANALYZE"; source: ImportSource } | { type: "REVIEW"; source: ImportSource; drafts: ImportDraft[] } | { type: "UPDATE_DRAFTS"; drafts: ImportDraft[] } | { type: "SAVING"; total: number } | { type: "SAVE_FAILED" } | { type: "PROGRESS"; completed: number; total: number; title: string } | { type: "RESULTS"; history: ImportHistoryEntry; failures: ImportSaveFailure[] };
+
+function reducer(state: State, action: Action): State {
+  if (action.type === "RESET") return { phase: "source" };
+  if (action.type === "ANALYZE") return { phase: "analyzing", source: action.source };
+  if (action.type === "REVIEW" && (state.phase === "analyzing" || state.phase === "results")) return { phase: "review", source: action.source, drafts: action.drafts };
+  if (action.type === "UPDATE_DRAFTS" && state.phase === "review") return { ...state, drafts: action.drafts };
+  if (action.type === "SAVING" && state.phase === "review") return { phase: "saving", source: state.source, drafts: state.drafts, completed: 0, total: action.total, title: "" };
+  if (action.type === "SAVE_FAILED" && state.phase === "saving") return { phase: "review", source: state.source, drafts: state.drafts };
+  if (action.type === "PROGRESS" && state.phase === "saving") return { ...state, completed: action.completed, total: action.total, title: action.title };
+  if (action.type === "RESULTS" && state.phase === "saving") return { phase: "results", source: state.source, drafts: state.drafts, history: action.history, failures: action.failures };
+  if (action.type === "RESULTS" && state.phase === "results") return { ...state, history: action.history, failures: action.failures };
+  return state;
 }
-
-type ImportPhase = "paste" | "parsing" | "review" | "saving" | "done";
 
 export function GlobalMagicImport({ isOpen, onOpenChange, masterPassword, onSuccess }: GlobalMagicImportProps) {
+  const [state, dispatch] = useReducer(reducer, { phase: "source" });
   const [inputText, setInputText] = useState("");
-  const [phase, setPhase] = useState<ImportPhase>("paste");
-  const [excluded, setExcluded] = useState<Set<keyof GlobalImportResult>>(new Set());
-  const [failed, setFailed] = useState(0);
-  const [importStats, setImportStats] = useState<GlobalImportResult | null>(null);
-  const [uploadedCount, setUploadedCount] = useState(0);
-  const [totalCount, setTotalCount] = useState(0);
-  const [currentLabel, setCurrentLabel] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [history, setHistory] = useState<ImportHistoryEntry[]>([]);
+  const [undoing, setUndoing] = useState(false);
+  const [closeConfirm, setCloseConfirm] = useState(false);
+  const generation = useRef(0);
 
-  const handleClose = () => {
-    if (phase === "saving" || phase === "parsing") return;
+  useEffect(() => { if (isOpen) queueMicrotask(() => setHistory(loadImportHistory())); }, [isOpen]);
+  const title = state.phase === "source" ? "Magic Import" : state.phase === "analyzing" ? "Analyzing source" : state.phase === "review" ? "Review import" : state.phase === "saving" ? "Saving securely" : "Import results";
+  const description = state.phase === "source" ? "Choose a source. Nothing is saved until you review it." : state.phase === "review" ? "Edit fields, resolve duplicates and choose exactly what to save." : "Your data is encrypted before it reaches the vault.";
+
+  const requestClose = () => {
+    if (state.phase === "saving") { setCloseConfirm(true); return; }
+    generation.current += 1;
     onOpenChange(false);
-    setTimeout(() => {
-      setImportStats(null);
-      setInputText("");
-      setPhase("paste");
-      setUploadedCount(0);
-      setTotalCount(0);
-    }, 300);
+    window.setTimeout(() => { dispatch({ type: "RESET" }); setInputText(""); setError(null); }, 220);
   };
 
-  const handleReview = async () => {
-    if (!inputText.trim() || !masterPassword) return;
-    setPhase("parsing");
-    setImportStats(null);
-    setUploadedCount(0);
-    setTotalCount(0);
-
+  const analyze = async (source: ImportSource) => {
+    if (!masterPassword) return;
+    const currentGeneration = ++generation.current;
+    setError(null);
+    dispatch({ type: "ANALYZE", source });
     try {
-      const parsedData = await parseGlobalBulkData(inputText);
-      setImportStats(parsedData);
-
-      const total =
-        parsedData.passwords.length +
-        parsedData.notes.length +
-        parsedData.bank_accounts.length +
-        parsedData.credit_cards.length;
-
-      setTotalCount(total);
-      setUploadedCount(0);
-      setPhase("review");
-    } catch (err) {
-      console.error(err);
-      setPhase("paste");
+      let drafts: ImportDraft[] = [];
+      if (source.kind === "paste") {
+        const response = await extractGlobalImportDrafts(source.text);
+        if (!response.ok) throw new Error(response.message);
+        drafts = response.drafts;
+      } else if (source.kind === "csv" || source.kind === "browser_csv") {
+        const parsed = await parseImportCsv(source.file, source.kind);
+        if (!parsed.drafts.length) throw new Error(parsed.errors[0] ?? "The CSV did not contain supported vault items.");
+        drafts = parsed.drafts;
+        if (parsed.errors.length) setError(parsed.errors[0]);
+      } else {
+        const imageBase64 = await readFileAsDataUrl(source.file);
+        const response = await fetch("/api/scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ imageBase64, type: "global_import" }) });
+        const payload = await response.json() as { ok?: boolean; data?: unknown; error?: string };
+        if (!response.ok || !payload.ok || !isGlobalImportResult(payload.data)) throw new Error(payload.error ?? "The image could not be analyzed.");
+        drafts = normalizeImportResult(payload.data, source.file.name);
+      }
+      if (generation.current !== currentGeneration) return;
+      drafts = classifyDuplicates(drafts, await loadExistingItems(masterPassword));
+      dispatch({ type: "REVIEW", source, drafts });
+    } catch (reason) {
+      if (generation.current !== currentGeneration) return;
+      setError(reason instanceof Error ? reason.message : "This source could not be analyzed.");
+      dispatch({ type: "RESET" });
     }
   };
 
-  const handleProcess = async () => {
-    if (!importStats || !masterPassword) return;
-    const parsedData: GlobalImportResult = {
-      passwords: excluded.has("passwords") ? [] : importStats.passwords,
-      notes: excluded.has("notes") ? [] : importStats.notes,
-      bank_accounts: excluded.has("bank_accounts") ? [] : importStats.bank_accounts,
-      credit_cards: excluded.has("credit_cards") ? [] : importStats.credit_cards,
-    };
-    setPhase("saving");
-    setFailed(0);
+  const save = async () => {
+    if (state.phase !== "review" || !masterPassword) return;
+    const drafts = state.drafts;
+    const source = state.source;
+    const candidates = drafts.filter((draft) => draft.included && draft.duplicateResolution !== "skip");
+    const { data, error: authError } = await supabase.auth.getUser();
+    if (authError || !data.user) { setError(authError?.message ?? "Sign in again before importing."); return; }
+    dispatch({ type: "SAVING", total: candidates.length });
     try {
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
-
-      let done = 0;
-
-      const tick = (label: string) => {
-        done++;
-        setUploadedCount(done);
-        setCurrentLabel(label);
-      };
-
-      // Handle Passwords
-      if (parsedData.passwords.length > 0) {
-        const { data: existingPass } = await supabase.from("vault_items").select("id, title, category");
-        for (const item of parsedData.passwords) {
-          const payload = {
-            domain: item.url || null,
-            username: item.username || "",
-            password: item.password || "",
-            notes: item.extra_details || ""
-          };
-          const encrypted = await encryptText(JSON.stringify(payload), masterPassword);
-          const sameAccount = existingPass?.find(e =>
-            e.title.toLowerCase() === (item.title || "Untitled").toLowerCase()
-          );
-          if (sameAccount) {
-            await supabase.from("vault_items").update({
-              encrypted_data: encrypted.ciphertext,
-              iv: encrypted.iv,
-              salt: encrypted.salt,
-              domain: item.url || null,
-              category: item.category || sameAccount.category || "Uncategorized"
-            }).eq("id", sameAccount.id);
-          } else {
-            await supabase.from("vault_items").insert({
-              user_id: user.id,
-              title: item.title || "Untitled",
-              category: item.category || "Uncategorized",
-              domain: item.url || null,
-              encrypted_data: encrypted.ciphertext,
-              iv: encrypted.iv,
-              salt: encrypted.salt,
-            });
-          }
-          tick(item.title || "Password");
-        }
-      }
-
-      // Handle Notes
-      if (parsedData.notes.length > 0) {
-        const { data: existingNotes } = await supabase.from("secure_notes").select("id, title, category");
-        for (const item of parsedData.notes) {
-          const encrypted = await encryptText(item.content || "", masterPassword);
-          const existing = existingNotes?.find(e =>
-            e.title.toLowerCase() === (item.title || "Untitled Note").toLowerCase()
-          );
-          if (existing) {
-            await supabase.from("secure_notes").update({
-              encrypted_content: encrypted.ciphertext,
-              iv: encrypted.iv,
-              salt: encrypted.salt,
-              category: item.category || existing.category || "Uncategorized"
-            }).eq("id", existing.id);
-          } else {
-            await supabase.from("secure_notes").insert({
-              user_id: user.id,
-              title: item.title || "Untitled Note",
-              category: item.category || "Uncategorized",
-              encrypted_content: encrypted.ciphertext,
-              iv: encrypted.iv,
-              salt: encrypted.salt,
-            });
-          }
-          tick(item.title || "Note");
-        }
-      }
-
-      // Handle Bank Accounts
-      if (parsedData.bank_accounts.length > 0) {
-        const { data: existingBank } = await supabase.from("secure_wallet").select("id, title").eq("type", "bank_account");
-        for (const item of parsedData.bank_accounts) {
-          const payload = {
-            routing: item.routing || "",
-            account: item.account || "",
-            name: item.name || "",
-            extra_details: item.extra_details || "",
-          };
-          const encrypted = await encryptText(JSON.stringify(payload), masterPassword);
-          const title = item.title || "Bank Account";
-          const existing = existingBank?.find(e => e.title.toLowerCase() === title.toLowerCase());
-          if (existing) {
-            await supabase.from("secure_wallet").update({
-              encrypted_content: encrypted.ciphertext,
-              iv: encrypted.iv,
-              salt: encrypted.salt,
-            }).eq("id", existing.id);
-          } else {
-            await supabase.from("secure_wallet").insert({
-              user_id: user.id,
-              title: title,
-              type: "bank_account",
-              encrypted_content: encrypted.ciphertext,
-              iv: encrypted.iv,
-              salt: encrypted.salt,
-            });
-          }
-          tick(title);
-        }
-      }
-
-      // Handle Credit Cards
-      if (parsedData.credit_cards.length > 0) {
-        const { data: existingCards } = await supabase.from("secure_wallet").select("id, title").eq("type", "credit_card");
-        for (const item of parsedData.credit_cards) {
-          const payload = {
-            number: item.number || "",
-            expiry: item.expiry || "",
-            cvv: item.cvv || "",
-            name: item.name || "",
-            pin: item.pin || "",
-            upi_pin: item.upi_pin || "",
-            subtype: (item.title || "").toLowerCase().includes("debit") ? "debit" : "credit",
-            extra_details: item.extra_details || "",
-          };
-          const encrypted = await encryptText(JSON.stringify(payload), masterPassword);
-          const title = item.title || "Credit Card";
-          const existing = existingCards?.find(e => e.title.toLowerCase() === title.toLowerCase());
-          if (existing) {
-            await supabase.from("secure_wallet").update({
-              encrypted_content: encrypted.ciphertext,
-              iv: encrypted.iv,
-              salt: encrypted.salt,
-            }).eq("id", existing.id);
-          } else {
-            await supabase.from("secure_wallet").insert({
-              user_id: user.id,
-              title: title,
-              type: "credit_card",
-              encrypted_content: encrypted.ciphertext,
-              iv: encrypted.iv,
-              salt: encrypted.salt,
-            });
-          }
-          tick(title);
-        }
-      }
-
-      // Invalidate all caches
-      invalidateCache("vault_items");
-      invalidateCache("vault_items_titles");
-      invalidateCache("secure_notes");
-      invalidateCache("secure_wallet_cards");
-      invalidateCache("secure_wallet_banks");
-
-      setPhase("done");
-      setInputText("");
+      const result = await saveImportDrafts({ drafts, masterPassword, userId: data.user.id, sourceKind: source.kind, isOnline: () => navigator.onLine, onProgress: (completed, total, itemTitle) => dispatch({ type: "PROGRESS", completed, total, title: itemTitle }) });
+      dispatch({ type: "RESULTS", history: result.history, failures: result.failures });
+      setHistory(loadImportHistory());
       onSuccess();
-
-    } catch (err) {
-      console.error(err);
-      alert("Failed to parse and import data.");
-      setFailed((count) => count + 1);
-      setPhase("review");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "The import could not be saved.");
+      dispatch({ type: "SAVE_FAILED" });
     }
   };
 
-  const totalImported = importStats
-    ? importStats.passwords.length + importStats.notes.length + importStats.bank_accounts.length + importStats.credit_cards.length
-    : 0;
-
-  const progressPercent = totalCount > 0 ? Math.round((uploadedCount / totalCount) * 100) : 0;
-  const isWorking = phase === "parsing" || phase === "saving";
-  const selected = importStats ? (["passwords", "notes", "bank_accounts", "credit_cards"] as const).reduce((sum, key) => sum + (excluded.has(key) ? 0 : importStats[key].length), 0) : 0;
+  const undo = async (entry: ImportHistoryEntry) => {
+    if (!masterPassword) return;
+    setUndoing(true); setError(null);
+    try { await undoImport(entry, masterPassword); setHistory(loadImportHistory()); if (state.phase === "results" && state.history.id === entry.id) dispatch({ type: "RESULTS", history: { ...entry, operations: undefined, undoneAt: new Date().toISOString() }, failures: state.failures }); onSuccess(); }
+    catch (reason) { setError(reason instanceof Error ? reason.message : "Undo failed."); }
+    finally { setUndoing(false); }
+  };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }}>
-      <DialogContent className="responsive-import-sheet sm:max-w-xl p-0 overflow-hidden [&>button]:hidden">
-        {/* Custom close button — always visible unless actively uploading */}
-        <button
-          onClick={handleClose}
-          disabled={isWorking}
-          className="magic-import-close absolute top-5 right-5 z-50 w-8 h-8 rounded-full bg-secondary/80 hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-          aria-label="Close"
-        >
-          <XIcon className="w-4 h-4" strokeWidth={2.5} />
-        </button>
-
-        <DialogHeader className="magic-import-header relative z-10 mb-8 space-y-3 flex flex-col items-center text-center px-8 pt-8">
-            <div className="relative flex items-center justify-center mb-4">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-orange-500 blur-xl opacity-30 rounded-full" />
-              <div className="relative w-16 h-16 bg-background/80 backdrop-blur-sm border border-border/50 shadow-sm rounded-full flex items-center justify-center">
-                {phase === "done" ? (
-                  <CheckIcon className="w-7 h-7 text-green-500" strokeWidth={2.5} />
-                ) : (
-                  <SparklesIcon className={`w-7 h-7 text-foreground ${isWorking ? "animate-pulse" : ""}`} strokeWidth={1.5} />
-                )}
-              </div>
-            </div>
-            <DialogTitle className="text-[24px] font-semibold tracking-tight text-foreground">
-              {phase === "done" ? "Import Complete" : "Magic Import"}
-            </DialogTitle>
-            <p className="text-[15px] text-muted-foreground leading-relaxed max-w-[360px] mx-auto">
-              {phase === "paste" && "Paste anything. Review every detected item before it is encrypted and saved."}
-              {phase === "parsing" && "AI is reading and categorizing your data…"}
-              {phase === "review" && `${selected} items selected for your vault.`}
-              {phase === "saving" && `Encrypting and saving selected items…`}
-              {phase === "done" && `${uploadedCount} saved · ${excluded.size} excluded · ${failed} failed`}
-            </p>
-        </DialogHeader>
-
-        <div className="magic-import-scroll relative z-10 px-8 pb-8">
-          <AnimatePresence mode="wait">
-
-            {/* Uploading progress view */}
-            {(phase === "saving" || phase === "done") && importStats && (
-              <motion.div
-                key="progress"
-                initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-              >
-                {/* Progress bar */}
-                {phase === "saving" && (
-                  <div className="mb-5">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[13px] font-medium text-muted-foreground truncate max-w-[60%]">
-                        {currentLabel && `Saving "${currentLabel}"…`}
-                      </span>
-                      <span className="text-[13px] font-semibold text-foreground tabular-nums">
-                        {uploadedCount} / {totalCount}
-                      </span>
-                    </div>
-                    <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
-                      <motion.div
-                        className="h-full bg-[#007aff] dark:bg-[#0a84ff] rounded-full"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${progressPercent}%` }}
-                        transition={{ duration: 0.3, ease: "easeOut" }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* Stats grid */}
-                <div className="bg-[#f2f2f7] dark:bg-[#1c1c1e] rounded-[20px] p-5">
-                  <h3 className="font-medium text-[13px] text-[#8e8e93] dark:text-[#98989d] mb-4 text-center tracking-tight">
-                    {phase === "done" ? `✓ Successfully saved ${totalImported} items` : `Processing ${totalImported} items`}
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { label: "Passwords", count: importStats.passwords.length },
-                      { label: "Bank Accounts", count: importStats.bank_accounts.length },
-                      { label: "Credit Cards", count: importStats.credit_cards.length },
-                      { label: "Notes", count: importStats.notes.length },
-                    ].map(({ label, count }) => (
-                      <div key={label} className="flex flex-col items-center justify-center p-4 bg-white dark:bg-[#2c2c2e] rounded-xl shadow-[0_1px_2px_rgba(0,0,0,0.04)] border border-black/[0.04] dark:border-white/[0.04]">
-                        <span className="text-[10px] uppercase tracking-[0.12em] text-[#8e8e93] font-semibold mb-1">{label}</span>
-                        <span className="text-[32px] font-light text-foreground tracking-tighter">{count}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                {phase === "done" && <Button onClick={handleClose} className="apple-button-primary mt-5 w-full">Done</Button>}
-              </motion.div>
-            )}
-
-            {/* Parsing spinner */}
-            {phase === "parsing" && (
-              <motion.div
-                key="parsing"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex flex-col items-center justify-center py-10 gap-4"
-              >
-                <Loader2Icon className="w-10 h-10 text-[#007aff] animate-spin" strokeWidth={1.5} />
-                <p className="text-[14px] text-muted-foreground">AI is analyzing your data…</p>
-              </motion.div>
-            )}
-
-            {phase === "review" && importStats && (
-              <motion.div key="review" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-                <div className="apple-grouped-list">
-                  {([
-                    ["passwords", "Passwords"], ["notes", "Notes"], ["credit_cards", "Cards"], ["bank_accounts", "Bank Accounts"],
-                  ] as const).map(([key, label]) => (
-                    <label key={key} className="apple-grouped-row flex items-center gap-3 cursor-pointer">
-                      <input type="checkbox" checked={!excluded.has(key)} onChange={() => setExcluded(prev => { const next = new Set(prev); if (next.has(key)) next.delete(key); else next.add(key); return next; })} className="h-5 w-5 accent-primary" />
-                      <span className="type-row-title flex-1">{label}</span><span className="type-metadata text-muted-foreground tabular-nums">{importStats[key].length}</span>
-                    </label>
-                  ))}
-                </div>
-                <p className="type-metadata text-muted-foreground">Uncheck a group to exclude it. Parsed titles and identifying fields remain visible for review before saving.</p>
-                <div className="flex justify-between gap-3"><Button variant="ghost" onClick={() => setPhase("paste")}>Back</Button><Button onClick={handleProcess} disabled={selected === 0} className="apple-button-primary px-6">Save {selected} Items</Button></div>
-              </motion.div>
-            )}
-
-            {/* Input view */}
-            {phase === "paste" && (
-              <motion.div
-                key="input"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-              >
-                <textarea
-                  placeholder={`Paste your passwords, notes, or bank details here...\n\ne.g.\nNetflix: user@email.com | pass123\nWiFi: MyNetwork - secret456`}
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  className="w-full h-48 sm:h-56 p-5 rounded-[20px] bg-secondary/30 border border-border/50 resize-none text-[15px] leading-relaxed focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/30 transition-all placeholder:text-muted-foreground/60"
-                />
-                <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3">
-                  <Button
-                    variant="ghost"
-                    onClick={handleClose}
-                    className="font-medium h-12 px-6 rounded-xl hover:bg-secondary/80 text-[15px]"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleReview}
-                    disabled={!inputText.trim()}
-                    className="font-medium h-12 px-7 rounded-xl bg-[#007aff] hover:bg-[#006ee6] text-white shadow-sm transition-all active:scale-[0.98] text-[15px]"
-                  >
-                    Review Import
-                  </Button>
-                </div>
-              </motion.div>
-            )}
-
-          </AnimatePresence>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <>
+      <AdaptiveSheet open={isOpen} onOpenChange={(open) => { if (!open) requestClose(); }} title={title} description={description} size="lg" className="magic-import-workflow">
+        <AdaptiveSheetBody className="magic-import-workflow-body">
+          {error && <div className="import-global-error" role="alert">{error}</div>}
+          {state.phase === "source" && <ImportSourceStep text={inputText} onTextChange={setInputText} onAnalyze={analyze} history={history} onUndoHistory={undo} />}
+          {state.phase === "analyzing" && <div className="import-analyzing"><Loader2Icon className="animate-spin" aria-hidden="true" /><h3>Reading your data</h3><p>Detecting fields and preparing an editable review.</p></div>}
+          {state.phase === "review" && <ImportReviewStep drafts={state.drafts} onChange={(drafts) => dispatch({ type: "UPDATE_DRAFTS", drafts })} onBack={() => dispatch({ type: "RESET" })} onSave={save} />}
+          {state.phase === "saving" && <ImportProgressStep completed={state.completed} total={state.total} title={state.title} />}
+          {state.phase === "results" && <ImportResultsStep history={state.history} failures={state.failures} undoing={undoing} onUndo={() => undo(state.history)} onRetry={() => dispatch({ type: "REVIEW", source: state.source, drafts: state.drafts.filter((draft) => state.failures.some((failure) => failure.clientId === draft.clientId)) })} onDone={requestClose} />}
+        </AdaptiveSheetBody>
+      </AdaptiveSheet>
+      <AdaptiveSheet open={closeConfirm} onOpenChange={setCloseConfirm} title="Close while saving?" description="Items already completed will remain in your vault." size="sm"><AdaptiveSheetBody><p className="import-close-warning">The secure save continues in the background. You can reopen Magic Import to see the final result.</p></AdaptiveSheetBody><AdaptiveSheetFooter><Button variant="ghost" onClick={() => setCloseConfirm(false)}>Keep open</Button><Button variant="destructive" onClick={() => { setCloseConfirm(false); onOpenChange(false); }}>Close importer</Button></AdaptiveSheetFooter></AdaptiveSheet>
+    </>
   );
 }
+
+async function readFileAsDataUrl(file: File) { return await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result)); reader.onerror = () => reject(reader.error); reader.readAsDataURL(file); }); }
+
+async function loadExistingItems(masterPassword: string): Promise<ExistingImportItem[]> {
+  const cached = [
+    ...(getCache<{ id: string; title: string; plaintext?: string }>("vault_items") ?? []).map((item) => ({ id: item.id, title: item.title, type: "password" as const, fields: parsePayload(item.plaintext) })),
+    ...(getCache<{ id: string; title: string; plaintext?: string }>("secure_notes") ?? []).map((item) => ({ id: item.id, title: item.title, type: "note" as const, fields: { content: item.plaintext ?? "" } })),
+  ];
+  const [passwords, notes, wallet] = await Promise.all([supabase.from("vault_items").select("id,title,encrypted_data,iv,salt"), supabase.from("secure_notes").select("id,title,encrypted_content,iv,salt"), supabase.from("secure_wallet").select("id,title,type,encrypted_content,iv,salt")]);
+  const existing: ExistingImportItem[] = [...cached];
+  for (const item of passwords.data ?? []) try { existing.push({ id: item.id, title: item.title, type: "password", fields: parsePayload(await decryptText(item.encrypted_data, item.salt, item.iv, masterPassword)) }); } catch {}
+  for (const item of notes.data ?? []) try { existing.push({ id: item.id, title: item.title, type: "note", fields: { content: await decryptText(item.encrypted_content, item.salt, item.iv, masterPassword) } }); } catch {}
+  for (const item of wallet.data ?? []) try { existing.push({ id: item.id, title: item.title, type: item.type === "bank_account" ? "bank_account" : "card", fields: parsePayload(await decryptText(item.encrypted_content, item.salt, item.iv, masterPassword)) }); } catch {}
+  return [...new Map(existing.map((item) => [`${item.type}:${item.id}`, item])).values()];
+}
+
+function parsePayload(value?: string): Record<string, string> { if (!value) return {}; try { const parsed = JSON.parse(value) as Record<string, unknown>; return Object.fromEntries(Object.entries(parsed).map(([key, item]) => [key, typeof item === "string" ? item : ""])); } catch { return { content: value }; } }
