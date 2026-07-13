@@ -6,8 +6,9 @@ import { AccountSettings } from "@/components/settings/AccountSettings";
 import { AppearanceSettings } from "@/components/settings/AppearanceSettings";
 import { SettingsNavigation } from "@/components/settings/SettingsNavigation";
 import { SETTINGS_SECTIONS, type SettingsProps, type SettingsSection } from "@/components/settings/settings-types";
-import { StateView } from "@/components/ui/state-view";
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
+import { BackupSettings } from "@/components/settings/BackupSettings";
+import { DangerSettings } from "@/components/settings/DangerSettings";
 
 export function Settings({ masterPassword, onLock }: SettingsProps) {
   const [selected, setSelected] = useState<SettingsSection | null>(null);
@@ -24,8 +25,8 @@ export function Settings({ masterPassword, onLock }: SettingsProps) {
           {active === "account" && <AccountSettings />}
           {active === "appearance" && <AppearanceSettings />}
           {active === "security" && <SecuritySettings masterPassword={masterPassword} onLock={onLock} />}
-          {active === "backup" && <StateView kind="empty" title="Data & Backup" description="Encrypted export controls are added after the security foundation." compact />}
-          {active === "danger" && <StateView kind="unsupported" title="Danger Zone" description="Destructive actions remain in the existing Profile until fresh local verification is connected." compact />}
+          {active === "backup" && <BackupSettings />}
+          {active === "danger" && <DangerSettings masterPassword={masterPassword} />}
           <span className="sr-only">{meta.label}</span>
         </main>
       </div>
