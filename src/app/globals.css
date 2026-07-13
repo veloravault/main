@@ -257,6 +257,40 @@
 @media (prefers-reduced-motion: reduce) {
   .system-motion, .system-motion * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+
+.adaptive-sheet { display: flex !important; max-height: min(86dvh, 820px); grid-template-columns: minmax(0, 1fr); flex-direction: column; gap: 0 !important; overflow: hidden; border-radius: 24px !important; padding: 0 !important; background: var(--elevated-bg) !important; }
+.adaptive-sheet-grabber { display: none; }
+.adaptive-sheet-heading { flex: 0 0 auto; padding: 22px 56px 18px 22px; border-bottom: 1px solid var(--separator); }
+.adaptive-sheet-heading [data-slot="dialog-title"] { font-size: 19px; font-weight: 700; letter-spacing: -.025em; line-height: 1.2; }
+.adaptive-sheet-heading [data-slot="dialog-description"] { margin-top: 5px; line-height: 1.4; }
+.adaptive-sheet-body { min-height: 0; flex: 1 1 auto; overflow-x: hidden; overflow-y: auto; padding: 20px 22px; overscroll-behavior: contain; }
+.adaptive-sheet-footer { display: flex; flex: 0 0 auto; align-items: center; justify-content: flex-end; gap: 10px; border-top: 1px solid var(--separator); padding: 14px 22px calc(14px + env(safe-area-inset-bottom, 0px)); background: color-mix(in srgb, var(--elevated-bg) 92%, var(--grouped-bg)); }
+
+.vault-master-detail { display: grid; min-width: 0; gap: 20px; }
+.vault-master-list, .vault-master-pane { min-width: 0; }
+.vault-master-pane { display: none; }
+
+.vault-context-menu { position: fixed; z-index: 200; display: grid; width: 220px; overflow: hidden; border: 1px solid var(--separator); border-radius: 14px; padding: 5px; background: color-mix(in srgb, var(--elevated-bg) 94%, transparent); box-shadow: var(--apple-shadow); backdrop-filter: saturate(180%) blur(24px); }
+.vault-context-action { display: flex; min-height: 42px; width: 100%; align-items: center; gap: 10px; border-radius: 10px; padding: 0 11px; color: var(--foreground); font-size: 14px; font-weight: 560; text-align: left; }
+.vault-context-action:hover { background: var(--fill-tertiary); }
+.vault-context-action.is-destructive { color: var(--destructive); }
+.vault-context-action:disabled { cursor: not-allowed; opacity: .42; }
+.vault-context-actions { display: grid; gap: 4px; }
+
+@media (min-width: 768px) {
+  .vault-master-detail { grid-template-columns: minmax(280px, .82fr) minmax(360px, 1.18fr); gap: 24px; align-items: start; }
+  .vault-master-pane { display: block; position: sticky; top: 20px; }
+}
+
+@media (max-width: 767px) {
+  .adaptive-sheet { --tw-translate-x: 0px !important; --tw-translate-y: 0px !important; top: auto !important; right: 0 !important; bottom: 0 !important; left: 0 !important; width: 100% !important; max-width: none !important; max-height: min(88dvh, 760px); transform: none !important; border-radius: 28px 28px 0 0 !important; }
+  .adaptive-sheet-grabber { position: absolute; z-index: 3; top: 8px; left: 50%; display: block; width: 36px; height: 5px; transform: translateX(-50%); border-radius: 999px; background: color-mix(in srgb, var(--muted-foreground) 38%, transparent); }
+  .adaptive-sheet-heading { padding: 34px 56px 16px 20px; }
+  .adaptive-sheet-body { padding: 18px 20px; }
+  .adaptive-sheet-footer { padding-right: 20px; padding-left: 20px; }
+  .vault-context-menu { display: none; }
+  .vault-context-action { min-height: 52px; border-radius: 13px; font-size: 16px; }
+}
 @media (min-width: 768px) {
   .wallet-workspace { grid-template-columns: minmax(0, 640px) minmax(300px, 360px); }
   .apple-bank-master-detail { display: grid; grid-template-columns: minmax(280px, .82fr) minmax(360px, 1.18fr); align-items: start; gap: 24px; }
