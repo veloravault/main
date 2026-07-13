@@ -43,7 +43,7 @@ export function BackupSettings() {
           <div><h3>Telkar Vault backup</h3><p>The export contains ciphertext, encryption metadata and encrypted document blobs. Your existing master key is required to read restored data.</p></div>
           <Button onClick={() => setConfirmOpen(true)} className="settings-primary-button"><DownloadIcon />Export backup</Button>
         </div>
-        <div className="settings-backup-facts">
+        <div className="settings-backup-facts" style={{ margin: 0 }}>
           <div><ShieldCheckIcon aria-hidden="true" /><span><strong>Encrypted only</strong><small>No decrypted passwords, notes, account numbers or document contents are written to disk.</small></span></div>
           <div><CheckCircleIcon aria-hidden="true" /><span><strong>Integrity protected</strong><small>A SHA-256 digest is included so a future restore flow can detect a damaged file.</small></span></div>
         </div>
