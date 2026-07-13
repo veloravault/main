@@ -169,7 +169,6 @@
 .wallet-filter-empty { display: grid; min-height: 240px; place-content: center; justify-items: center; gap: 12px; color: var(--muted-foreground); text-align: center; }
 .wallet-filter-empty button { min-height: 40px; border-radius: 999px; padding: 0 15px; background: var(--fill-tertiary); color: var(--system-blue); font-size: 13px; font-weight: 650; }
 .apple-bank-list { max-width: 760px; margin-inline: auto; }
-.apple-bank-list > * + * { border-top: .5px solid var(--separator); }
 .apple-bank-row { cursor: pointer; transition: background-color 140ms ease; }
 .apple-bank-row:active { background: color-mix(in srgb, var(--elevated-bg) 90%, var(--system-blue)) !important; }
 .apple-bank-detail { background: var(--elevated-bg); border: 1px solid color-mix(in srgb, var(--separator) 60%, transparent); border-radius: 22px; padding: 16px; box-shadow: 0 12px 32px rgba(0,0,0,.07); }
