@@ -22,7 +22,7 @@ export function LegalSettings() {
             <header className="flex items-center gap-2 mb-6">
               <button 
                 onClick={() => setActivePolicy(null)}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors -ml-2 active:scale-95"
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors active:scale-95"
                 aria-label="Go back"
               >
                 <ArrowLeftIcon className="w-5 h-5" />
@@ -81,7 +81,7 @@ export function LegalSettings() {
             <header className="flex items-center gap-2 mb-6">
               <button 
                 onClick={() => setActivePolicy(null)}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors -ml-2 active:scale-95"
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors active:scale-95"
                 aria-label="Go back"
               >
                 <ArrowLeftIcon className="w-5 h-5" />
@@ -125,7 +125,7 @@ export function LegalSettings() {
             <header className="flex items-center gap-2 mb-6">
               <button 
                 onClick={() => setActivePolicy(null)}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors -ml-2 active:scale-95"
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors active:scale-95"
                 aria-label="Go back"
               >
                 <ArrowLeftIcon className="w-5 h-5" />
