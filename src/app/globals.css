@@ -213,7 +213,7 @@
 .vault-create-form { display: contents; }
 .vault-create-sheet .adaptive-sheet-body { padding: 4px 22px 20px; }
 .vault-create-sheet .adaptive-sheet-footer { position: sticky; bottom: 0; z-index: 2; background: color-mix(in srgb,var(--card) 88%,transparent); backdrop-filter: blur(24px) saturate(1.4); }
-.vault-system-surface { --vault-system-grouped: color-mix(in srgb,var(--card) 92%,var(--background)); --vault-system-elevated: color-mix(in srgb,var(--card) 82%,var(--muted)); }
+.vault-system-surface { --vault-system-grouped: color-mix(in srgb,var(--card) 92%,var(--background)); --vault-system-elevated: color-mix(in srgb,var(--card) 82%,var(--muted)); background: transparent; }
 .vault-system-surface .apple-grouped-list,
 .vault-system-surface .apple-detail-pane,
 .vault-system-surface .apple-bank-detail { background: var(--vault-system-grouped); border-color: color-mix(in srgb,var(--border) 76%,transparent); }
@@ -419,7 +419,6 @@
   outline-offset: 2px;
 }
 
-.vault-system-surface { background: var(--grouped-bg); }
 .dark .vault-system-surface { --grouped-bg: var(--surface-page-dark); --elevated-bg: var(--surface-group-dark); --popover: var(--surface-elevated-dark); }
 
 .vault-toast-region { position: fixed; z-index: 9999; top: max(16px, env(safe-area-inset-top)); left: 50%; display: flex; width: min(100% - 24px, 390px); transform: translateX(-50%); flex-direction: column; gap: 8px; pointer-events: none; }
