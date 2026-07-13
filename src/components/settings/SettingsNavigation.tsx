@@ -9,7 +9,7 @@ export function SettingsNavigation(props: {
   onSelect: (section: SettingsSection) => void;
 }) {
   return (
-    <nav className="settings-navigation apple-grouped-list" aria-label="Settings sections">
+    <nav className="settings-navigation flex flex-col gap-1 p-2" aria-label="Settings sections">
       {SETTINGS_SECTIONS.map((section) => {
         const Icon = section.icon;
         const active = props.selected === section.id;
@@ -17,7 +17,7 @@ export function SettingsNavigation(props: {
           <button
             key={section.id}
             type="button"
-            className={`settings-navigation-row system-interactive relative ${active ? "is-active !bg-transparent" : ""} ${section.destructive ? "is-destructive" : ""}`}
+            className={`settings-navigation-row system-interactive relative !border-none !bg-transparent rounded-[10px] ${active ? "is-active text-primary" : "text-foreground"} ${section.destructive && !active ? "!text-destructive" : ""}`}
             onClick={() => props.onSelect(section.id)}
             aria-current={active ? "page" : undefined}
           >
