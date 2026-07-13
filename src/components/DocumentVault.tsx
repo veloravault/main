@@ -388,7 +388,7 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
                     </button>
                   )}
                 </div>
-                <div className="apple-grouped-list">
+                <div className="flex flex-col gap-1">
                   <AnimatePresence initial={false}>
                   {categoryDocs
                     .sort((a, b) => a.title.localeCompare(b.title))
@@ -410,11 +410,19 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0, height: 0 }}
-                    className={`bg-card transition-all duration-300 overflow-hidden ${!isLast ? 'border-b border-border' : ''}`}
+                    className={`relative overflow-hidden rounded-[10px] group transition-colors ${!isExpanded || expandedId !== doc.id ? 'hover:bg-black/5 dark:hover:bg-white/5' : ''} ${isSelectionMode && isSelected ? 'ring-2 ring-primary/30 bg-primary/5' : 'bg-transparent'}`}
                   >
+                    {isExpanded && !isSelectionMode && (
+                      <motion.div
+                        layoutId="document-active-bg"
+                        className="absolute inset-0 bg-primary/10 rounded-[10px]"
+                        transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                        style={{ zIndex: 0 }}
+                      />
+                    )}
                     <button
                       onClick={(e) => isSelectionMode ? toggleSelection(doc.id, e) : setExpandedId(isExpanded ? null : doc.id)}
-                      className="flex items-center justify-between p-4 sm:p-5 w-full focus:outline-none cursor-default group"
+                      className="relative z-10 flex items-center justify-between p-4 sm:p-5 w-full focus:outline-none cursor-default group bg-transparent"
                     >
                     <div className="flex items-center gap-4 min-w-0">
                       {isSelectionMode && (
@@ -443,12 +451,12 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
                       transition={{ duration: 0.3, ease: "easeInOut" }}
                       className="overflow-hidden"
                     >
-                      <div className="px-5 pb-5">
+                      <div className="relative z-10 px-5 pb-5">
                         <div className="pt-4 border-t border-border">
                           
                           <div className="flex flex-row gap-3">
                             <button
-                              className="flex-1 py-3 px-4 rounded-xl text-[15px] font-semibold text-foreground bg-secondary hover:bg-muted active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                              className="flex-1 py-3 px-4 rounded-xl text-[15px] font-semibold text-foreground bg-secondary hover:bg-black/10 dark:hover:bg-white/10 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                               onClick={() => handlePreview(doc)}
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>

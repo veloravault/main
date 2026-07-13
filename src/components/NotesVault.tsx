@@ -327,7 +327,7 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
                     </button>
                   )}
                 </div>
-                <div className="apple-grouped-list">
+                <div className="flex flex-col gap-1">
                   <AnimatePresence initial={false}>
                   {categoryItems
                     .sort((a, b) => a.title.localeCompare(b.title))
@@ -349,11 +349,19 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0, height: 0 }}
                     key={item.id} 
-                    className={`bg-card transition-all duration-300 overflow-hidden ${!isLast ? 'border-b border-border' : ''}`}
+                    className={`relative overflow-hidden rounded-[10px] group transition-colors ${!isExpanded || expandedId !== item.id ? 'hover:bg-black/5 dark:hover:bg-white/5' : ''} ${isSelectionMode && isSelected ? 'ring-2 ring-primary/30 bg-primary/5' : 'bg-transparent'}`}
                   >
+                    {isExpanded && !isSelectionMode && (
+                      <motion.div
+                        layoutId="note-active-bg"
+                        className="absolute inset-0 bg-primary/10 rounded-[10px]"
+                        transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                        style={{ zIndex: 0 }}
+                      />
+                    )}
                     <button
                       onClick={(e) => isSelectionMode ? toggleSelection(item.id, e) : setExpandedId(isExpanded ? null : item.id)}
-                      className="flex items-center justify-between p-4 sm:p-5 w-full focus:outline-none cursor-default group"
+                      className="relative z-10 flex items-center justify-between p-4 sm:p-5 w-full focus:outline-none cursor-default group bg-transparent"
                     >
                     <div className="flex items-center gap-4 min-w-0">
                       {isSelectionMode && (
@@ -382,7 +390,7 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
                       transition={{ duration: 0.3, ease: "easeInOut" }}
                       className="overflow-hidden"
                     >
-                      <div className="px-5 pb-5">
+                      <div className="relative z-10 px-5 pb-5">
                         <div className="pt-4 border-t border-border">
                           <div className="flex flex-col gap-2 mb-6">
                             <div className="relative group/input">

@@ -589,8 +589,8 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
                   )}
                 </div>
 
-                {/* Inset grouped list card */}
-                <div className="apple-grouped-list">
+                {/* Master list container */}
+                <div className="flex flex-col gap-1">
                   <AnimatePresence initial={false}>
                   {categoryItems
                     .sort((a, b) => a.title.localeCompare(b.title))
@@ -614,14 +614,23 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
-                          className={idx < arr.length - 1 || isExpanded ? "border-b border-border" : ""}
+                          className=""
                         >
                           {/* Row */}
                           <button
                             key="row-btn"
                             onClick={(e) => isSelectionMode ? toggleSelection(item.id, e) : setExpandedId(isExpanded ? null : item.id)}
-                            className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-colors"
+                            className={`relative w-full text-left overflow-hidden rounded-[10px] bg-transparent group transition-colors ${!isExpanded || expandedId !== item.id ? 'hover:bg-black/5 dark:hover:bg-white/5' : ''} ${isSelectionMode && isSelected ? 'ring-2 ring-primary/30 bg-primary/5' : ''}`}
                           >
+                            {isExpanded && !isSelectionMode && (
+                              <motion.div
+                                layoutId="password-active-bg"
+                                className="absolute inset-0 bg-primary/10 rounded-[10px]"
+                                transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                                style={{ zIndex: 0 }}
+                              />
+                            )}
+                            <div className="relative z-10 flex items-center gap-3 w-full px-4 py-3">
                             {/* Selection checkbox */}
                             {isSelectionMode && (
                               <div className="shrink-0 text-primary">
@@ -676,6 +685,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
                                   strokeWidth={2}
                                 />
                               )}
+                            </div>
                             </div>
                           </button>
 

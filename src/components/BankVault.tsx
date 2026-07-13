@@ -466,7 +466,7 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
         ) : items.length === 0 ? (
           <EmptyState type="bank" onCta={() => setIsAddOpen(true)} />
         ) : (
-          <motion.div layout className="apple-bank-list apple-master-list apple-grouped-list" aria-label="Bank accounts">
+          <motion.div layout className="apple-bank-list apple-master-list flex flex-col gap-1" aria-label="Bank accounts">
             <AnimatePresence>
             {items.map((item) => (
               <ContextActions key={item.id} title={item.title} actions={[
@@ -485,7 +485,7 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
               >
                   <button
                     type="button"
-                    className={`apple-bank-row apple-grouped-row w-full relative overflow-hidden group text-left ${isSelectionMode && selectedIds.has(item.id) ? 'ring-2 ring-primary/30' : ''}`}
+                    className={`w-full relative overflow-hidden group text-left px-3 py-3 min-h-[58px] rounded-[10px] transition-colors ${!expandedBankId || expandedBankId !== item.id ? 'hover:bg-black/5 dark:hover:bg-white/5' : ''} ${isSelectionMode && selectedIds.has(item.id) ? 'ring-2 ring-primary/30 bg-primary/5' : 'bg-transparent'}`}
                     onClick={(e) => {
                       if (isSelectionMode) toggleSelection(item.id, e); else setExpandedBankId(expandedBankId === item.id ? null : item.id);
                     }}
@@ -495,9 +495,9 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
                     {expandedBankId === item.id && !isSelectionMode && (
                       <motion.div
                         layoutId="bank-active-bg"
-                        className="absolute bg-primary/10 rounded-[12px]"
-                        style={{ top: '6px', bottom: '6px', left: '6px', right: '6px', zIndex: 0 }}
-                        transition={{ type: "spring", bounce: 0.25, duration: 0.4 }}
+                        className="absolute inset-0 bg-primary/10 rounded-[10px]"
+                        transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                        style={{ zIndex: 0 }}
                       />
                     )}
                     {isSelectionMode && (
