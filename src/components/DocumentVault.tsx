@@ -554,7 +554,29 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
                </div>
             ) : previewModal.url ? (
                previewModal.doc?.title.toLowerCase().endsWith('.pdf') ? (
-                 <iframe src={previewModal.url} className="w-full h-full border-0 bg-background" title={previewModal.doc?.title} />
+                 <>
+                   {/* Desktop Preview */}
+                   <iframe src={previewModal.url} className="hidden md:block w-full h-full border-0 bg-background" title={previewModal.doc?.title} />
+                   
+                   {/* Mobile Fallback */}
+                   <div className="flex md:hidden flex-col items-center justify-center w-full h-full p-6 text-center space-y-4 bg-background">
+                     <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                       <FileIcon className="w-8 h-8 text-primary" />
+                     </div>
+                     <div>
+                       <h3 className="font-semibold text-lg line-clamp-2 px-4">{previewModal.doc?.title}</h3>
+                       <p className="text-sm text-muted-foreground mt-2 max-w-[250px] mx-auto">PDF previews are limited on mobile devices. Open in a new tab to view or share.</p>
+                     </div>
+                     <a 
+                       href={previewModal.url} 
+                       target="_blank" 
+                       rel="noreferrer" 
+                       className="mt-4 px-8 py-3 bg-primary text-primary-foreground rounded-full font-medium active:scale-95 transition-transform shadow-sm flex items-center gap-2"
+                     >
+                       Open PDF
+                     </a>
+                   </div>
+                 </>
                ) : (
                  <div className="w-full h-full p-4 flex items-center justify-center min-w-full min-h-full transition-transform duration-300 ease-out" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}>
                    <img src={previewModal.url} className="max-w-full max-h-full object-contain drop-shadow-xl rounded-lg" alt="preview" />
