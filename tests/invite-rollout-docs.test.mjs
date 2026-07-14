@@ -1,9 +1,17 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 
 function read(path) {
   return readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+}
+
+function sourceFiles(directory = new URL("../src/", import.meta.url)) {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const url = new URL(entry.name, directory);
+    if (entry.isDirectory()) return sourceFiles(new URL(`${url.href}/`));
+    return /\.(?:ts|tsx)$/.test(entry.name) ? [url] : [];
+  });
 }
 
 test("environment example prefers current Supabase keys and labels legacy fallbacks", () => {
@@ -97,4 +105,22 @@ test("README explains local setup, invite architecture, and master-key boundary"
   assert.match(readme, /request-access[\s\S]*admin[\s\S]*approve[\s\S]*accept-invite[\s\S]*onboarding[\s\S]*vault/i);
   assert.match(readme, /master key[\s\S]*client memory[\s\S]*(never|not)[\s\S]*(Auth|network|storage)/i);
   assert.match(readme, /docs\/invite-only-rollout\.md/);
+});
+
+test("every legacy privileged-key consumer prefers the modern Supabase secret", () => {
+  const consumers = sourceFiles().filter((url) => readFileSync(url, "utf8").includes("SUPABASE_SERVICE_ROLE_KEY"));
+  assert.ok(consumers.length > 0, "expected at least one migration-compatible privileged consumer");
+
+  for (const url of consumers) {
+    assert.match(
+      readFileSync(url, "utf8"),
+      /process\.env\.SUPABASE_SECRET_KEY\s*\?\?\s*process\.env\.SUPABASE_SERVICE_ROLE_KEY/,
+      `${url.pathname} must prefer SUPABASE_SECRET_KEY before its legacy fallback`,
+    );
+  }
+
+  assert.match(
+    read("docs/invite-only-rollout.md"),
+    /retire[\s\S]*legacy[\s\S]*(?:rg|grep)[\s\S]*build[\s\S]*runtime verification/i,
+  );
 });

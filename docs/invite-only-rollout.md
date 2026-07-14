@@ -238,11 +238,12 @@ Also verify the landing page, request form, login, invitation screen, onboarding
 
 Only after the controlled invitation, denial matrix, RLS checks, browser review, logs, and monitoring all pass in production:
 
-1. Confirm every deployment uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_SECRET_KEY`.
-2. Remove `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` from deployment environments.
-3. Redeploy and rerun sign-in, request, approval, onboarding, vault, RLS, and denial checks.
-4. Disable legacy JWT-based API keys in Supabase Settings > API Keys according to the current platform migration procedure.
-5. Monitor Auth, API, database, email, and application error rates through the rollback window.
+1. Run `rg "SUPABASE_SERVICE_ROLE_KEY" src` and confirm every remaining server consumer uses it only after `SUPABASE_SECRET_KEY ??` as a temporary fallback. Then run a fresh production build and runtime verification with the legacy variables absent.
+2. Confirm every deployment and server job uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_SECRET_KEY` successfully under that verification.
+3. Remove `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` from deployment environments.
+4. Redeploy and rerun sign-in, request, approval, account deletion, onboarding, vault, RLS, and denial checks.
+5. Disable legacy JWT-based API keys in Supabase Settings > API Keys according to the current platform migration procedure.
+6. Monitor Auth, API, database, email, and application error rates through the rollback window.
 
 Do not disable legacy keys while any deployment or job still depends on them.
 

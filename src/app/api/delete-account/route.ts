@@ -23,10 +23,10 @@ export async function POST(request: NextRequest) {
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!url || !serviceRoleKey) return serverError();
+    const secret = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url || !secret) return serverError();
 
-    const admin = createClient(url, serviceRoleKey, {
+    const admin = createClient(url, secret, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
