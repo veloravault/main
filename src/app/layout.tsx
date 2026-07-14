@@ -29,7 +29,8 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "Telkar Vault",
-  description: "Your encrypted, private, end-to-end secure vault.",
+  description:
+    "A private, encrypted home for passwords, documents, notes and financial essentials.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
