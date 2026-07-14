@@ -7,8 +7,10 @@ import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 import { savePinForMaster, hasPinLock } from "@/components/PinLock";
 import { isBiometricsSupported, hasBiometricsEnabled, enableBiometrics, unlockWithBiometrics } from "@/lib/biometrics";
+import { useVaultKey } from "@/components/auth/VaultKeyProvider";
 
 export function Auth({ onLogin }: { onLogin: (masterPass: string) => void }) {
+  const { authenticatedUserId } = useVaultKey();
   const [loading, setLoading] = useState(false);
   const [masterPassword, setMasterPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -55,12 +57,18 @@ export function Auth({ onLogin }: { onLogin: (masterPass: string) => void }) {
   const [savingPin, setSavingPin] = useState(false);
 
   const [isBioSupported] = useState(() => isBiometricsSupported());
-  const [hasBio] = useState(() => hasBiometricsEnabled());
+  const hasBio = authenticatedUserId ? hasBiometricsEnabled(authenticatedUserId) : false;
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    if (!authenticatedUserId) {
+      setError("Your authenticated account could not be verified.");
+      setLoading(false);
+      return;
+    }
 
     if (!masterPassword || masterPassword.length < 8) {
       setError("Master key must be at least 8 characters long.");
@@ -69,7 +77,7 @@ export function Auth({ onLogin }: { onLogin: (masterPass: string) => void }) {
     }
 
     // If no PIN is set yet, OR if biometrics are supported but not set up, offer to set up.
-    if (!hasPinLock() || (isBioSupported && !hasBio)) {
+    if (!hasPinLock(authenticatedUserId) || (isBioSupported && !hasBio)) {
       setPendingMaster(masterPassword);
       setPinSetupPhase("prompt");
       setLoading(false);
@@ -82,6 +90,11 @@ export function Auth({ onLogin }: { onLogin: (masterPass: string) => void }) {
 
   // ── PIN setup helpers ─────────────────────────────────────────────────────
   const handlePinDigit = (digit: string, isConfirm: boolean) => {
+    if (!authenticatedUserId) {
+      setPinError("Your authenticated account could not be verified.");
+      return;
+    }
+    const userId = authenticatedUserId;
     const current = isConfirm ? pinConfirmDigits : pinDigits;
     const setter = isConfirm ? setPinConfirmDigits : setPinDigits;
     if (current.length >= 6) return;
@@ -103,7 +116,7 @@ export function Auth({ onLogin }: { onLogin: (masterPass: string) => void }) {
         } else {
           // Save and unlock
           setSavingPin(true);
-          savePinForMaster(pinStr, pendingMaster!).then(() => {
+          savePinForMaster(pinStr, pendingMaster!, userId).then(() => {
             setSavingPin(false);
             onLogin(pendingMaster!);
           });
@@ -147,7 +160,8 @@ export function Auth({ onLogin }: { onLogin: (masterPass: string) => void }) {
                 <button
                   onClick={async () => {
                     try {
-                      await enableBiometrics(pendingMaster!);
+                      if (!authenticatedUserId) throw new Error("Your authenticated account could not be verified.");
+                      await enableBiometrics(pendingMaster!, authenticatedUserId);
                       onLogin(pendingMaster!);
                     } catch (error: unknown) {
                       setPinError(error instanceof Error ? error.message : "Biometric enrollment failed.");
@@ -283,7 +297,8 @@ export function Auth({ onLogin }: { onLogin: (masterPass: string) => void }) {
             <button
               onClick={async () => {
                 try {
-                  const masterKey = await unlockWithBiometrics();
+                  if (!authenticatedUserId) throw new Error("Your authenticated account could not be verified.");
+                  const masterKey = await unlockWithBiometrics(authenticatedUserId);
                   onLogin(masterKey);
                 } catch (error: unknown) {
                   setError(error instanceof Error ? error.message : "Biometric unlock failed.");

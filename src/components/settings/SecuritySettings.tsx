@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { disableBiometrics, enableBiometrics, hasBiometricsEnabled, isBiometricsSupported } from "@/lib/biometrics";
 import { loadVaultPreferences, saveVaultPreferences, subscribeVaultPreferences, type AutoLockMinutes, type ClipboardClearSeconds, type VaultPreferences } from "@/lib/vaultPreferences";
 import { useToast } from "@/components/Toast";
+import { useVaultKey } from "@/components/auth/VaultKeyProvider";
 
 const AUTO_LOCK: Array<{ value: AutoLockMinutes; label: string }> = [
   { value: 0, label: "Immediately" }, { value: 1, label: "1 minute" }, { value: 5, label: "5 minutes" }, { value: 15, label: "15 minutes" }, { value: 30, label: "30 minutes" },
@@ -23,6 +24,7 @@ function currentDeviceLabel() {
 }
 
 export function SecuritySettings({ masterPassword, onLock }: { masterPassword: string; onLock: () => void }) {
+  const { authenticatedUserId } = useVaultKey();
   const [preferences, setPreferences] = useState<VaultPreferences>(() => loadVaultPreferences());
   const [bioEnabled, setBioEnabled] = useState(false);
   const [bioSupported, setBioSupported] = useState(false);
@@ -36,10 +38,10 @@ export function SecuritySettings({ masterPassword, onLock }: { masterPassword: s
   useEffect(() => {
     queueMicrotask(() => {
       setBioSupported(isBiometricsSupported());
-      setBioEnabled(hasBiometricsEnabled());
+      setBioEnabled(authenticatedUserId ? hasBiometricsEnabled(authenticatedUserId) : false);
     });
     void supabase.auth.getUser().then(({ data }) => setLastSignIn(data.user?.last_sign_in_at ?? null));
-  }, []);
+  }, [authenticatedUserId]);
 
   const updatePreferences = (patch: Partial<VaultPreferences>) => setPreferences(saveVaultPreferences(patch));
 
@@ -47,12 +49,13 @@ export function SecuritySettings({ masterPassword, onLock }: { masterPassword: s
     setBioWorking(true);
     setError(null);
     try {
+      if (!authenticatedUserId) throw new Error("Your authenticated account could not be verified.");
       if (bioEnabled) {
-        disableBiometrics();
+        disableBiometrics(authenticatedUserId);
         setBioEnabled(false);
         toast("Biometric unlock disabled on this device", "info");
       } else {
-        await enableBiometrics(masterPassword);
+        await enableBiometrics(masterPassword, authenticatedUserId);
         setBioEnabled(true);
         toast("Biometric unlock enabled", "success");
       }
@@ -85,7 +88,7 @@ export function SecuritySettings({ masterPassword, onLock }: { masterPassword: s
           </select>
         </SettingsControl>
         <SettingsControl icon={FingerprintIcon} title="Face ID / Touch ID" description={bioSupported ? (bioEnabled ? "Enabled on this device" : "Use this device to unlock faster") : "Unavailable in this browser or context"}>
-          <button type="button" className={`settings-toggle system-interactive ${bioEnabled ? "is-on" : ""}`} role="switch" aria-checked={bioEnabled} aria-label="Toggle biometric unlock" disabled={!bioSupported || bioWorking} onClick={toggleBiometrics}>{bioWorking ? <Loader2Icon className="animate-spin" /> : <span />}</button>
+          <button type="button" className={`settings-toggle system-interactive ${bioEnabled ? "is-on" : ""}`} role="switch" aria-checked={bioEnabled} aria-label="Toggle biometric unlock" disabled={!authenticatedUserId || !bioSupported || bioWorking} onClick={toggleBiometrics}>{bioWorking ? <Loader2Icon className="animate-spin" /> : <span />}</button>
         </SettingsControl>
         <SettingsControl icon={ClipboardIcon} title="Clear clipboard" description="Only clears a secret if it is still the latest copied value.">
           <select value={preferences.clipboardClearSeconds} onChange={(event) => updatePreferences({ clipboardClearSeconds: Number(event.target.value) as ClipboardClearSeconds })} aria-label="Clipboard clearing duration">

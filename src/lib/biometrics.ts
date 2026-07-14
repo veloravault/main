@@ -1,8 +1,11 @@
 "use client";
 
+import { canUseVaultWrapper, requireAuthenticatedVaultUserId, requireVaultWrapperOwner } from "@/lib/vaultKeyOwnership";
+
 // Keys for localStorage
 const BIO_ENCRYPTED_KEY = "vault_bio_encrypted_master";
 const BIO_CRED_ID = "vault_bio_credential_id";
+const BIO_OWNER_KEY = "vault_bio_owner_user_id";
 
 function base64urlToBuffer(base64url: string): ArrayBuffer {
   const padding = "=".repeat((4 - (base64url.length % 4)) % 4);
@@ -68,21 +71,25 @@ export function isBiometricsSupported(): boolean {
          window.isSecureContext;
 }
 
-export function hasBiometricsEnabled(): boolean {
+export function hasBiometricsEnabled(userId: string): boolean {
   return !!(
     typeof window !== "undefined" &&
     localStorage.getItem(BIO_ENCRYPTED_KEY) &&
-    localStorage.getItem(BIO_CRED_ID)
+    localStorage.getItem(BIO_CRED_ID) &&
+    canUseVaultWrapper(localStorage.getItem(BIO_OWNER_KEY), userId)
   );
 }
 
-export function disableBiometrics(): void {
+export function disableBiometrics(userId: string): void {
   if (typeof window === "undefined") return;
+  requireVaultWrapperOwner(localStorage.getItem(BIO_OWNER_KEY), userId, "Biometric");
   localStorage.removeItem(BIO_ENCRYPTED_KEY);
   localStorage.removeItem(BIO_CRED_ID);
+  localStorage.removeItem(BIO_OWNER_KEY);
 }
 
-export async function enableBiometrics(masterKey: string): Promise<void> {
+export async function enableBiometrics(masterKey: string, userId: string): Promise<void> {
+  const ownerUserId = requireAuthenticatedVaultUserId(userId);
   if (!isBiometricsSupported()) throw new Error("Biometrics not supported on this device/browser.");
 
   // Generate a secure 32-byte (256-bit) AES key
@@ -127,13 +134,15 @@ export async function enableBiometrics(masterKey: string): Promise<void> {
   localStorage.setItem(BIO_ENCRYPTED_KEY, encryptedMaster);
   // Store the credential ID so we can specify it in the allowList later
   localStorage.setItem(BIO_CRED_ID, credential.id);
+  localStorage.setItem(BIO_OWNER_KEY, ownerUserId);
 }
 
-export async function unlockWithBiometrics(): Promise<string> {
-  if (!hasBiometricsEnabled()) throw new Error("Biometrics not set up.");
+export async function unlockWithBiometrics(userId: string): Promise<string> {
+  requireVaultWrapperOwner(localStorage.getItem(BIO_OWNER_KEY), userId, "Biometric");
 
-  const encryptedMaster = localStorage.getItem(BIO_ENCRYPTED_KEY)!;
-  const credIdBase64url = localStorage.getItem(BIO_CRED_ID)!;
+  const encryptedMaster = localStorage.getItem(BIO_ENCRYPTED_KEY);
+  const credIdBase64url = localStorage.getItem(BIO_CRED_ID);
+  if (!encryptedMaster || !credIdBase64url) throw new Error("Biometrics not set up.");
 
   const challenge = crypto.getRandomValues(new Uint8Array(32));
 

@@ -5,12 +5,20 @@ import { motion, AnimatePresence } from "framer-motion";
 import { XCircleIcon } from "lucide-react";
 import { FaceIdIcon, AppleLockIcon } from "@/components/Icons";
 import { hasBiometricsEnabled, unlockWithBiometrics } from "@/lib/biometrics";
+import { canUseVaultWrapper, requireAuthenticatedVaultUserId, requireVaultWrapperOwner } from "@/lib/vaultKeyOwnership";
 
 const MAX_ATTEMPTS = 3;
 const PIN_STORAGE_KEY = "vault_pin_hash";
 const PIN_ENCRYPTED_KEY = "vault_pin_encrypted_master";
 const LEGACY_PIN_ITERATIONS = 100_000;
 const PIN_ITERATIONS = 600_000;
+
+type PinMetadata = {
+  hash?: string;
+  salt?: string;
+  iterations?: number;
+  ownerUserId?: string;
+};
 
 // ── Crypto helpers ────────────────────────────────────────────────────────────
 
@@ -65,19 +73,33 @@ async function decryptWithPin(cipherB64: string, pin: string, salt: string, iter
 
 // ── Public API ─────────────────────────────────────────────────────────────────
 
-export async function savePinForMaster(pin: string, masterKey: string) {
+export async function savePinForMaster(pin: string, masterKey: string, userId: string) {
+  const ownerUserId = requireAuthenticatedVaultUserId(userId);
   const salt = crypto.randomUUID();
   const pinHash = await hashPin(pin, salt, PIN_ITERATIONS);
   const encryptedMaster = await encryptWithPin(masterKey, pin, salt, PIN_ITERATIONS);
-  localStorage.setItem(PIN_STORAGE_KEY, JSON.stringify({ hash: pinHash, salt, iterations: PIN_ITERATIONS }));
+  localStorage.setItem(PIN_STORAGE_KEY, JSON.stringify({ hash: pinHash, salt, iterations: PIN_ITERATIONS, ownerUserId }));
   localStorage.setItem(PIN_ENCRYPTED_KEY, encryptedMaster);
 }
 
-export function hasPinLock(): boolean {
-  return !!(
-    typeof window !== "undefined" &&
-    localStorage.getItem(PIN_STORAGE_KEY) &&
-    localStorage.getItem(PIN_ENCRYPTED_KEY)
+function readPinMetadata(): PinMetadata | null {
+  if (typeof window === "undefined") return null;
+  const stored = localStorage.getItem(PIN_STORAGE_KEY);
+  if (!stored) return null;
+  try {
+    const parsed: unknown = JSON.parse(stored);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as PinMetadata : null;
+  } catch {
+    return null;
+  }
+}
+
+export function hasPinLock(userId: string): boolean {
+  const metadata = readPinMetadata();
+  return Boolean(
+    metadata &&
+    localStorage.getItem(PIN_ENCRYPTED_KEY) &&
+    canUseVaultWrapper(metadata.ownerUserId, userId)
   );
 }
 
@@ -86,15 +108,15 @@ export function clearPinLock() {
   localStorage.removeItem(PIN_ENCRYPTED_KEY);
 }
 
-export async function verifyPinAndRecoverMaster(pin: string): Promise<string> {
-  const stored = localStorage.getItem(PIN_STORAGE_KEY);
+export async function verifyPinAndRecoverMaster(pin: string, userId: string): Promise<string> {
+  const parsed = readPinMetadata();
   const encryptedMaster = localStorage.getItem(PIN_ENCRYPTED_KEY);
-  if (!stored || !encryptedMaster) {
+  if (!parsed || !encryptedMaster) {
     throw new Error("PIN unlock is not configured on this device.");
   }
 
   try {
-    const parsed = JSON.parse(stored) as { hash?: string; salt?: string; iterations?: number };
+    const ownerUserId = requireVaultWrapperOwner(parsed.ownerUserId, userId, "PIN");
     if (!parsed.hash || !parsed.salt) throw new Error("Invalid PIN enrollment.");
     const iterations = parsed.iterations ?? LEGACY_PIN_ITERATIONS;
     if (!Number.isSafeInteger(iterations) || iterations < LEGACY_PIN_ITERATIONS || iterations > PIN_ITERATIONS) {
@@ -114,7 +136,7 @@ export async function verifyPinAndRecoverMaster(pin: string): Promise<string> {
     }
 
     const masterKey = await decryptWithPin(encryptedMaster, pin, parsed.salt, iterations);
-    if (iterations < PIN_ITERATIONS) await savePinForMaster(pin, masterKey);
+    if (iterations < PIN_ITERATIONS) await savePinForMaster(pin, masterKey, ownerUserId);
     localStorage.removeItem("vault_pin_attempts");
     return masterKey;
   } catch (error) {
@@ -126,11 +148,12 @@ export async function verifyPinAndRecoverMaster(pin: string): Promise<string> {
 // ── PinLock Component ──────────────────────────────────────────────────────────
 
 interface PinLockProps {
+  authenticatedUserId: string;
   onUnlock: (masterKey: string) => void;
   onFallback: () => void;  // Called when user wants to use full login
 }
 
-export function PinLock({ onUnlock, onFallback }: PinLockProps) {
+export function PinLock({ authenticatedUserId, onUnlock, onFallback }: PinLockProps) {
   const [digits, setDigits] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [attempts, setAttempts] = useState(() => {
@@ -141,7 +164,7 @@ export function PinLock({ onUnlock, onFallback }: PinLockProps) {
   const [shake, setShake] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  const [hasBio] = useState(() => hasBiometricsEnabled());
+  const hasBio = hasBiometricsEnabled(authenticatedUserId);
 
   // Read attempts from localStorage so they persist across refreshes
   useEffect(() => {
@@ -177,14 +200,14 @@ export function PinLock({ onUnlock, onFallback }: PinLockProps) {
   const verifyPin = async (pin: string) => {
     setChecking(true);
     try {
-      const masterKey = await verifyPinAndRecoverMaster(pin);
+      const masterKey = await verifyPinAndRecoverMaster(pin, authenticatedUserId);
       onUnlock(masterKey);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to verify PIN. Use your master key.";
       const nextAttempts = Number.parseInt(localStorage.getItem("vault_pin_attempts") || "0", 10);
       setAttempts(nextAttempts);
       setError(message);
-      if (!hasPinLock()) {
+      if (!hasPinLock(authenticatedUserId)) {
         setTimeout(onFallback, 1500);
       } else {
         setShake(true);
@@ -288,7 +311,7 @@ export function PinLock({ onUnlock, onFallback }: PinLockProps) {
               onClick={async () => {
                 setChecking(true);
                 try {
-                  const masterKey = await unlockWithBiometrics();
+                  const masterKey = await unlockWithBiometrics(authenticatedUserId);
                   onUnlock(masterKey);
                 } catch (error: unknown) {
                   setError(error instanceof Error ? error.message : "Biometric unlock failed.");

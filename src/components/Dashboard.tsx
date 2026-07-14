@@ -20,6 +20,7 @@ import {
   Loader2Icon
 } from "lucide-react";
 import { FaceIdIcon } from "@/components/Icons";
+import { useVaultKey } from "@/components/auth/VaultKeyProvider";
 
 interface DashboardProps {
   masterPassword: string;
@@ -66,6 +67,7 @@ interface DashboardWalletItem {
 }
 
 export function Dashboard({ masterPassword }: DashboardProps) {
+  const { authenticatedUserId } = useVaultKey();
   const [stats, setStats] = useState({
     passwords: 0,
     documents: 0,
@@ -79,7 +81,7 @@ export function Dashboard({ masterPassword }: DashboardProps) {
   const [recentNotes, setRecentNotes] = useState<DashboardNote[]>([]);
   const [loading, setLoading] = useState(true);
   const [fullName, setFullName] = useState("User");
-  const [showBioBanner, setShowBioBanner] = useState(() => isBiometricsSupported() && !hasBiometricsEnabled());
+  const [showBioBanner, setShowBioBanner] = useState(false);
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState("");
@@ -167,6 +169,16 @@ export function Dashboard({ masterPassword }: DashboardProps) {
       void fetchDashboardData();
     });
   }, [fetchDashboardData]);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      setShowBioBanner(Boolean(
+        authenticatedUserId &&
+        isBiometricsSupported() &&
+        !hasBiometricsEnabled(authenticatedUserId)
+      ));
+    });
+  }, [authenticatedUserId]);
 
   const handleSaveName = async () => {
     if (!editNameValue.trim()) return;
@@ -257,7 +269,8 @@ export function Dashboard({ masterPassword }: DashboardProps) {
               <button
                 onClick={async () => {
                   try {
-                    await enableBiometrics(masterPassword);
+                    if (!authenticatedUserId) throw new Error("Your authenticated account could not be verified.");
+                    await enableBiometrics(masterPassword, authenticatedUserId);
                     setShowBioBanner(false);
                   } catch (error: unknown) {
                     alert(error instanceof Error ? error.message : "Biometric enrollment failed.");

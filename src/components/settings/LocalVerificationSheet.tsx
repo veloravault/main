@@ -6,6 +6,7 @@ import { AdaptiveSheet, AdaptiveSheetBody, AdaptiveSheetFooter } from "@/compone
 import { Button } from "@/components/ui/button";
 import { hasBiometricsEnabled, unlockWithBiometrics } from "@/lib/biometrics";
 import { hasPinLock, verifyPinAndRecoverMaster } from "@/components/PinLock";
+import { useVaultKey } from "@/components/auth/VaultKeyProvider";
 
 export function LocalVerificationSheet(props: {
   open: boolean;
@@ -13,6 +14,7 @@ export function LocalVerificationSheet(props: {
   onOpenChange: (open: boolean) => void;
   onVerified: () => void;
 }) {
+  const { authenticatedUserId } = useVaultKey();
   const [value, setValue] = useState("");
   const [working, setWorking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,14 +24,25 @@ export function LocalVerificationSheet(props: {
 
   useEffect(() => {
     if (!props.open) return;
-    queueMicrotask(() => setMode(hasBiometricsEnabled() ? "biometric" : hasPinLock() ? "pin" : "master"));
-  }, [props.open]);
+    queueMicrotask(() => setMode(
+      authenticatedUserId && hasBiometricsEnabled(authenticatedUserId)
+        ? "biometric"
+        : authenticatedUserId && hasPinLock(authenticatedUserId)
+          ? "pin"
+          : "master"
+    ));
+  }, [authenticatedUserId, props.open]);
 
   const verify = async () => {
     setWorking(true);
     setError(null);
     try {
-      const recovered = usesBio ? await unlockWithBiometrics() : usesPin ? await verifyPinAndRecoverMaster(value) : value;
+      if ((usesBio || usesPin) && !authenticatedUserId) throw new Error("Your authenticated account could not be verified.");
+      const recovered = usesBio
+        ? await unlockWithBiometrics(authenticatedUserId!)
+        : usesPin
+          ? await verifyPinAndRecoverMaster(value, authenticatedUserId!)
+          : value;
       if (recovered !== props.masterPassword) throw new Error(usesPin ? "The PIN does not unlock this vault." : "The master key does not match this vault.");
       setValue("");
       props.onOpenChange(false);

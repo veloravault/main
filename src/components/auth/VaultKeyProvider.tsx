@@ -3,8 +3,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { clearLocalVaultSession } from "@/lib/vaultSession";
+import { scopeVaultKeyToAuthenticatedUser, shouldClearVaultKeyForAuthChange } from "@/lib/vaultKeyOwnership";
 
 type VaultKeyContextValue = {
+  authenticatedUserId: string | null;
   masterKey: string | null;
   setMasterKey: (value: string) => void;
   clearMasterKey: () => void;
@@ -42,7 +44,7 @@ export function VaultKeyProvider({ children }: { children: React.ReactNode }) {
       currentUserIdRef.current = currentUserId;
       setAuthenticatedUserId(currentUserId);
 
-      if (!currentUserId || previousUserId !== currentUserId) {
+      if (shouldClearVaultKeyForAuthChange(previousUserId, currentUserId)) {
         clearMasterKey();
       }
     });
@@ -50,14 +52,15 @@ export function VaultKeyProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, [clearMasterKey]);
 
-  const scopedMasterKey = masterKeyUserId === authenticatedUserId ? masterKey : null;
+  const scopedMasterKey = scopeVaultKeyToAuthenticatedUser(masterKey, masterKeyUserId, authenticatedUserId);
   const value = useMemo(
     () => ({
+      authenticatedUserId,
       masterKey: scopedMasterKey,
       setMasterKey,
       clearMasterKey,
     }),
-    [clearMasterKey, scopedMasterKey, setMasterKey],
+    [authenticatedUserId, clearMasterKey, scopedMasterKey, setMasterKey],
   );
 
   return <VaultKeyContext.Provider value={value}>{children}</VaultKeyContext.Provider>;

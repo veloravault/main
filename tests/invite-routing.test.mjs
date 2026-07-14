@@ -48,8 +48,8 @@ test("master key provider clears globally when the authenticated user changes or
   assert.match(provider, /supabase\.auth\.onAuthStateChange/);
   assert.match(provider, /previousUserId/);
   assert.match(provider, /currentUserId/);
-  assert.match(provider, /!currentUserId/);
-  assert.match(provider, /previousUserId\s*!==\s*currentUserId/);
+  assert.match(provider, /shouldClearVaultKeyForAuthChange\(previousUserId,\s*currentUserId\)/);
+  assert.match(provider, /scopeVaultKeyToAuthenticatedUser/);
   assert.match(provider, /setMasterKeyState\(null\)/);
   assert.match(provider, /clearLocalVaultSession\(\)/);
   assert.match(provider, /subscription\.unsubscribe\(\)/);
@@ -66,7 +66,10 @@ test("vault unlock is session-only and preserves PIN and biometrics", () => {
   assert.match(auth, /unlockWithBiometrics/);
   assert.match(auth, /onLogin\(masterPassword\)/);
   assert.match(vaultApp, /if \(!loading\s*&&\s*!sessionUser\)\s*\{[\s\S]*router\.replace\("\/login\?next=\/vault"\)/);
-  assert.match(vaultApp, /if \(loading\s*\|\|\s*!sessionUser\)/);
+  assert.match(
+    vaultApp,
+    /if \(loading\s*\|\|\s*!sessionUser\s*\|\|\s*!authenticatedUserId\s*\|\|\s*sessionUser\.id\s*!==\s*authenticatedUserId\)/,
+  );
   assert.match(vaultApp, /if \(!masterPassword\)\s*\{[\s\S]*<Auth onLogin=\{handleLogin\}/);
   assert.doesNotMatch(vaultApp, /if \(!sessionUser\s*\|\|\s*!masterPassword\)[\s\S]*<Auth/);
 });

@@ -110,7 +110,7 @@ export default function VaultApp() {
   const prefersReducedMotion = useReducedMotion();
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const [sessionUser, setSessionUser] = useState<User | null>(null);
-  const { masterKey: masterPassword, setMasterKey, clearMasterKey } = useVaultKey();
+  const { authenticatedUserId, masterKey: masterPassword, setMasterKey, clearMasterKey } = useVaultKey();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
   const [showPinLock, setShowPinLock] = useState(false);
@@ -138,7 +138,7 @@ export default function VaultApp() {
 
       if (user) {
         // The raw master key is never restored from browser storage.
-        if (hasPinLock()) {
+        if (hasPinLock(user.id)) {
           setShowPinLock(true);
           setLoading(false);
           return;
@@ -198,12 +198,12 @@ export default function VaultApp() {
   const handleLockVault = useCallback(() => {
     clearLocalVaultSession();
     clearMasterKey();
-    const pinEnabled = hasPinLock();
+    const pinEnabled = authenticatedUserId ? hasPinLock(authenticatedUserId) : false;
     setShowPinLock(pinEnabled);
     setShowFullAuth(!pinEnabled);
     setSearchOpen(false);
     setIsGlobalImportOpen(false);
-  }, [clearMasterKey]);
+  }, [authenticatedUserId, clearMasterKey]);
 
   useAutoLock({ enabled: Boolean(sessionUser && masterPassword), onLock: handleLockVault });
 
@@ -296,7 +296,7 @@ export default function VaultApp() {
     return () => clearTimeout(handler);
   }, [handleAiSearch, searchQuery]);
 
-  if (loading || !sessionUser) {
+  if (loading || !sessionUser || !authenticatedUserId || sessionUser.id !== authenticatedUserId) {
     return (
       <div className="flex h-dvh items-center justify-center bg-background">
         <ShieldCheckIcon className="w-8 h-8 text-primary opacity-60" />
@@ -308,6 +308,7 @@ export default function VaultApp() {
   if (sessionUser && !masterPassword && showPinLock && !showFullAuth) {
     return (
       <PinLock
+        authenticatedUserId={authenticatedUserId}
         onUnlock={(mk) => {
           setMasterKey(mk);
         }}
