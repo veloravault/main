@@ -13,21 +13,31 @@ export async function POST(request: Request) {
   try {
     assertSameOrigin(request);
     const body = await readBoundedJson(request, 128);
-    if (Object.keys(body).length !== 1 || body.completed !== true) {
+    if (
+      Object.keys(body).length !== 2
+      || body.completed !== true
+      || typeof body.expectedUserId !== "string"
+    ) {
       return Response.json({ error: "INVALID_REQUEST" }, { status: 400 });
     }
+    const expectedUserId = body.expectedUserId;
 
     const user = await requireUser();
+    if (user.id !== expectedUserId) {
+      return Response.json({ error: "SESSION_CHANGED" }, { status: 403 });
+    }
     const membership = await getMembershipForUser(user.id);
-    if (membership?.status !== "invited") {
+    if (membership?.status !== "invited" && membership?.status !== "active") {
       return Response.json({ error: "MEMBERSHIP_NOT_INVITED" }, { status: 403 });
     }
 
     await activateInvitedMember(user.id);
-    try {
-      await recordActivationAudit(user.id);
-    } catch (auditError) {
-      console.error("Activation audit unavailable", auditError instanceof Error ? auditError.name : "unknown");
+    if (membership.status === "invited") {
+      try {
+        await recordActivationAudit(user.id);
+      } catch (auditError) {
+        console.error("Activation audit unavailable", auditError instanceof Error ? auditError.name : "unknown");
+      }
     }
     return Response.json({ activated: true });
   } catch (error) {

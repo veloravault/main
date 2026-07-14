@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 
+import { captureAccessTokenForExpectedUser } from "../src/lib/vaultKeyOwnership.ts";
+
 const file = (path) => new URL(`../${path}`, import.meta.url);
 const read = (path) => readFileSync(file(path), "utf8");
 
@@ -17,6 +19,8 @@ test("invitation GET is a non-consuming explicit-confirmation landing", () => {
   assert.match(source, /action=["']\/auth\/confirm["']/);
   assert.match(source, /method=["']post["']/i);
   assert.doesNotMatch(source, /verifyOtp|exchangeCodeForSession|createServerSupabaseClient/);
+  assert.doesNotMatch(source, /has not been used|not been used yet/i);
+  assert.match(source, /ready to be verified/i);
 });
 
 test("confirmation route consumes invitation tokens only on POST", () => {
@@ -38,8 +42,9 @@ test("onboarding keeps sign-in password and master key as separate secrets", () 
   assert.equal(existsSync(file(path)), true, `${path} must exist`);
   const source = read(path);
 
-  assert.match(source, /updateUser\(\{\s*password\s*\}\)/);
-  assert.match(source, /JSON\.stringify\(\{\s*completed:\s*true\s*\}\)/);
+  assert.match(source, /getExpectedUserAuthorization\(userId\)/);
+  assert.match(source, /userClient\.auth\.updateUser\(\{\s*password\s*\}\)/);
+  assert.match(source, /JSON\.stringify\(\{\s*completed:\s*true,\s*expectedUserId:\s*userId\s*\}\)/);
   assert.doesNotMatch(source, /JSON\.stringify\([^)]*(?:masterKey|masterPassword)/s);
   assert.doesNotMatch(source, /localStorage|sessionStorage|indexedDB|document\.cookie/);
   assert.match(source, /if\s*\(masterKey\s*!==\s*masterKeyConfirmation\)/);
@@ -55,6 +60,27 @@ test("onboarding keeps sign-in password and master key as separate secrets", () 
   assert.match(source, /setMasterKeyValue\(["']{2}\)/);
   assert.match(source, /setMasterKeyConfirmation\(["']{2}\)/);
   assert.match(source, /router\.replace\(["']\/vault["']\)/);
+
+  const expectedAuthIndex = source.indexOf("getExpectedUserAuthorization(userId)");
+  const passwordIndex = source.indexOf("userClient.auth.updateUser({ password })");
+  const scopedRecheckIndex = source.indexOf("userClient.auth.getUser()");
+  const activationIndex = source.indexOf('fetch("/api/onboarding/complete"');
+  const liveRecheckIndex = source.lastIndexOf("supabase.auth.getUser()");
+  const keyIndex = source.indexOf("setMasterKey(masterKey");
+  assert.ok(expectedAuthIndex < passwordIndex, "expected identity must be captured before password update");
+  assert.ok(passwordIndex < scopedRecheckIndex, "the captured identity must be rechecked after password update");
+  assert.ok(scopedRecheckIndex < activationIndex, "captured identity must remain valid before activation");
+  assert.ok(activationIndex < liveRecheckIndex, "live browser identity must be checked after activation");
+  assert.ok(liveRecheckIndex < keyIndex, "live identity must be checked before the local key handoff");
+});
+
+test("a stale onboarding page cannot capture a different account token", async () => {
+  const userA = "550e8400-e29b-41d4-a716-446655440001";
+  const userB = "550e8400-e29b-41d4-a716-446655440002";
+  await assert.rejects(
+    captureAccessTokenForExpectedUser(userA, async () => "token-b", async () => userB),
+    /expected authenticated user/,
+  );
 });
 
 test("onboarding completion accepts only a marker and activates the cookie user", () => {
@@ -65,9 +91,11 @@ test("onboarding completion accepts only a marker and activates the cookie user"
   assert.match(source, /assertSameOrigin\(request\)/);
   assert.match(source, /readBoundedJson\(request,/);
   assert.match(source, /completed\s*!==\s*true/);
+  assert.match(source, /user\.id\s*!==\s*expectedUserId/);
+  assert.match(source, /Object\.keys\(body\)\.length\s*!==\s*2/);
   assert.match(source, /requireUser\(\)/);
   assert.match(source, /getMembershipForUser\(user\.id\)/);
-  assert.match(source, /status\s*!==\s*["']invited["']/);
+  assert.match(source, /status\s*!==\s*["']invited["'][\s\S]*status\s*!==\s*["']active["']/);
   assert.match(source, /activateInvitedMember\(user\.id\)/);
   assert.doesNotMatch(source, /masterKey|masterPassword|password/);
 });
@@ -81,7 +109,10 @@ test("privileged onboarding RPCs preserve terminal member states and are service
   assert.match(sql, /create or replace function public\.reconcile_confirmed_invite/i);
   assert.match(sql, /create or replace function public\.activate_invited_member/i);
   assert.match(sql, /status\s+not in\s*\(\s*'active'\s*,\s*'suspended'\s*,\s*'revoked'\s*\)/i);
-  assert.match(sql, /get diagnostics updated_requests = row_count[\s\S]*updated_requests <> 1/i);
+  assert.match(
+    sql,
+    /member_status = 'active'[\s\S]*request_status = 'active'[\s\S]*request_user_id = p_user_id[\s\S]*return 'active'/i,
+  );
   for (const signature of [
     "public.reconcile_confirmed_invite(uuid, text, timestamptz)",
     "public.activate_invited_member(uuid, timestamptz)",

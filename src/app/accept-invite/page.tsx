@@ -44,7 +44,7 @@ export default async function AcceptInvitePage({
               <p className={styles.eyebrow}>Invitation ready</p>
               <h1 id="invitation-title">Enter when you’re ready.</h1>
               <p className={styles.lede}>
-                Your invitation has not been used yet. Continue explicitly to verify it and create your private sign-in.
+                Your invitation is ready to be verified. Continue explicitly to create your private sign-in.
               </p>
               <form action="/auth/confirm" method="post" className={styles.actionForm}>
                 <input type="hidden" name="token_hash" value={tokenHash} />

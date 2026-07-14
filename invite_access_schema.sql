@@ -237,36 +237,60 @@ set search_path = ''
 as $$
 declare
   request_id uuid;
-  updated_requests integer;
+  member_status text;
+  request_status text;
+  request_user_id uuid;
 begin
-  update public.app_members as member
-  set status = 'active',
-      activated_at = coalesce(member.activated_at, p_now)
+  select member.status, member.access_request_id
+  into member_status, request_id
+  from public.app_members as member
   where member.user_id = p_user_id
-    and member.status = 'invited'
-  returning member.access_request_id into request_id;
+  for update;
 
   if not found then
-    raise exception using errcode = 'P0002', message = 'invited membership not found';
+    raise exception using errcode = 'P0002', message = 'membership not found';
   end if;
 
   if request_id is null then
     raise exception using errcode = 'P0002', message = 'invitation request link not found';
   end if;
 
+  select request.status, request.auth_user_id
+  into request_status, request_user_id
+  from public.access_requests as request
+  where request.id = request_id
+  for update;
+
+  if not found then
+    raise exception using errcode = 'P0002', message = 'invitation request not found';
+  end if;
+
+  if member_status = 'active' then
+    if request_status = 'active' and request_user_id = p_user_id then
+      return 'active';
+    end if;
+    raise exception using errcode = 'P0002', message = 'active invitation state is inconsistent';
+  end if;
+
+  if member_status <> 'invited'
+     or request_status <> 'invited'
+     or request_user_id is distinct from p_user_id then
+    raise exception using errcode = 'P0002', message = 'invitation state is not activatable';
+  end if;
+
+  update public.app_members as member
+  set status = 'active',
+      activated_at = coalesce(member.activated_at, p_now)
+  where member.user_id = p_user_id
+    and member.status = 'invited';
+
   update public.access_requests as request
   set status = 'active',
-      auth_user_id = p_user_id,
       activated_at = coalesce(request.activated_at, p_now),
       updated_at = p_now
   where request.id = request_id
     and request.auth_user_id = p_user_id
     and request.status = 'invited';
-
-  get diagnostics updated_requests = row_count;
-  if updated_requests <> 1 then
-    raise exception using errcode = 'P0002', message = 'invitation request is not activatable';
-  end if;
 
   return 'active';
 end;

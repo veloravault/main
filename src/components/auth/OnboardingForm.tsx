@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useVaultKey } from "@/components/auth/VaultKeyProvider";
+import { getExpectedUserAuthorization } from "@/lib/authToken";
 import { supabase } from "@/lib/supabase";
 import styles from "@/app/onboarding/onboarding.module.css";
 
@@ -34,16 +35,27 @@ export function OnboardingForm({ userId, email }: { userId: string; email: strin
 
     setSubmitting(true);
     try {
-      const { error: passwordError } = await supabase.auth.updateUser({ password });
+      const { userClient } = await getExpectedUserAuthorization(userId);
+      const { error: passwordError } = await userClient.auth.updateUser({ password });
       if (passwordError) throw new Error(passwordError.message);
+
+      const { data: scopedIdentity, error: scopedIdentityError } = await userClient.auth.getUser();
+      if (scopedIdentityError || scopedIdentity.user?.id !== userId) {
+        throw new Error("Your secure session changed. Sign in again to continue.");
+      }
 
       const response = await fetch("/api/onboarding/complete", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ completed: true }),
+        body: JSON.stringify({ completed: true, expectedUserId: userId }),
       });
       if (!response.ok) throw new Error("Your account could not be activated. Please try again.");
+
+      const { data: liveIdentity, error: liveIdentityError } = await supabase.auth.getUser();
+      if (liveIdentityError || liveIdentity.user?.id !== userId) {
+        throw new Error("Your secure session changed. Sign in again to continue.");
+      }
       if (!setMasterKey(masterKey, userId)) {
         throw new Error("Your secure session changed. Sign in again to continue.");
       }
