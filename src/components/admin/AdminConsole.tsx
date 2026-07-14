@@ -182,6 +182,28 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
       if (view === "members" && memberFilter !== "all") params.set("status", memberFilter);
 
       const response = await fetch(`${endpoint}?${params}`, { signal: controller.signal, headers: { accept: "application/json" } });
+      if (response.status === 401) {
+        if (generation !== queryGenerationRef.current || controller.signal.aborted) return;
+        setItems([]);
+        setNextCursor(null);
+        setSelected(null);
+        setError(null);
+        setAppendError(null);
+        setAnnouncement("Your owner session expired. Sign in again.");
+        router.replace("/login?next=/admin");
+        return;
+      }
+      if (response.status === 403) {
+        if (generation !== queryGenerationRef.current || controller.signal.aborted) return;
+        setItems([]);
+        setNextCursor(null);
+        setSelected(null);
+        setAppendError(null);
+        setError("This account no longer has access to the owner console.");
+        setAnnouncement("Owner access could not be verified.");
+        router.refresh();
+        return;
+      }
       if (!response.ok) throw new Error("ADMIN_LIST_FAILED");
       const page = safePage(await response.json());
       if (generation !== queryGenerationRef.current || controller.signal.aborted) return;
@@ -201,14 +223,17 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
       if (append) setLoadingMore(false);
       else setLoading(false);
     }
-  }, [memberFilter, pendingFilter, searchQuery, view]);
+  }, [memberFilter, pendingFilter, router, searchQuery, view]);
 
   useEffect(() => {
     const generation = ++queryGenerationRef.current;
     const controllers = requestControllersRef.current;
     for (const controller of controllers) controller.abort();
     controllers.clear();
-    const timer = window.setTimeout(() => void loadPage(null, false, generation), 0);
+    const timer = window.setTimeout(() => {
+      setLoadingMore(false);
+      void loadPage(null, false, generation);
+    }, 0);
     return () => {
       window.clearTimeout(timer);
       for (const controller of controllers) controller.abort();

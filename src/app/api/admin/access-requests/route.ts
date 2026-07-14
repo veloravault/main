@@ -4,7 +4,7 @@ import { AuthorizationError, requireAdmin } from "@/lib/server/access";
 import { listAccessRequestsAdmin } from "@/lib/server/access-repository";
 
 const ALLOWED_QUERY_KEYS = new Set(["status", "search", "cursor"]);
-const SAFE_SEARCH = /^[a-z0-9@._+ -]{1,100}$/i;
+const SAFE_SEARCH = /^[\p{L}\p{M}\p{N}@._+ '\u2019-]{1,100}$/u;
 
 function invalidQuery() {
   return Response.json({ error: "INVALID_QUERY" }, { status: 400 });

@@ -101,14 +101,24 @@ test("only server-confirmed invitation failure becomes durable Retry state", () 
   assert.doesNotMatch(catchBlock, /status: "invite_failed"/);
 });
 
-test("client search normalization matches the server query allowlist", () => {
+test("client search normalization preserves human names and removes filter grammar", async () => {
   const helper = read("src/components/admin/admin-client.ts");
   const consoleSource = read("src/components/admin/AdminConsole.tsx");
-  assert.match(helper, /normalize\("NFKD"\)/);
-  assert.match(helper, /\\p\{Diacritic\}/);
-  assert.match(helper, /\^a-z0-9@\._\+ -/i);
+  assert.match(helper, /normalize\("NFKC"\)/);
+  assert.doesNotMatch(helper, /\\p\{Diacritic\}/);
+  assert.match(helper, /,%\(\)/);
   assert.match(consoleSource, /normalizeAdminSearch/);
   assert.match(consoleSource, /rawUrlSearch !== urlSearch/);
+  const { normalizeAdminSearch } = await import("../src/components/admin/admin-client.ts");
+  assert.equal(normalizeAdminSearch("  José O'Connor  "), "José O'Connor");
+  assert.equal(normalizeAdminSearch("José,(100%)"), "José100");
+});
+
+test("query generations reset pagination and list authorization clears protected rows", () => {
+  const consoleSource = read("src/components/admin/AdminConsole.tsx");
+  assert.match(consoleSource, /setLoadingMore\(false\)[\s\S]*loadPage\(null, false, generation\)/);
+  assert.match(consoleSource, /response\.status === 401[\s\S]*setItems\(\[\]\)[\s\S]*router\.replace\("\/login\?next=\/admin"\)/);
+  assert.match(consoleSource, /response\.status === 403[\s\S]*setItems\(\[\]\)[\s\S]*setNextCursor\(null\)[\s\S]*router\.refresh\(\)/);
 });
 
 test("mobile sticky controls are notch-safe, touch-safe, and expose selection semantics", () => {

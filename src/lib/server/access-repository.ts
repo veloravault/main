@@ -247,6 +247,11 @@ function applyAccessCursor<T extends {
   );
 }
 
+function quotePostgrestFilterValue(value: string) {
+  const escaped = value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  return `"%${escaped}%"`;
+}
+
 export async function listAccessRequestsAdmin(args: {
   status: AccessRequestStatus | null;
   search: string | null;
@@ -262,7 +267,8 @@ export async function listAccessRequestsAdmin(args: {
 
   if (args.status) query = query.eq("status", args.status);
   if (args.search) {
-    query = query.or(`full_name.ilike.%${args.search}%,email.ilike.%${args.search}%`);
+    const searchLiteral = quotePostgrestFilterValue(args.search);
+    query = query.or(`full_name.ilike.${searchLiteral},email.ilike.${searchLiteral}`);
   }
   query = applyAccessCursor(query, args.cursor);
 
