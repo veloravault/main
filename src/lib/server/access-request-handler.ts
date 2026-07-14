@@ -12,7 +12,10 @@ export type AccessRequestHandlerDependencies = {
   now: () => Date;
   accessRequestWindowStart: (now: Date) => string;
   fingerprintAccessRequest: (email: string, forwardedIp: string, windowStart: string) => string;
-  consumeAccessRequestRateLimit: (fingerprint: string, windowStart: string) => Promise<boolean>;
+  fingerprintAccessRequestIp: (forwardedIp: string, windowStart: string) => string;
+  accessRequestPairLimit: number;
+  accessRequestIpLimit: number;
+  consumeAccessRequestRateLimit: (fingerprint: string, windowStart: string, limit: number) => Promise<boolean>;
   insertAccessRequest: (input: AccessRequest) => Promise<void>;
   cleanupExpiredRateLimits: (cutoff: string) => Promise<void>;
   isRequestSecurityError: (error: unknown) => error is SafeRequestError;
@@ -55,11 +58,23 @@ export async function handleAccessRequest(request: Request, deps: AccessRequestH
     const now = deps.now();
     const windowStart = deps.accessRequestWindowStart(now);
     const forwardedIp = request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? "unknown";
-    const fingerprint = deps.fingerprintAccessRequest(parsed.value.email, forwardedIp, windowStart);
-    scheduleCleanup(deps, fingerprint, now);
+    const ipFingerprint = deps.fingerprintAccessRequestIp(forwardedIp, windowStart);
+    const pairFingerprint = deps.fingerprintAccessRequest(parsed.value.email, forwardedIp, windowStart);
+    scheduleCleanup(deps, ipFingerprint, now);
 
-    const allowed = await deps.consumeAccessRequestRateLimit(fingerprint, windowStart);
-    if (!allowed) return json({ code: "RATE_LIMITED" }, 429);
+    const ipAllowed = await deps.consumeAccessRequestRateLimit(
+      ipFingerprint,
+      windowStart,
+      deps.accessRequestIpLimit,
+    );
+    if (!ipAllowed) return json({ code: "RATE_LIMITED" }, 429);
+
+    const pairAllowed = await deps.consumeAccessRequestRateLimit(
+      pairFingerprint,
+      windowStart,
+      deps.accessRequestPairLimit,
+    );
+    if (!pairAllowed) return json({ code: "RATE_LIMITED" }, 429);
 
     await deps.insertAccessRequest(parsed.value);
     return accepted();

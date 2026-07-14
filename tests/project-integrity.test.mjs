@@ -102,14 +102,28 @@ test("raw account password and master key are not persisted in localStorage", ()
   assert.equal(page.includes("SESSION_MASTER_KEY"), false);
 });
 
-test("account deletion authenticates the caller and revokes refresh sessions", () => {
+test("account deletion authenticates the caller, removes canonical request PII, and revokes refresh sessions", () => {
   const route = read("src/app/api/delete-account/route.ts");
+  const inviteSchema = read("invite_access_schema.sql");
   assert.match(route, /authenticateRequest\(request\)/);
   assert.doesNotMatch(route, /authenticateActiveMemberRequest\(request\)/);
   assert.match(route, /admin\.auth\.admin\.signOut\(accessToken,\s*"global"\)/);
   assert.match(route, /collectPaginated/);
   assert.match(route, /chunkValues/);
+  assert.match(route, /user\.email/);
+  assert.match(route, /trim\(\)\.toLowerCase\(\)/);
+  assert.match(route, /from\("access_requests"\)[\s\S]*\.delete\(\)[\s\S]*\.eq\("auth_user_id",\s*user\.id\)[\s\S]*\.eq\("email",\s*canonicalEmail\)/);
   assert.match(route, /admin\.auth\.admin\.deleteUser\(user\.id\)/);
+  assert.ok(
+    route.indexOf('from("access_requests")') < route.indexOf("admin.auth.admin.deleteUser(user.id)"),
+    "request PII must be deleted before the Auth identity",
+  );
+  assert.doesNotMatch(route, /from\("access_requests"\)[\s\S]*\.or\(/);
+  assert.match(route, /SUPABASE_SECRET_KEY\s*\?\?\s*process\.env\.SUPABASE_SERVICE_ROLE_KEY/);
+  assert.match(inviteSchema, /user_id uuid primary key references auth\.users\(id\) on delete cascade/i);
+  assert.match(inviteSchema, /access_request_id uuid unique references public\.access_requests\(id\) on delete set null/i);
+  assert.match(inviteSchema, /access_request_id uuid references public\.access_requests\(id\) on delete set null/i);
+  assert.match(inviteSchema, /member_user_id uuid references auth\.users\(id\) on delete set null/i);
 });
 
 test("scan requests are byte-bounded before JSON parsing", () => {

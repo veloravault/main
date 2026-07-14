@@ -5,6 +5,7 @@ import { afterEach, test } from "node:test";
 
 import {
   fingerprintAccessRequest,
+  fingerprintAccessRequestIp,
   readBoundedJson,
   RequestSecurityError,
 } from "../src/lib/server/request-security.ts";
@@ -24,7 +25,7 @@ test("access request fingerprints normalize email and IP without exposing either
   const first = fingerprintAccessRequest("  Person@Example.COM ", " 203.0.113.42 ", windowStart);
   const equivalent = fingerprintAccessRequest("person@example.com", "203.0.113.42", windowStart);
   const expected = createHmac("sha256", process.env.ACCESS_REQUEST_HMAC_SECRET)
-    .update(`person@example.com|203.0.113.42|${windowStart}`)
+    .update(`access-request:email-ip:v1|person@example.com|203.0.113.42|${windowStart}`)
     .digest("hex");
 
   assert.equal(first, equivalent);
@@ -32,6 +33,25 @@ test("access request fingerprints normalize email and IP without exposing either
   assert.match(first, /^[a-f0-9]{64}$/);
   assert.equal(first.includes("person@example.com"), false);
   assert.equal(first.includes("203.0.113.42"), false);
+});
+
+test("IP fingerprints are domain-separated and stay stable when an attacker rotates email", () => {
+  process.env.ACCESS_REQUEST_HMAC_SECRET = "a-test-secret-with-enough-entropy";
+  const windowStart = "2026-07-14T09:15:00.000Z";
+
+  const firstPair = fingerprintAccessRequest("first@example.com", "203.0.113.42", windowStart);
+  const secondPair = fingerprintAccessRequest("second@example.com", "203.0.113.42", windowStart);
+  const firstIp = fingerprintAccessRequestIp("203.0.113.42", windowStart);
+  const secondIp = fingerprintAccessRequestIp(" 203.0.113.42, 10.0.0.1 ", windowStart);
+  const expectedIp = createHmac("sha256", process.env.ACCESS_REQUEST_HMAC_SECRET)
+    .update(`access-request:ip:v1|203.0.113.42|${windowStart}`)
+    .digest("hex");
+
+  assert.notEqual(firstPair, secondPair);
+  assert.equal(firstIp, secondIp);
+  assert.equal(firstIp, expectedIp);
+  assert.notEqual(firstIp, firstPair);
+  assert.equal(firstIp.includes("203.0.113.42"), false);
 });
 
 test("access request fingerprints change across rate-limit windows", () => {
@@ -48,6 +68,10 @@ test("access request fingerprinting requires its dedicated secret", () => {
 
   assert.throws(
     () => fingerprintAccessRequest("person@example.com", "203.0.113.42", "2026-07-14T09:15:00.000Z"),
+    /ACCESS_REQUEST_HMAC_SECRET_NOT_CONFIGURED/,
+  );
+  assert.throws(
+    () => fingerprintAccessRequestIp("203.0.113.42", "2026-07-14T09:15:00.000Z"),
     /ACCESS_REQUEST_HMAC_SECRET_NOT_CONFIGURED/,
   );
 });
@@ -105,7 +129,9 @@ test("access request repository enforces the durable limiter and duplicate-safe 
   const repository = read("src/lib/server/access-repository.ts");
 
   assert.match(repository, /consume_access_request_rate_limit/);
-  assert.match(repository, /p_limit:\s*5/);
+  assert.match(repository, /ACCESS_REQUEST_PAIR_LIMIT\s*=\s*5/);
+  assert.match(repository, /ACCESS_REQUEST_IP_LIMIT\s*=\s*20/);
+  assert.match(repository, /p_limit:\s*limit/);
   assert.match(repository, /15\s*\*\s*60\s*\*\s*1_000/);
   assert.match(repository, /upsert\([\s\S]*onConflict:\s*"email"[\s\S]*ignoreDuplicates:\s*true/);
   assert.match(repository, /from\("access_request_rate_limits"\)[\s\S]*\.delete\(\)[\s\S]*\.lt\("window_started_at",\s*cutoff\)/);
@@ -119,12 +145,15 @@ test("public route keeps honeypot, throttling, and generic response semantics or
   const readIndex = handler.indexOf("deps.readBoundedJson(request, deps.maxRequestBytes)");
   const honeypotIndex = handler.indexOf("body.website");
   const validationIndex = handler.indexOf("deps.parseAccessRequestInput(body)");
-  const rateLimitIndex = handler.indexOf("await deps.consumeAccessRequestRateLimit", validationIndex);
-  const insertIndex = handler.indexOf("await deps.insertAccessRequest", rateLimitIndex);
+  const ipRateLimitIndex = handler.indexOf("deps.accessRequestIpLimit", validationIndex);
+  const pairRateLimitIndex = handler.indexOf("deps.accessRequestPairLimit", ipRateLimitIndex);
+  const insertIndex = handler.indexOf("await deps.insertAccessRequest", pairRateLimitIndex);
 
   assert.ok(originIndex >= 0 && readIndex > originIndex);
   assert.ok(honeypotIndex > readIndex && validationIndex > honeypotIndex);
-  assert.ok(rateLimitIndex > validationIndex && insertIndex > rateLimitIndex);
+  assert.ok(ipRateLimitIndex > validationIndex, "IP bucket must be consumed after validation");
+  assert.ok(pairRateLimitIndex > ipRateLimitIndex, "pair bucket must be consumed after IP bucket");
+  assert.ok(insertIndex > pairRateLimitIndex, "insert must happen only after both buckets allow");
   assert.match(route, /const MAX_REQUEST_BYTES = 8_192/);
   assert.match(handler, /accepted:\s*true\s*},\s*202/);
   assert.match(handler, /RATE_LIMITED"\s*},\s*429/);
@@ -164,6 +193,9 @@ test("public response settles while selected cleanup remains pending after it", 
       now: () => new Date("2026-07-14T09:16:00.000Z"),
       accessRequestWindowStart: () => "2026-07-14T09:15:00.000Z",
       fingerprintAccessRequest: () => `00${"a".repeat(62)}`,
+      fingerprintAccessRequestIp: () => `00${"b".repeat(62)}`,
+      accessRequestPairLimit: 5,
+      accessRequestIpLimit: 20,
       consumeAccessRequestRateLimit: async () => true,
       insertAccessRequest: async () => {},
       cleanupExpiredRateLimits: async () => {
@@ -182,6 +214,87 @@ test("public response settles while selected cleanup remains pending after it", 
   assert.equal(response.status, 202);
   assert.deepEqual(await response.json(), { accepted: true });
   assert.equal(cleanupStarted, true);
+});
+
+test("public handler consumes independent IP and pair buckets before insertion", async () => {
+  const { handleAccessRequest } = await import("../src/lib/server/access-request-handler.ts");
+  const consumed = [];
+  let inserted = false;
+
+  const response = await handleAccessRequest(
+    new Request("https://vault.test/api/access-requests", {
+      method: "POST",
+      headers: {
+        origin: "https://vault.test",
+        "content-type": "application/json",
+        "x-forwarded-for": "203.0.113.42",
+      },
+      body: JSON.stringify({ fullName: "Aarav Thakur", email: "aarav@example.com", website: "" }),
+    }),
+    {
+      after() {},
+      assertSameOrigin() {},
+      readBoundedJson: async () => ({ fullName: "Aarav Thakur", email: "aarav@example.com", website: "" }),
+      parseAccessRequestInput: () => ({ ok: true, value: { fullName: "Aarav Thakur", email: "aarav@example.com" } }),
+      now: () => new Date("2026-07-14T09:16:00.000Z"),
+      accessRequestWindowStart: () => "2026-07-14T09:15:00.000Z",
+      fingerprintAccessRequest: () => "pair-fingerprint",
+      fingerprintAccessRequestIp: () => "ip-fingerprint",
+      accessRequestPairLimit: 5,
+      accessRequestIpLimit: 20,
+      consumeAccessRequestRateLimit: async (fingerprint, _window, limit) => {
+        consumed.push([fingerprint, limit]);
+        return true;
+      },
+      insertAccessRequest: async () => { inserted = true; },
+      cleanupExpiredRateLimits: async () => {},
+      isRequestSecurityError: () => false,
+    },
+  );
+
+  assert.equal(response.status, 202);
+  assert.deepEqual(consumed, [["ip-fingerprint", 20], ["pair-fingerprint", 5]]);
+  assert.equal(inserted, true);
+});
+
+test("public handler rejects when either durable bucket is exhausted", async () => {
+  const { handleAccessRequest } = await import("../src/lib/server/access-request-handler.ts");
+
+  for (const exhausted of ["ip-fingerprint", "pair-fingerprint"]) {
+    const consumed = [];
+    let inserted = false;
+    const response = await handleAccessRequest(
+      new Request("https://vault.test/api/access-requests", {
+        method: "POST",
+        headers: { origin: "https://vault.test", "content-type": "application/json", "x-real-ip": "203.0.113.42" },
+        body: JSON.stringify({ fullName: "Aarav Thakur", email: "aarav@example.com" }),
+      }),
+      {
+        after() {},
+        assertSameOrigin() {},
+        readBoundedJson: async () => ({ fullName: "Aarav Thakur", email: "aarav@example.com" }),
+        parseAccessRequestInput: () => ({ ok: true, value: { fullName: "Aarav Thakur", email: "aarav@example.com" } }),
+        now: () => new Date("2026-07-14T09:16:00.000Z"),
+        accessRequestWindowStart: () => "2026-07-14T09:15:00.000Z",
+        fingerprintAccessRequest: () => "pair-fingerprint",
+        fingerprintAccessRequestIp: () => "ip-fingerprint",
+        accessRequestPairLimit: 5,
+        accessRequestIpLimit: 20,
+        consumeAccessRequestRateLimit: async (fingerprint) => {
+          consumed.push(fingerprint);
+          return fingerprint !== exhausted;
+        },
+        insertAccessRequest: async () => { inserted = true; },
+        cleanupExpiredRateLimits: async () => {},
+        isRequestSecurityError: () => false,
+      },
+    );
+
+    assert.equal(response.status, 429);
+    assert.deepEqual(await response.json(), { code: "RATE_LIMITED" });
+    assert.equal(inserted, false);
+    assert.ok(consumed.includes(exhausted));
+  }
 });
 
 test("Next schedules selected cleanup after the response instead of awaiting it", () => {

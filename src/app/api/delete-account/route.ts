@@ -21,6 +21,8 @@ export async function POST(request: NextRequest) {
 
     const user = await authenticateRequest(request);
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const canonicalEmail = user.email?.trim().toLowerCase();
+    if (!canonicalEmail) return serverError();
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const secret = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -68,6 +70,13 @@ export async function POST(request: NextRequest) {
       const { error } = await admin.from(table).delete().eq("user_id", user.id);
       if (error) throw error;
     }
+
+    const { error: accessRequestError } = await admin
+      .from("access_requests")
+      .delete()
+      .eq("auth_user_id", user.id)
+      .eq("email", canonicalEmail);
+    if (accessRequestError) throw accessRequestError;
 
     const { error: deleteUserError } = await admin.auth.admin.deleteUser(user.id);
     if (deleteUserError) throw deleteUserError;

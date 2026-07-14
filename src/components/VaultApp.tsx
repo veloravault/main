@@ -261,7 +261,7 @@ export default function VaultApp() {
   const handleAiSearch = useCallback(async () => {
     const currentQuery = searchQuery.trim();
     if (!currentQuery) return;
-    
+
     setAiSearching(true);
     setAiMatch(null);
 
@@ -696,10 +696,10 @@ export default function VaultApp() {
       </nav>
 
       {/* Global AI Magic Import Modal */}
-      <GlobalMagicImport 
-        isOpen={isGlobalImportOpen} 
-        onOpenChange={setIsGlobalImportOpen} 
-        masterPassword={masterPassword} 
+      <GlobalMagicImport
+        isOpen={isGlobalImportOpen}
+        onOpenChange={setIsGlobalImportOpen}
+        masterPassword={masterPassword}
         onSuccess={() => {
           // Force remount of active vault by briefly switching away and back
           setActiveTab(prev => {

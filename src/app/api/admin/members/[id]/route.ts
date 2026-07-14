@@ -1,5 +1,5 @@
 import { AuthorizationError, requireAdmin } from "@/lib/server/access";
-import { recordMemberAudit, updateMemberStatus } from "@/lib/server/access-repository";
+import { mutateMemberStatus } from "@/lib/server/access-repository";
 import {
   assertSameOrigin,
   readBoundedJson,
@@ -37,15 +37,14 @@ export async function PATCH(
       return Response.json({ error: "INVALID_MEMBER_UPDATE" }, { status: 400 });
     }
 
-    const member = await updateMemberStatus(id, status);
-    if (!member) return Response.json({ error: "MEMBER_NOT_FOUND" }, { status: 404 });
-
-    try {
-      await recordMemberAudit({ adminId: admin.id, memberId: id, status });
-    } catch {
-      console.error("ADMIN_AUDIT_WRITE_FAILED");
+    const result = await mutateMemberStatus({ adminId: admin.id, memberId: id, status });
+    if (result.kind === "not_found") {
+      return Response.json({ error: "MEMBER_NOT_FOUND" }, { status: 404 });
     }
-    return Response.json({ member });
+    if (result.kind === "conflict") {
+      return Response.json({ error: "MEMBER_STATUS_CONFLICT" }, { status: 409 });
+    }
+    return Response.json({ member: result.member });
   } catch (error) {
     return failureResponse(error);
   }

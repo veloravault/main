@@ -11,6 +11,8 @@ import { encodeInviteCursor } from "@/lib/access/validation";
 import { createSupabaseAdminClient } from "@/lib/server/supabase-admin";
 
 export const ACCESS_REQUEST_WINDOW_MS = 15 * 60 * 1_000;
+export const ACCESS_REQUEST_PAIR_LIMIT = 5;
+export const ACCESS_REQUEST_IP_LIMIT = 20;
 export const ACCESS_REQUEST_PAGE_SIZE = 25;
 export const MEMBER_PAGE_SIZE = 25;
 const INVITATION_LEASE_MS = 10 * 60 * 1_000;
@@ -78,12 +80,13 @@ export function accessRequestWindowStart(now: Date) {
   return new Date(Math.floor(now.getTime() / ACCESS_REQUEST_WINDOW_MS) * ACCESS_REQUEST_WINDOW_MS).toISOString();
 }
 
-export async function consumeAccessRequestRateLimit(fingerprint: string, windowStart: string) {
+export async function consumeAccessRequestRateLimit(fingerprint: string, windowStart: string, limit: number) {
+  if (!Number.isSafeInteger(limit) || limit < 1) throw new Error("INVALID_ACCESS_REQUEST_LIMIT");
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin.rpc("consume_access_request_rate_limit", {
     p_fingerprint: fingerprint,
     p_window_started_at: windowStart,
-    p_limit: 5,
+    p_limit: limit,
   });
 
   if (error || typeof data !== "boolean") throw new Error("ACCESS_REQUEST_RATE_LIMIT_FAILED");
@@ -372,29 +375,27 @@ export async function listMembersAdmin(args: {
   };
 }
 
-export async function updateMemberStatus(memberId: string, status: "suspended" | "revoked") {
-  const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
-    .from("app_members")
-    .update({ status })
-    .eq("user_id", memberId)
-    .select("user_id,email,status,access_request_id,approved_at,activated_at,created_at")
-    .maybeSingle();
-  if (error) throw new Error("MEMBER_UPDATE_FAILED");
-  return data ? memberDto(data as MemberRow) : null;
-}
-
-export async function recordMemberAudit(args: {
+export async function mutateMemberStatus(args: {
   adminId: string;
   memberId: string;
   status: "suspended" | "revoked";
-}) {
+}): Promise<
+  | { kind: "updated"; member: MemberAdminDto }
+  | { kind: "not_found" }
+  | { kind: "conflict" }
+> {
   const admin = createSupabaseAdminClient();
-  const { error } = await admin.from("admin_audit_log").insert({
-    action: args.status === "suspended" ? "suspend" : "revoke",
-    result_code: args.status.toUpperCase(),
-    actor_user_id: args.adminId,
-    member_user_id: args.memberId,
-  });
-  if (error) throw new Error("ADMIN_AUDIT_WRITE_FAILED");
+  const { data, error } = await admin
+    .rpc("mutate_member_status", {
+      p_member_id: args.memberId,
+      p_admin_id: args.adminId,
+      p_status: args.status,
+      p_now: new Date().toISOString(),
+    });
+  if (error) throw new Error("MEMBER_UPDATE_FAILED");
+  const row = Array.isArray(data) ? data[0] : null;
+  if (!row || row.outcome === "not_found") return { kind: "not_found" };
+  if (row.outcome === "conflict") return { kind: "conflict" };
+  if (row.outcome !== "updated") throw new Error("MEMBER_UPDATE_FAILED");
+  return { kind: "updated", member: memberDto(row as MemberRow) };
 }

@@ -2,6 +2,8 @@ import { after } from "next/server";
 import { parseAccessRequestInput } from "@/lib/access/validation";
 import {
   accessRequestWindowStart,
+  ACCESS_REQUEST_IP_LIMIT,
+  ACCESS_REQUEST_PAIR_LIMIT,
   cleanupExpiredRateLimits,
   consumeAccessRequestRateLimit,
   insertAccessRequest,
@@ -10,6 +12,7 @@ import { handleAccessRequest } from "@/lib/server/access-request-handler";
 import {
   assertSameOrigin,
   fingerprintAccessRequest,
+  fingerprintAccessRequestIp,
   readBoundedJson,
   RequestSecurityError,
 } from "@/lib/server/request-security";
@@ -26,6 +29,9 @@ export async function POST(request: Request) {
     now: () => new Date(),
     accessRequestWindowStart,
     fingerprintAccessRequest,
+    fingerprintAccessRequestIp,
+    accessRequestPairLimit: ACCESS_REQUEST_PAIR_LIMIT,
+    accessRequestIpLimit: ACCESS_REQUEST_IP_LIMIT,
     consumeAccessRequestRateLimit,
     insertAccessRequest,
     cleanupExpiredRateLimits,

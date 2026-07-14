@@ -102,3 +102,25 @@ test("member mutation accepts only suspended or revoked and member lists are DTO
   assert.match(repository, /\.select\("user_id,email,status,access_request_id,approved_at,activated_at,created_at"\)/);
   assert.doesNotMatch(repository, /\.select\(\s*"\*"|\.range\(|offset/i);
 });
+
+test("member status mutation is one locked transactional RPC with monotonic transitions and atomic audit", () => {
+  const route = read("src/app/api/admin/members/[id]/route.ts");
+  const repository = read("src/lib/server/access-repository.ts");
+  const schema = read("invite_access_schema.sql");
+
+  assert.match(repository, /rpc\("mutate_member_status"/);
+  assert.doesNotMatch(repository, /export async function recordMemberAudit/);
+  assert.doesNotMatch(route, /recordMemberAudit|console\.error\("ADMIN_AUDIT_WRITE_FAILED"/);
+  assert.match(route, /result\.kind\s*===\s*"not_found"[\s\S]*MEMBER_NOT_FOUND[\s\S]*404/);
+  assert.match(route, /result\.kind\s*===\s*"conflict"[\s\S]*MEMBER_STATUS_CONFLICT[\s\S]*409/);
+
+  assert.match(schema, /create or replace function public\.mutate_member_status\(/i);
+  assert.match(schema, /p_admin_id is null[\s\S]*p_member_id is null[\s\S]*p_now is null[\s\S]*p_status is null/i);
+  assert.match(schema, /from public\.app_members as member[\s\S]*for update/i);
+  assert.match(schema, /current_member\.status\s*=\s*'revoked'/i);
+  assert.match(schema, /current_member\.status\s*=\s*'suspended'[\s\S]*p_status\s*=\s*'suspended'/i);
+  assert.match(schema, /update public\.app_members[\s\S]*insert into public\.admin_audit_log/i);
+  assert.match(schema, /action[\s\S]*case p_status[\s\S]*when 'suspended' then 'suspend'[\s\S]*else 'revoke'/i);
+  assert.match(schema, /revoke all on function public\.mutate_member_status\(uuid, uuid, text, timestamptz\) from public, anon, authenticated/i);
+  assert.match(schema, /grant execute on function public\.mutate_member_status\(uuid, uuid, text, timestamptz\) to service_role/i);
+});

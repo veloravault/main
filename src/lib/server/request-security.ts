@@ -34,13 +34,27 @@ export function assertSameOrigin(request: Request) {
 }
 
 export function fingerprintAccessRequest(email: string, forwardedIp: string, windowStart: string) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedIp = normalizeForwardedIp(forwardedIp);
+  return fingerprint(
+    `access-request:email-ip:v1|${normalizedEmail}|${normalizedIp}|${windowStart}`,
+  );
+}
+
+export function fingerprintAccessRequestIp(forwardedIp: string, windowStart: string) {
+  const normalizedIp = normalizeForwardedIp(forwardedIp);
+  return fingerprint(`access-request:ip:v1|${normalizedIp}|${windowStart}`);
+}
+
+function normalizeForwardedIp(forwardedIp: string) {
+  return forwardedIp.split(",", 1)[0]?.trim().toLowerCase() || "unknown";
+}
+
+function fingerprint(value: string) {
   const secret = process.env.ACCESS_REQUEST_HMAC_SECRET?.trim();
   if (!secret) throw new Error("ACCESS_REQUEST_HMAC_SECRET_NOT_CONFIGURED");
-
-  const normalizedEmail = email.trim().toLowerCase();
-  const normalizedIp = forwardedIp.split(",", 1)[0]?.trim().toLowerCase() || "unknown";
   return createHmac("sha256", secret)
-    .update(`${normalizedEmail}|${normalizedIp}|${windowStart}`)
+    .update(value)
     .digest("hex");
 }
 
