@@ -1,9 +1,10 @@
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from "@supabase/ssr";
 
-let supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-if (!supabaseUrl.startsWith('http://') && !supabaseUrl.startsWith('https://')) {
-  supabaseUrl = 'https://placeholder.supabase.co';
+let supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+if (!supabaseUrl.startsWith("http://") && !supabaseUrl.startsWith("https://")) {
+  supabaseUrl = "https://placeholder.supabase.co";
 }
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder_key';
+const publishableKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createBrowserClient(supabaseUrl, publishableKey || "placeholder_key");

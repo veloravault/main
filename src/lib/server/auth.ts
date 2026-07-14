@@ -1,25 +1,17 @@
 import "server-only";
 
-import { createClient, type User } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
+import { createServerSupabaseClient } from "@/lib/server/supabase";
 
 const MAX_ACCESS_TOKEN_LENGTH = 8_192;
-
-function getAuthClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) throw new Error("Server authentication is not configured.");
-
-  return createClient(url, anonKey, {
-    auth: { autoRefreshToken: false, detectSessionInUrl: false, persistSession: false },
-  });
-}
 
 export async function requireAuthenticatedUser(accessToken: string): Promise<User> {
   if (!accessToken || accessToken.length > MAX_ACCESS_TOKEN_LENGTH) {
     throw new Error("Unauthorized");
   }
 
-  const { data, error } = await getAuthClient().auth.getUser(accessToken);
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase.auth.getUser(accessToken);
   if (error || !data.user) throw new Error("Unauthorized");
   return data.user;
 }
