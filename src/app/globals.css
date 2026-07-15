@@ -75,11 +75,6 @@
   --fill-tertiary:     rgba(118, 118, 128, 0.10);
 }
 
-.velora-logo { position: relative; display: inline-block; overflow: hidden; }
-.velora-logo > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
-.velora-logo-dark { display: none; }
-.dark .velora-logo-light { display: none; }
-.dark .velora-logo-dark { display: block; }
 .velora-brand-mark { filter: drop-shadow(0 2px 5px color-mix(in srgb, var(--foreground) 12%, transparent)); }
 
 .type-large-title { font-size: 34px; line-height: 1.08; font-weight: 750; letter-spacing: -0.045em; }

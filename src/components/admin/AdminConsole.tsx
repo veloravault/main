@@ -26,7 +26,7 @@ import {
   type PendingFilter,
 } from "./types";
 import styles from "@/app/admin/admin.module.css";
-import { VeloraMark } from "@/components/Icons";
+import { VeloraMark } from "@/components/VeloraMark";
 
 const ADMIN_VIEWS: readonly AdminView[] = ["pending", "invited", "members", "activity"];
 const PENDING_FILTERS: readonly PendingFilter[] = ["pending", "inviting", "invite_failed"];

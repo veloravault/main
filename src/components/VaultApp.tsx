@@ -44,7 +44,7 @@ import {
   HashIcon,
   BuildingIcon,
 } from "lucide-react";
-import { VeloraMark } from "@/components/Icons";
+import { VeloraMark } from "@/components/VeloraMark";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { createPortal } from "react-dom";
 

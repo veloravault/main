@@ -12,17 +12,6 @@ export function FaceIdIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-export function VeloraMark({ className = "", ...props }: React.HTMLAttributes<HTMLSpanElement>) {
-  return (
-    <span className={`velora-logo ${className}`.trim()} {...props}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="velora-logo-light" src="/brand/velora-mark-light.png" alt="" />
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="velora-logo-dark" src="/brand/velora-mark-dark.png" alt="" />
-    </span>
-  );
-}
-
 export function PremiumShieldIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>

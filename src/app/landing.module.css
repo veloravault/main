@@ -90,6 +90,23 @@
   gap: 4px;
 }
 
+.themeToggle {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--landing-muted);
+  outline: none;
+  transition: color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.themeToggle:hover { background: var(--landing-soft); color: var(--landing-graphite); }
+.themeToggle:active { transform: scale(0.94); }
+.themeToggle:focus-visible { box-shadow: 0 0 0 3px var(--landing-paper), 0 0 0 6px var(--landing-blue); }
+.themeToggle svg { width: 18px; height: 18px; }
+
 .desktopNav a,
 .signInLink {
   display: inline-flex;
