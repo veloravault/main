@@ -263,7 +263,7 @@ export function Dashboard({ masterPassword }: DashboardProps) {
           <div className="flex-1">
             <h3 className="text-[15px] font-semibold text-foreground">Enable Face ID / Touch ID</h3>
             <p className="text-[13px] text-muted-foreground mt-0.5 mb-3 leading-relaxed">
-              Unlock Telkar Vault instantly without entering your master key or PIN every time.
+              Unlock Velora Vault instantly without entering your master key or PIN every time.
             </p>
             <div className="flex items-center gap-2">
               <button

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import type { AdminView } from "./types";
 import styles from "@/app/admin/admin.module.css";
+import { VeloraMark } from "@/components/Icons";
 
 const NAVIGATION: Array<{
   id: AdminView;
@@ -27,9 +28,9 @@ export function AdminSidebar(props: {
 }) {
   return (
     <aside className={styles.sidebar} aria-label="Access console sections">
-      <div className={styles.sidebarMark} aria-hidden="true"><i /><i /><i /><i /><b /></div>
+      <VeloraMark className={styles.sidebarMark} aria-hidden="true" />
       <div className={styles.sidebarIntro}>
-        <p>Telkar Vault</p>
+        <p>Velora Vault</p>
         <strong>Owner console</strong>
       </div>
       <nav className={styles.sidebarNav}>

@@ -34,15 +34,7 @@
 .shell { display: grid; min-height: 100dvh; grid-template-columns: clamp(176px, 16vw, 220px) minmax(0, 1fr); }
 .sidebar { position: relative; z-index: 2; display: flex; min-width: 0; flex-direction: column; border-right: 1px solid var(--admin-line); padding: 28px 14px 22px; background: color-mix(in srgb, var(--admin-surface) 76%, transparent); backdrop-filter: blur(28px) saturate(150%); -webkit-backdrop-filter: blur(28px) saturate(150%); }
 .sidebarMark,
-.mobileBrand > span { position: relative; display: block; width: 30px; height: 30px; border-radius: 9px; background: var(--admin-ink); }
-.sidebarMark i,
-.mobileBrand i { position: absolute; width: 8px; height: 8px; border: 1.5px solid var(--admin-bg); border-radius: 3px; opacity: .92; }
-.sidebarMark i:nth-child(1), .mobileBrand i:nth-child(1) { top: 4px; left: 4px; }
-.sidebarMark i:nth-child(2), .mobileBrand i:nth-child(2) { top: 4px; right: 4px; }
-.sidebarMark i:nth-child(3), .mobileBrand i:nth-child(3) { right: 4px; bottom: 4px; }
-.sidebarMark i:nth-child(4), .mobileBrand i:nth-child(4) { bottom: 4px; left: 4px; }
-.sidebarMark b,
-.mobileBrand b { position: absolute; top: 50%; left: 50%; width: 4px; height: 4px; border-radius: 50%; background: var(--admin-blue); transform: translate(-50%, -50%); }
+.mobileBrand > span { display: block; width: 30px; height: 30px; flex: 0 0 auto; filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .08)); }
 .sidebarIntro { display: grid; gap: 2px; margin: 20px 6px 36px; }
 .sidebarIntro p { color: var(--admin-muted); font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 .sidebarIntro strong { font-size: 16px; font-weight: 680; letter-spacing: -.025em; }
@@ -238,7 +230,7 @@
   .workspace { height: auto; min-height: 100dvh; overflow: visible; }
   .topbar { min-height: calc(66px + env(safe-area-inset-top, 0px)); grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; padding: env(safe-area-inset-top, 0px) 16px 0; }
   .mobileBrand { display: flex; align-items: center; gap: 8px; }
-  .mobileBrand > span { width: 30px; height: 30px; flex: 0 0 auto; }
+  .mobileBrand > span { width: 30px; height: 30px; }
   .mobileBrand strong { display: none; }
   .search { height: 40px; border-radius: 999px; }
   .search input { font-size: 16px; }

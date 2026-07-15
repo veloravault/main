@@ -1,6 +1,6 @@
-# Telkar Vault
+# Velora Vault
 
-Telkar Vault is an invite-only encrypted vault built with Next.js 16 and Supabase. The public experience is a restrained product landing page and access request flow; approved members sign in to the existing vault application at `/vault`.
+Velora Vault is an invite-only encrypted vault built with Next.js 16 and Supabase. The public experience is a restrained product landing page and access request flow; approved members sign in to the existing vault application at `/vault`.
 
 ## Local setup
 

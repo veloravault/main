@@ -257,7 +257,7 @@ export function PinLock({ authenticatedUserId, onUnlock, onFallback }: PinLockPr
           </div>
           <h1 className="text-[24px] font-semibold text-foreground tracking-tight">Enter PIN</h1>
           <p className="text-[14px] text-muted-foreground text-center">
-            Enter your 6-digit PIN to unlock Telkar Vault
+            Enter your 6-digit PIN to unlock Velora Vault
           </p>
         </div>
 

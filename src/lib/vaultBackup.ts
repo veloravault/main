@@ -89,7 +89,7 @@ export async function exportEncryptedVaultBackup(onProgress?: (completed: number
   };
   const digest = await sha256(JSON.stringify(unsigned));
   const backup = { ...unsigned, manifest: { ...unsigned.manifest, sha256: digest } };
-  return { backup, filename: `telkar-vault-${exportedAt.slice(0, 10)}.telkarvault` };
+  return { backup, filename: `velora-vault-${exportedAt.slice(0, 10)}.telkarvault` };
 }
 
 export function downloadEncryptedVaultBackup(backup: EncryptedVaultBackup, filename: string) {

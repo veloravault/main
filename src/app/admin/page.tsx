@@ -6,8 +6,8 @@ import { AuthorizationError, requireAdmin } from "@/lib/server/access";
 import styles from "./admin.module.css";
 
 export const metadata: Metadata = {
-  title: "Access Console — Telkar Vault",
-  description: "Owner access review for Telkar Vault.",
+  title: "Access Console — Velora Vault",
+  description: "Owner access review for Velora Vault.",
 };
 
 export default async function AdminPage() {

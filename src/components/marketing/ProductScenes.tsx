@@ -9,7 +9,7 @@ function PasswordScene() {
       </div>
       <div className={styles.passwordList}>
         <div><i>G</i><span><strong>Google</strong><small>personal@icloud.com</small></span><b>••••••</b></div>
-        <div><i>A</i><span><strong>Apple ID</strong><small>telkar@icloud.com</small></span><b>••••••</b></div>
+        <div><i>A</i><span><strong>Apple ID</strong><small>velora@icloud.com</small></span><b>••••••</b></div>
         <div><i>N</i><span><strong>Notion</strong><small>Workspace</small></span><b>••••••</b></div>
       </div>
     </div>
@@ -48,7 +48,7 @@ function FinanceScene() {
   return (
     <div className={`${styles.sceneVisual} ${styles.financeVisual}`} aria-hidden="true">
       <div className={styles.financeCard}>
-        <span>Telkar Vault</span>
+        <span>Velora Vault</span>
         <i />
         <strong>••••&nbsp;&nbsp;••••&nbsp;&nbsp;2486</strong>
         <small>FINANCIAL ESSENTIAL</small>

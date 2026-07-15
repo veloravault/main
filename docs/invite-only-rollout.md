@@ -1,6 +1,6 @@
 # Invite-only production rollout
 
-This is the operator runbook for enabling Telkar Vault's invite-only access model in a hosted Supabase project. Execute it in order, record evidence for every gate, and stop on the first unexpected result. No hosted changes are performed by this repository; cloning, building, or deploying the application does not apply SQL, edit Auth settings, send invitations, or change DNS.
+This is the operator runbook for enabling Velora Vault's invite-only access model in a hosted Supabase project. Execute it in order, record evidence for every gate, and stop on the first unexpected result. No hosted changes are performed by this repository; cloning, building, or deploying the application does not apply SQL, edit Auth settings, send invitations, or change DNS.
 
 Use a staging project first. Replace values such as `OWNER_UUID` and `YOUR_PRODUCTION_ORIGIN` locally—never commit real keys, SMTP credentials, tokens, or user data.
 
@@ -174,7 +174,7 @@ The email's first GET lands on `/accept-invite` and does not call `verifyOtp`. T
 
 In Authentication > Email Templates > Invite user:
 
-1. Set a restrained subject such as `Your Telkar Vault invitation is ready`.
+1. Set a restrained subject such as `Your Velora Vault invitation is ready`.
 2. Install the exact contents of [`docs/supabase/invite-email.html`](supabase/invite-email.html).
 3. Send previews to authorized internal addresses.
 4. Confirm the rendered message contains exactly one link to `{{ .SiteURL }}/accept-invite?token_hash={{ .TokenHash }}&type=invite`.

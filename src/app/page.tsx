@@ -8,7 +8,7 @@ import { VaultAperture } from "@/components/marketing/VaultAperture";
 import styles from "./landing.module.css";
 
 export const metadata: Metadata = {
-  title: "Telkar Vault — Private by invitation",
+  title: "Velora Vault — Private by invitation",
   description:
     "A private, encrypted home for passwords, documents, notes and financial essentials.",
 };

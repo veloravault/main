@@ -40,7 +40,7 @@ export function BackupSettings() {
       <div className="apple-grouped-list">
         <div className="settings-backup-hero">
           <span><ArchiveIcon aria-hidden="true" /></span>
-          <div><h3>Telkar Vault backup</h3><p>The export contains ciphertext, encryption metadata and encrypted document blobs. Your existing master key is required to read restored data.</p></div>
+          <div><h3>Velora Vault backup</h3><p>The export contains ciphertext, encryption metadata and encrypted document blobs. Your existing master key is required to read restored data.</p></div>
           <Button onClick={() => setConfirmOpen(true)} className="settings-primary-button"><DownloadIcon />Export backup</Button>
         </div>
         <div className="settings-backup-facts" style={{ margin: 0 }}>

@@ -2,11 +2,11 @@
 
 ## Goal
 
-Refresh Telkar Vault with an Apple-ecosystem visual language led by iOS Wallet on mobile and adapted to macOS productivity patterns on larger screens. Correct the wallet-card network logos and make the interface feel like one coherent product without changing authentication, encryption, storage, imports, search, or database behavior.
+Refresh Velora Vault with an Apple-ecosystem visual language led by iOS Wallet on mobile and adapted to macOS productivity patterns on larger screens. Correct the wallet-card network logos and make the interface feel like one coherent product without changing authentication, encryption, storage, imports, search, or database behavior.
 
 ## Product and Audience
 
-Telkar Vault is a private personal vault for passwords, documents, notes, payment cards, and bank accounts. The interface should feel calm, trustworthy, tactile, and immediately understandable to people familiar with Apple devices. Security content stays legible and functional; decoration never competes with stored data.
+Velora Vault is a private personal vault for passwords, documents, notes, payment cards, and bank accounts. The interface should feel calm, trustworthy, tactile, and immediately understandable to people familiar with Apple devices. Security content stays legible and functional; decoration never competes with stored data.
 
 ## Chosen Direction
 

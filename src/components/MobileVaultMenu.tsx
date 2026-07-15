@@ -36,7 +36,7 @@ export function MobileVaultMenu(props: {
           <MenuRow icon={LockIcon} label="Lock Vault" detail="Keep your account signed in" destructive onClick={() => act(props.onLock)} />
         </AdaptiveSheetBody>
       </AdaptiveSheet>
-      <AdaptiveSheet open={appearanceOpen} onOpenChange={setAppearanceOpen} title="Appearance" description="Choose how Telkar Vault looks on this device." size="sm" className="mobile-vault-menu">
+      <AdaptiveSheet open={appearanceOpen} onOpenChange={setAppearanceOpen} title="Appearance" description="Choose how Velora Vault looks on this device." size="sm" className="mobile-vault-menu">
         <AdaptiveSheetBody className="mobile-vault-menu-body">
           {(["system", "light", "dark"] as ThemeChoice[]).map((choice) => <button key={choice} type="button" className="mobile-vault-theme-row system-interactive" onClick={() => { props.setTheme(choice); setAppearanceOpen(false); }}><span>{choice[0].toUpperCase() + choice.slice(1)}</span>{activeTheme === choice && <CheckIcon aria-hidden="true" />}</button>)}
         </AdaptiveSheetBody>

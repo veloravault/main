@@ -12,7 +12,7 @@ type AuthGatewayProps = {
 
 const modeCopy: Record<AuthMode, { title: string; description: string }> = {
   "sign-in": {
-    title: "Sign in to Telkar Vault",
+    title: "Sign in to Velora Vault",
     description: "Use your account credentials. Your vault master key is entered separately after access is verified.",
   },
   "request-access": {

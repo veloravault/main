@@ -76,38 +76,11 @@
 }
 
 .vaultMark {
-  position: relative;
   display: block;
   width: 26px;
   height: 26px;
   flex: 0 0 auto;
-  overflow: hidden;
-  border-radius: 8px;
-  background: var(--landing-graphite);
-}
-
-.vaultMark > span {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border: 1.5px solid var(--landing-paper);
-  border-radius: 3px;
-  opacity: 0.9;
-}
-
-.vaultMark > span:nth-child(1) { top: 4px; left: 4px; }
-.vaultMark > span:nth-child(2) { top: 4px; right: 4px; }
-.vaultMark > span:nth-child(3) { right: 4px; bottom: 4px; }
-.vaultMark > span:nth-child(4) { bottom: 4px; left: 4px; }
-.vaultMark > i {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--landing-blue);
-  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.08));
 }
 
 .desktopNav,

@@ -5,7 +5,7 @@ export function LandingFooter() {
   return (
     <footer className={styles.footer}>
       <div>
-        <span>© {new Date().getFullYear()} Telkar Vault</span>
+        <span>© {new Date().getFullYear()} Velora Vault</span>
         <nav aria-label="Footer navigation">
           <Link href="#security">Security</Link>
           <Link href="#privacy">Privacy</Link>

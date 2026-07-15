@@ -2,7 +2,7 @@
 
 ## Goal
 
-Move Telkar Vault from Apple-inspired styling to a more structurally authentic Apple ecosystem experience across mobile and desktop. Preserve all authentication, encryption, storage, import, search, and database behavior.
+Move Velora Vault from Apple-inspired styling to a more structurally authentic Apple ecosystem experience across mobile and desktop. Preserve all authentication, encryption, storage, import, search, and database behavior.
 
 ## Approved Direction
 

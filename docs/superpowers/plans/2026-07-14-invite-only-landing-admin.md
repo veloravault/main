@@ -1056,7 +1056,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 Use restrained, authentication-only copy with one button:
 
 ```html
-<h2>Your Telkar Vault invitation is ready</h2>
+<h2>Your Velora Vault invitation is ready</h2>
 <p>Use the secure button below to finish setting up your account.</p>
 <p><a href="{{ .SiteURL }}/accept-invite?token_hash={{ .TokenHash }}&type=invite">Accept invitation</a></p>
 <p>If you did not expect this invitation, you can ignore this email.</p>

@@ -108,7 +108,7 @@ export async function enableBiometrics(
     publicKey: {
       challenge,
       rp: {
-        name: "Telkar Vault",
+        name: "Velora Vault",
         id: window.location.hostname
       },
       user: {

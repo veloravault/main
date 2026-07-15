@@ -44,6 +44,7 @@ import {
   HashIcon,
   BuildingIcon,
 } from "lucide-react";
+import { VeloraMark } from "@/components/Icons";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { createPortal } from "react-dom";
 
@@ -342,10 +343,8 @@ export default function VaultApp() {
         {/* App identity */}
         <div className="px-4 pt-5 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-[9px] bg-primary flex items-center justify-center shadow-sm shrink-0">
-              <ShieldCheckIcon className="w-4 h-4 text-white" strokeWidth={2} />
-            </div>
-            <span className="text-[15px] font-semibold tracking-tight text-foreground">Telkar Vault</span>
+            <VeloraMark className="velora-brand-mark h-8 w-8 shrink-0" aria-hidden="true" />
+            <span className="text-[15px] font-semibold tracking-tight text-foreground">Velora Vault</span>
           </div>
         </div>
 

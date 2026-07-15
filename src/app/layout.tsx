@@ -28,13 +28,20 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Telkar Vault",
+  title: "Velora Vault",
   description:
     "A private, encrypted home for passwords, documents, notes and financial essentials.",
+  icons: {
+    icon: [
+      { url: "/brand/velora-favicon-light.png", media: "(prefers-color-scheme: light)", type: "image/png" },
+      { url: "/brand/velora-favicon-dark.png", media: "(prefers-color-scheme: dark)", type: "image/png" },
+    ],
+    apple: "/apple-icon.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Telkar Vault",
+    title: "Velora Vault",
   },
 };
 

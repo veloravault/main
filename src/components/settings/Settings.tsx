@@ -19,7 +19,7 @@ export function Settings({ masterPassword, onLock }: SettingsProps) {
 
   return (
     <div className={`vault-settings vault-material-scope ${selected ? "has-mobile-selection" : ""}`}>
-      <header className="settings-page-header"><p className="type-group-label">Telkar Vault</p><h1>Settings</h1><p>Account, security and preferences for this device.</p></header>
+      <header className="settings-page-header"><p className="type-group-label">Velora Vault</p><h1>Settings</h1><p>Account, security and preferences for this device.</p></header>
       <div className="settings-layout">
         <aside className="settings-sidebar"><SettingsNavigation selected={active} onSelect={setSelected} /></aside>
         <main className="settings-detail overflow-hidden relative">

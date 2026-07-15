@@ -6,7 +6,7 @@
 
 ## 1. Goal
 
-Turn the remaining Telkar Vault experience into a coherent Apple-like product system across mobile and desktop. The work replaces the current Profile card collection with a real Settings experience, completes mobile access to secondary areas, rebuilds Magic Import as an editable multi-source workflow, and establishes shared interaction and state patterns for Passwords, Documents, Notes, and Bank Accounts.
+Turn the remaining Velora Vault experience into a coherent Apple-like product system across mobile and desktop. The work replaces the current Profile card collection with a real Settings experience, completes mobile access to secondary areas, rebuilds Magic Import as an editable multi-source workflow, and establishes shared interaction and state patterns for Passwords, Documents, Notes, and Bank Accounts.
 
 The finished Wallet experience is protected. This project must not redesign or behaviorally change Wallet screens, cards, details, stacking, responsiveness, motion, dialogs, or deletion.
 

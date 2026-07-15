@@ -1,25 +1,14 @@
 import Link from "next/link";
 import styles from "@/app/landing.module.css";
-
-function VaultMark() {
-  return (
-    <span className={styles.vaultMark} aria-hidden="true">
-      <span />
-      <span />
-      <span />
-      <span />
-      <i />
-    </span>
-  );
-}
+import { VeloraMark } from "@/components/Icons";
 
 export function LandingHeader() {
   return (
     <header className={styles.header}>
       <div className={styles.headerInner}>
-        <Link className={styles.brand} href="/" aria-label="Telkar Vault home">
-          <VaultMark />
-          <span>Telkar Vault</span>
+        <Link className={styles.brand} href="/" aria-label="Velora Vault home">
+          <VeloraMark className={styles.vaultMark} aria-hidden="true" />
+          <span>Velora Vault</span>
         </Link>
 
         <nav className={styles.desktopNav} aria-label="Primary navigation">

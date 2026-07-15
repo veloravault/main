@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make every Telkar Vault surface structurally resemble Apple ecosystem interfaces through grouped lists, responsive sheets, a mobile Wallet stack, native selection chrome, consistent typography, and restrained materials.
+**Goal:** Make every Velora Vault surface structurally resemble Apple ecosystem interfaces through grouped lists, responsive sheets, a mobile Wallet stack, native selection chrome, consistent typography, and restrained materials.
 
 **Architecture:** Extend the shared CSS system and introduce three presentation primitives: `AppleGroupedList`, `ResponsiveSheetFrame`, and `SelectionToolbar`. Existing feature components keep all Supabase, encryption, search, and state logic while adopting these primitives; `PaymentCard` and `WalletVault` own card stacking and expansion.
 

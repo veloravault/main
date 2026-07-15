@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Correct wallet-card network logos and apply a coherent iOS Wallet-led Apple ecosystem interface across Telkar Vault without changing its data or security behavior.
+**Goal:** Correct wallet-card network logos and apply a coherent iOS Wallet-led Apple ecosystem interface across Velora Vault without changing its data or security behavior.
 
 **Architecture:** Introduce a focused `PaymentCard` presentation component and a shared network-logo resolver, then centralize Apple-like materials and layout primitives in `globals.css`. Existing vault components keep ownership of Supabase calls, encryption, and state; they only adopt shared presentation classes and the extracted wallet renderer.
 

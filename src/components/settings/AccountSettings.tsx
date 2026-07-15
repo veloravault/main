@@ -99,7 +99,7 @@ export function AccountSettings() {
 
   return (
     <section className="settings-detail-section" aria-labelledby="settings-account-title">
-      <header><p className="type-group-label">Account</p><h2 id="settings-account-title">Your account</h2><p>Manage the identity shown across Telkar Vault.</p></header>
+      <header><p className="type-group-label">Account</p><h2 id="settings-account-title">Your account</h2><p>Manage the identity shown across Velora Vault.</p></header>
       <div className="settings-group settings-account-card">
         <div className="settings-avatar-column">
           <button type="button" className="settings-avatar system-interactive" onClick={() => fileInputRef.current?.click()} aria-label="Change profile photo" disabled={uploading}>

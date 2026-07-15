@@ -1,4 +1,4 @@
-# Invite-Only Telkar Vault: Landing, Approval, and Onboarding Design
+# Invite-Only Velora Vault: Landing, Approval, and Onboarding Design
 
 **Date:** 2026-07-14
 **Status:** Design approved in conversation; written specification awaiting final review
@@ -6,7 +6,7 @@
 
 ## 1. Purpose
 
-Transform Telkar Vault from a vault-first single screen into a private, invitation-only product with:
+Transform Velora Vault from a vault-first single screen into a private, invitation-only product with:
 
 - a professional public landing page with an Apple-ecosystem feel;
 - a name-and-email access request flow;
@@ -24,7 +24,7 @@ The system must preserve the current encryption model. The vault master key rema
 | Access model | Request access, then receive an invitation after approval |
 | Public request fields | Full name and email only |
 | Auth user creation | Only after admin approval |
-| Admin location | Inside Telkar Vault at `/admin` |
+| Admin location | Inside Velora Vault at `/admin` |
 | Initial admins | One owner account, extensible to more immutable user IDs later |
 | Invitation delivery | Customized Supabase invitation email |
 | Public signup | Disabled |
@@ -73,7 +73,7 @@ No password, master key, Auth user, or empty vault is created at the public requ
 
 The page has one primary job: establish enough trust for a visitor to request access.
 
-1. Minimal translucent navigation: Telkar Vault, Security, Privacy, Sign in, Request access.
+1. Minimal translucent navigation: Velora Vault, Security, Privacy, Sign in, Request access.
 2. Eyebrow: “Private by invitation.”
 3. Hero: “Everything important. Only yours.”
 4. Supporting line: “A calm, encrypted home for passwords, documents, notes and financial essentials.”
@@ -172,7 +172,7 @@ Double-clicks, repeated requests, browser refreshes, and concurrent admin tabs m
 
 ### 7.1 Invitation
 
-Approval invokes Supabase Admin `inviteUserByEmail` from a server-only module. The email uses the configured Telkar Vault invitation template and links to `/accept-invite` with the template-provided token hash.
+Approval invokes Supabase Admin `inviteUserByEmail` from a server-only module. The email uses the configured Velora Vault invitation template and links to `/accept-invite` with the template-provided token hash.
 
 Production delivery requires custom SMTP configured in Supabase Auth. Supabase’s default development mailer is not considered a production delivery solution.
 

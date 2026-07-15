@@ -13,7 +13,7 @@ export function SecurityStory() {
         <p className={styles.sectionEyebrow}>Security, in plain language</p>
         <h2 id="security-title">Private is a design decision.</h2>
         <p>
-          Telkar Vault separates account access from the key that protects your
+          Velora Vault separates account access from the key that protects your
           sensitive information. That boundary stays intact from invitation to
           every unlock.
         </p>

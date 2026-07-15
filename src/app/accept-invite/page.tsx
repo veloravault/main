@@ -5,8 +5,8 @@ import { AuthShell } from "@/components/auth/AuthShell";
 import styles from "@/components/auth/auth-shell.module.css";
 
 export const metadata: Metadata = {
-  title: "Accept invitation — Telkar Vault",
-  description: "Confirm your invitation to Telkar Vault.",
+  title: "Accept invitation — Velora Vault",
+  description: "Confirm your invitation to Velora Vault.",
   robots: { index: false, follow: false },
 };
 

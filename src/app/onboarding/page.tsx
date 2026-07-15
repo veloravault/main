@@ -6,8 +6,8 @@ import { AuthorizationError, getMembershipForUser, requireUser } from "@/lib/ser
 import styles from "@/components/auth/auth-shell.module.css";
 
 export const metadata: Metadata = {
-  title: "Create your private access — Telkar Vault",
-  description: "Complete your Telkar Vault invitation.",
+  title: "Create your private access — Velora Vault",
+  description: "Complete your Velora Vault invitation.",
   robots: { index: false, follow: false },
 };
 

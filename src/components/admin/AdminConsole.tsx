@@ -26,6 +26,7 @@ import {
   type PendingFilter,
 } from "./types";
 import styles from "@/app/admin/admin.module.css";
+import { VeloraMark } from "@/components/Icons";
 
 const ADMIN_VIEWS: readonly AdminView[] = ["pending", "invited", "members", "activity"];
 const PENDING_FILTERS: readonly PendingFilter[] = ["pending", "inviting", "invite_failed"];
@@ -332,7 +333,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
         <AdminSidebar activeView={view} onSelect={selectView} />
         <section className={styles.workspace}>
           <header className={styles.topbar}>
-            <div className={styles.mobileBrand}><span aria-hidden="true"><i /><i /><i /><i /><b /></span><strong>Owner console</strong></div>
+            <div className={styles.mobileBrand}><VeloraMark aria-hidden="true" /><strong>Owner console</strong></div>
             <label className={styles.search}>
               <SearchIcon aria-hidden="true" />
               <span className="sr-only">Search this view</span>

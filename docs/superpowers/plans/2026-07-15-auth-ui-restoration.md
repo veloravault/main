@@ -203,7 +203,7 @@ Create `AuthGateway.tsx` as a Client Component with `useState(initialMode)`. Ren
 
 ```tsx
 const copy = mode === "sign-in"
-  ? { title: "Sign in to Telkar Vault", description: "Use your account credentials. Your vault master key is entered separately after access is verified." }
+  ? { title: "Sign in to Velora Vault", description: "Use your account credentials. Your vault master key is entered separately after access is verified." }
   : { title: "Request private access", description: "Tell us who you are. Every request is reviewed before an invitation is sent." };
 
 return (

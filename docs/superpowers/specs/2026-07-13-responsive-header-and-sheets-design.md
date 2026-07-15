@@ -21,7 +21,7 @@ This redesign covers the authenticated application header, global search present
 ### Mobile
 
 - The toolbar is 56px high plus the safe-area inset.
-- The active section title replaces the persistent Telkar Vault identity.
+- The active section title replaces the persistent Velora Vault identity.
 - Search remains a direct icon action.
 - A single More control contains Magic Import, theme selection, and Profile.
 - The duplicated large mobile content heading is removed because the destination is already identified in the toolbar.
