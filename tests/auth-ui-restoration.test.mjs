@@ -17,6 +17,7 @@ test("shared auth shell owns presentation without authentication", () => {
   assert.match(css, /100dvh/);
   assert.match(css, /safe-area-inset/);
   assert.match(css, /min-height:\s*44px/);
+  assert.match(css, /\.heading\s*\+\s*\.content\s*\{[^}]*margin-top:\s*20px/s);
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
 });
 

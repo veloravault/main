@@ -123,6 +123,7 @@
 .segmented button:active { transform: scale(0.97); }
 
 .content { width: 100%; }
+.heading + .content { margin-top: 20px; }
 
 .fieldGroup {
   overflow: hidden;
