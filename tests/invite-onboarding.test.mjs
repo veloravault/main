@@ -38,6 +38,39 @@ test("confirmation route consumes invitation tokens only on POST", () => {
   assert.match(source, /size\s*>\s*MAX_CONFIRM_BYTES/);
 });
 
+test("default Supabase invite fragments are stripped and completed through the authenticated server session", () => {
+  const page = read("src/app/accept-invite/page.tsx");
+  const bridgePath = "src/components/auth/InviteFragmentBridge.tsx";
+  const routePath = "src/app/auth/invite-session/route.ts";
+
+  assert.equal(existsSync(file(bridgePath)), true, `${bridgePath} must exist`);
+  assert.equal(existsSync(file(routePath)), true, `${routePath} must exist`);
+  const bridge = read(bridgePath);
+  const route = read(routePath);
+  const nextConfig = read("next.config.ts");
+  const browserSupabase = read("src/lib/supabase.ts");
+
+  assert.match(page, /InviteFragmentBridge/);
+  assert.match(bridge, /window\.location\.hash/);
+  assert.match(bridge, /history\.replaceState/);
+  assert.match(bridge, /useRef<Promise<void>\s*\|\s*null>/);
+  assert.doesNotMatch(bridge, /let\s+cancelled\s*=/);
+  assert.match(bridge, /access_token/);
+  assert.match(bridge, /refresh_token/);
+  assert.match(bridge, /type\s*!==\s*["']invite["']/);
+  assert.match(bridge, /auth\.setSession\(\{\s*access_token:\s*accessToken,\s*refresh_token:\s*refreshToken,?\s*\}\)/s);
+  assert.match(bridge, /fetch\(["']\/auth\/invite-session["']/);
+  assert.doesNotMatch(bridge, /console\.(?:log|error)[^(]*\([^)]*(?:accessToken|refreshToken|hash)/s);
+
+  assert.match(route, /assertSameOrigin\(request\)/);
+  assert.match(route, /export\s+async\s+function\s+POST\s*\(/);
+  assert.match(route, /auth\.getUser\(\)/);
+  assert.match(route, /reconcileConfirmedInvite/);
+  assert.doesNotMatch(route, /access_token|refresh_token|request\.json|request\.formData/);
+  assert.match(nextConfig, /source:\s*["']\/auth\/invite-session["']\s*,\s*headers:\s*sensitiveAuthHeaders/);
+  assert.match(browserSupabase, /detectSessionInUrl:\s*false/);
+});
+
 test("onboarding keeps sign-in password and master key as separate secrets", () => {
   const path = "src/components/auth/OnboardingForm.tsx";
   assert.equal(existsSync(file(path)), true, `${path} must exist`);

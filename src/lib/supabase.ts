@@ -8,4 +8,6 @@ export const supabaseUrl = configuredSupabaseUrl;
 export const supabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-export const supabase = createBrowserClient(supabaseUrl, supabasePublishableKey || "placeholder_key");
+export const supabase = createBrowserClient(supabaseUrl, supabasePublishableKey || "placeholder_key", {
+  auth: { detectSessionInUrl: false },
+});

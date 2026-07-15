@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRightIcon } from "lucide-react";
 import { AuthShell } from "@/components/auth/AuthShell";
+import { InviteFragmentBridge } from "@/components/auth/InviteFragmentBridge";
 import styles from "@/components/auth/auth-shell.module.css";
 
 export const metadata: Metadata = {
@@ -27,9 +28,12 @@ export default async function AcceptInvitePage({
   const state = typeof parameters.state === "string" ? parameters.state : "";
   const canConfirm = type === "invite" && tokenHash.length >= 20 && tokenHash.length <= 2048;
   const expired = state === "expired";
-  const title = canConfirm ? "Enter when you’re ready." : "This link can’t be used.";
+  const awaitingFragment = !state && !canConfirm;
+  const title = canConfirm ? "Enter when you’re ready." : awaitingFragment ? "Opening your invitation." : "This link can’t be used.";
   const description = canConfirm
     ? "Your invitation is ready to be verified. Continue explicitly to create your private sign-in."
+    : awaitingFragment
+      ? "Velora Vault is securely completing the invitation from your email."
     : expired
       ? "The invitation is no longer valid. Ask the vault owner to send a fresh invitation."
       : "This invitation is incomplete or invalid. Return to the access page for help.";
@@ -37,7 +41,7 @@ export default async function AcceptInvitePage({
   return (
     <AuthShell
       compact
-      eyebrow={canConfirm ? "Private invitation · 01" : expired ? "Invitation expired" : "Invitation unavailable"}
+      eyebrow={canConfirm ? "Private invitation · 01" : awaitingFragment ? "Private invitation" : expired ? "Invitation expired" : "Invitation unavailable"}
       title={title}
       description={description}
       footer={canConfirm ? "The link is verified only after you press Accept invitation." : undefined}
@@ -50,6 +54,8 @@ export default async function AcceptInvitePage({
             <span>Accept invitation</span><ArrowRightIcon width={17} height={17} aria-hidden="true" />
           </button>
         </form>
+      ) : awaitingFragment ? (
+        <InviteFragmentBridge />
       ) : (
         <Link className={styles.actionLink} href="/request-access">
           <span>Return to access</span><ArrowRightIcon width={17} height={17} aria-hidden="true" />

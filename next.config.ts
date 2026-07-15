@@ -25,6 +25,7 @@ const nextConfig: NextConfig = {
       },
       { source: "/accept-invite", headers: sensitiveAuthHeaders },
       { source: "/auth/confirm", headers: sensitiveAuthHeaders },
+      { source: "/auth/invite-session", headers: sensitiveAuthHeaders },
     ];
   },
 };
