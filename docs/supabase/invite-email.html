@@ -16,7 +16,7 @@
                 <h1 style="margin:0 0 16px;font-size:32px;line-height:1.15;letter-spacing:-.025em;">Your invitation is ready.</h1>
                 <p style="margin:0 0 28px;color:#515154;font-size:17px;line-height:1.55;">Use the secure button below to finish setting up your account.</p>
                 <p style="margin:0 0 28px;">
-                  <a href="{{ .SiteURL }}/accept-invite?token_hash={{ .TokenHash }}&amp;type=invite" style="display:inline-block;border-radius:999px;background:#0071e3;color:#ffffff;font-size:16px;font-weight:650;line-height:1;padding:15px 24px;text-decoration:none;">Accept invitation</a>
+                  <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&amp;type=invite" style="display:inline-block;border-radius:999px;background:#0071e3;color:#ffffff;font-size:16px;font-weight:650;line-height:1;padding:15px 24px;text-decoration:none;">Accept invitation</a>
                 </p>
                 <p style="margin:0;color:#86868b;font-size:14px;line-height:1.5;">If you did not expect this invitation, you can ignore this email.</p>
               </td>

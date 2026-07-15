@@ -38,7 +38,8 @@ test("invite email is a scanner-safe single-action authentication message", () =
   const links = email.match(/<a\b/gi) ?? [];
 
   assert.equal(links.length, 1, "the invitation must contain one link");
-  assert.match(email, /{{\s*\.SiteURL\s*}}\/accept-invite\?token_hash={{\s*\.TokenHash\s*}}&amp;type=invite/);
+  assert.match(email, /{{\s*\.RedirectTo\s*}}\?token_hash={{\s*\.TokenHash\s*}}&amp;type=invite/);
+  assert.doesNotMatch(email, /{{\s*\.SiteURL\s*}}/);
   assert.doesNotMatch(email, /\.ConfirmationURL|\.Data|full[_ ]?name|master key|<img\b|tracking/i);
 });
 

@@ -177,7 +177,7 @@ In Authentication > Email Templates > Invite user:
 1. Set a restrained subject such as `Your Velora Vault invitation is ready`.
 2. Install the exact contents of [`docs/supabase/invite-email.html`](supabase/invite-email.html).
 3. Send previews to authorized internal addresses.
-4. Confirm the rendered message contains exactly one link to `{{ .SiteURL }}/accept-invite?token_hash={{ .TokenHash }}&type=invite`.
+4. Confirm the rendered message contains exactly one link to `{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=invite`; `inviteUserByEmail` supplies the exact allow-listed `/accept-invite` URL for the current environment.
 5. Disable click/open email tracking and link rewriting in the SMTP provider. Rewritten links can break Auth verification.
 
 The template intentionally includes no remote images, personalization metadata, requester name, marketing copy, analytics, or master key. Do not replace the custom `TokenHash` URL with `ConfirmationURL`; automated security scanners can prefetch and consume a direct confirmation URL.
