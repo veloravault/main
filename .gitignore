@@ -13,6 +13,14 @@
 # testing
 /coverage
 
+# local browser tooling and one-off provider probes
+/.playwright-mcp/
+/list-models.js
+/test-all.js
+/test-pdf.js
+/test-text.js
+/test-version.js
+
 # next.js
 /.next/
 /out/
