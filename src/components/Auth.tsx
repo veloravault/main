@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Loader2Icon, SunIcon, MoonIcon } from "lucide-react";
 import { FaceIdIcon, AppleLockIcon } from "@/components/Icons";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/ThemeProvider";
 import { motion, AnimatePresence } from "framer-motion";
 import { savePinForMaster, hasPinLock } from "@/components/PinLock";
 import { isBiometricsSupported, hasBiometricsEnabled, enableBiometrics, unlockWithBiometrics } from "@/lib/biometrics";

@@ -3,12 +3,13 @@
 import { useState } from "react";
 import { BuildingIcon, CheckIcon, ChevronRightIcon, LockIcon, MoreHorizontalIcon, PaletteIcon, SettingsIcon, Wand2Icon } from "lucide-react";
 import { AdaptiveSheet, AdaptiveSheetBody } from "@/components/ui/adaptive-sheet";
+import type { Theme } from "@/components/ThemeProvider";
 
-type ThemeChoice = "system" | "light" | "dark";
+type ThemeChoice = Theme;
 
 export function MobileVaultMenu(props: {
-  theme: string | undefined;
-  setTheme: (theme: string) => void;
+  theme: Theme | undefined;
+  setTheme: (theme: Theme) => void;
   onNavigateBanks: () => void;
   onNavigateSettings: () => void;
   onMagicImport: () => void;

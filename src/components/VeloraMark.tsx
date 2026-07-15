@@ -1,6 +1,6 @@
 "use client";
 
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/ThemeProvider";
 
 export function VeloraMark({ className = "", style, ...props }: React.HTMLAttributes<HTMLSpanElement>) {
   const { resolvedTheme } = useTheme();

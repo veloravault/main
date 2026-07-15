@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { MoonIcon, SunIcon } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/ThemeProvider";
 import styles from "./auth-shell.module.css";
 
 export type AuthMode = "sign-in" | "request-access";

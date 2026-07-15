@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/ThemeProvider";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Auth } from "@/components/Auth";

@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastProvider } from "@/components/Toast";
@@ -13,6 +14,21 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
+const themeBootstrap = `
+(() => {
+  try {
+    const stored = localStorage.getItem("theme");
+    const preference = stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+    const resolved = preference === "system"
+      ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+      : preference;
+    const root = document.documentElement;
+    root.classList.remove("light", "dark");
+    root.classList.add(resolved);
+    root.style.colorScheme = resolved;
+  } catch {}
+})();`;
 
 import type { Metadata, Viewport } from "next";
 
@@ -56,6 +72,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
+      <head>
+        <Script id="velora-theme-bootstrap" strategy="beforeInteractive">
+          {themeBootstrap}
+        </Script>
+      </head>
       <body className="antialiased bg-background text-foreground selection:bg-primary/20 min-h-full flex flex-col">
         <ThemeProvider
           attribute="class"

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { MoonIcon, SunIcon } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/ThemeProvider";
 import styles from "@/app/landing.module.css";
 import { VeloraMark } from "@/components/VeloraMark";
 

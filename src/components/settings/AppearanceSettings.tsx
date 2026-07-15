@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { CheckIcon, LaptopIcon, MoonIcon, SunIcon } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/ThemeProvider";
 
 type ThemeChoice = "system" | "light" | "dark";
 const choices: Array<{ id: ThemeChoice; label: string; description: string; icon: typeof SunIcon }> = [
