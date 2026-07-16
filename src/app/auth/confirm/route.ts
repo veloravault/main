@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { reconcileConfirmedInvite } from "@/lib/server/access-repository";
+import { InviteReconciliationError, reconcileConfirmedInvite } from "@/lib/server/access-repository";
 import { assertSameOrigin, requiredAppUrl } from "@/lib/server/request-security";
 import { createServerSupabaseClient } from "@/lib/server/supabase";
 
@@ -79,6 +79,7 @@ export async function POST(request: Request) {
         userId: data.user.id,
         name: reconcileError instanceof Error ? reconcileError.name : typeof reconcileError,
         message: reconcileError instanceof Error ? reconcileError.message : String(reconcileError),
+        detail: reconcileError instanceof InviteReconciliationError ? reconcileError.detail : undefined,
       });
       await supabase.auth.signOut();
       return redirectTo("/accept-invite?state=invalid");

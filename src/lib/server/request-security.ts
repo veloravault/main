@@ -24,15 +24,36 @@ export function assertSameOrigin(request: Request) {
   const origin = request.headers.get("origin");
   let parsedOrigin: string | null = null;
   try {
-    parsedOrigin = origin ? new URL(origin).origin : null;
+    parsedOrigin = origin && origin !== "null" ? new URL(origin).origin : null;
   } catch {
     parsedOrigin = null;
   }
+
   const expected = requiredAppUrl();
-  if (!parsedOrigin || parsedOrigin !== expected) {
-    console.error("ORIGIN_MISMATCH_DETAIL", { receivedOriginHeader: origin, parsedOrigin, expectedAppUrl: expected });
-    throw new RequestSecurityError("ORIGIN_MISMATCH", 403);
+  if (parsedOrigin === expected) return;
+
+  // Some browsers (observed: Brave) send a literal "null" Origin on certain
+  // top-level form-POST navigations, e.g. when the page was reached from an
+  // external context like a webmail link. Origin isn't available then, so
+  // fall back to Referer, which browsers still populate for genuine
+  // same-origin navigations under the default Referrer-Policy.
+  const referer = request.headers.get("referer");
+  let parsedReferer: string | null = null;
+  try {
+    parsedReferer = referer ? new URL(referer).origin : null;
+  } catch {
+    parsedReferer = null;
   }
+  if (parsedReferer === expected) return;
+
+  console.error("ORIGIN_MISMATCH_DETAIL", {
+    receivedOriginHeader: origin,
+    parsedOrigin,
+    receivedRefererHeader: referer,
+    parsedReferer,
+    expectedAppUrl: expected,
+  });
+  throw new RequestSecurityError("ORIGIN_MISMATCH", 403);
 }
 
 export function fingerprintAccessRequest(email: string, forwardedIp: string, windowStart: string) {

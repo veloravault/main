@@ -47,7 +47,10 @@ export type MemberAdminDto = {
 };
 
 export class InviteReconciliationError extends Error {
-  constructor(readonly code: "NO_ELIGIBLE_REQUEST" | "RECONCILIATION_FAILED") {
+  constructor(
+    readonly code: "NO_ELIGIBLE_REQUEST" | "RECONCILIATION_FAILED",
+    readonly detail?: Record<string, unknown>,
+  ) {
     super(code);
     this.name = "InviteReconciliationError";
   }
@@ -225,12 +228,10 @@ export async function reconcileConfirmedInvite(input: {
     .limit(2);
 
   if (lookupError) {
-    console.error("RECONCILE_INVITE_LOOKUP_FAILED", { email, code: lookupError.code, message: lookupError.message });
-    throw new InviteReconciliationError("RECONCILIATION_FAILED");
+    throw new InviteReconciliationError("RECONCILIATION_FAILED", { code: lookupError.code, message: lookupError.message });
   }
   if (matches?.length !== 1) {
-    console.error("RECONCILE_INVITE_NO_ELIGIBLE_REQUEST", { email, matchCount: matches?.length ?? 0 });
-    throw new InviteReconciliationError("NO_ELIGIBLE_REQUEST");
+    throw new InviteReconciliationError("NO_ELIGIBLE_REQUEST", { matchCount: matches?.length ?? 0 });
   }
 
   const now = new Date().toISOString();
@@ -240,16 +241,13 @@ export async function reconcileConfirmedInvite(input: {
     p_now: now,
   });
   if (error || !["invited", "active", "suspended", "revoked"].includes(data)) {
-    console.error("RECONCILE_INVITE_RPC_FAILED", {
-      email,
-      userId: input.userId,
+    throw new InviteReconciliationError("RECONCILIATION_FAILED", {
       returnedData: data,
       errorCode: error?.code,
       errorMessage: error?.message,
       errorDetails: error?.details,
       errorHint: error?.hint,
     });
-    throw new InviteReconciliationError("RECONCILIATION_FAILED");
   }
   return data as MemberStatus;
 }
