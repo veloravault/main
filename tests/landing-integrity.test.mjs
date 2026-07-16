@@ -58,10 +58,6 @@ test("landing palette keeps small labels and CTA hover text accessible", () => {
   assert.match(css, /--landing-label-blue: #2997ff/);
   assert.match(css, /--landing-action-hover: #005bb5/);
   assert.match(css, /color: var\(--landing-label-blue\)/);
-  assert.match(
-    css,
-    /\.darkScene \.featureCopy > span \{ color: #2997ff; \}/,
-  );
   assert.match(css, /background: var\(--landing-action-hover\)/);
 
   assert.ok(contrastRatio("#0066cc", "#fbfbfd") >= 4.5);
