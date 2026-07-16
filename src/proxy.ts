@@ -5,9 +5,16 @@ const CSP_REPORT_ENDPOINT = "csp-endpoint";
 const CSP_REPORT_PATH = "/api/csp-report";
 
 function buildCsp(nonce: string) {
+  // Next.js dev mode (React DevTools, HMR, RSC stack-trace reconstruction)
+  // relies on eval(); production never needs it, so keep the tighter policy there.
+  const scriptSrc =
+    process.env.NODE_ENV === "production"
+      ? `'self' 'nonce-${nonce}'`
+      : `'self' 'nonce-${nonce}' 'unsafe-eval'`;
+
   return [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}'`,
+    `script-src ${scriptSrc}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https://*.supabase.co https://unavatar.io",
     "font-src 'self' data:",

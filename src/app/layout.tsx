@@ -1,6 +1,5 @@
 import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastProvider } from "@/components/Toast";
@@ -76,9 +75,22 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <Script id="velora-theme-bootstrap" strategy="beforeInteractive" nonce={nonce}>
-          {themeBootstrap}
-        </Script>
+        {/*
+          A plain inline script, not next/script: it's in <head> so it already
+          runs synchronously before hydration, and next/script's
+          "beforeInteractive" wrapper re-serializes props into its own
+          internal <script> element without forwarding suppressHydrationWarning.
+          Browsers also blank a script's nonce attribute once it's inserted into
+          the document (so page JS can't read and re-use it) — the initial HTML
+          still has the real value the CSP check already passed against, but
+          React sees the later empty attribute as a server/client mismatch.
+        */}
+        <script
+          id="velora-theme-bootstrap"
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: themeBootstrap }}
+        />
       </head>
       <body className="antialiased bg-background text-foreground selection:bg-primary/20 min-h-full flex flex-col">
         <ThemeProvider
