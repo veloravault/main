@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { InviteReconciliationError, reconcileConfirmedInvite } from "@/lib/server/access-repository";
-import { assertSameOrigin, requiredAppUrl } from "@/lib/server/request-security";
+import { requiredAppUrl } from "@/lib/server/request-security";
 import { createServerSupabaseClient } from "@/lib/server/supabase";
 
 const MAX_CONFIRM_BYTES = 3_072;
@@ -50,7 +50,14 @@ async function readConfirmationForm(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    assertSameOrigin(request);
+    // No assertSameOrigin here: /accept-invite intentionally sends
+    // Referrer-Policy: no-referrer (its URL carries token_hash), so this
+    // form's own POST never carries a Referer, and some browsers also send
+    // a literal "null" Origin on this kind of top-level navigation when the
+    // page was reached from an external context (e.g. a webmail link).
+    // Authorization here comes entirely from token_hash: verifyOtp only
+    // succeeds for a genuine, unexpired, single-use invite token, so there
+    // is no ambient session/cookie for a cross-site request to ride on.
     const form = await readConfirmationForm(request);
     const tokenHash = form.get("token_hash");
     if (
