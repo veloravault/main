@@ -1,84 +1,70 @@
 "use client";
 
-import { useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import shared from "@/app/dreelio/dreelio.module.css";
 import styles from "./Pricing.module.css";
-import { PLANS } from "./data";
-import { IconCheck } from "./icons";
+import { BETA_STEPS } from "./data";
+import {
+  HOVER_LIFT,
+  LANDING_VIEWPORT,
+  TAP_PRESS,
+  revealVariants,
+  staggerContainer,
+  staggerItem,
+} from "./motion";
 
 export function Pricing() {
-  const [annual, setAnnual] = useState(true);
+  const reduceMotion = useReducedMotion();
 
   return (
-    <section id="pricing" className={`${shared.section} ${styles.section}`}>
+    <motion.section
+      id="pricing"
+      className={`${shared.section} ${styles.section}`}
+      initial={reduceMotion ? false : "hidden"}
+      whileInView="show"
+      viewport={LANDING_VIEWPORT}
+    >
       <div className={shared.container}>
-        <div className={shared.sectionHead}>
-          <p className={shared.eyebrow}>Access</p>
-          <h2 className={shared.h2}>
-            Free for everyone,
-            <br />
-            always
-          </h2>
-        </div>
+        <motion.div className={shared.sectionHead} variants={revealVariants()}>
+          <p className={shared.eyebrow}>Private beta access</p>
+          <h2 className={shared.h2}>Free during private beta</h2>
+          <p className={styles.intro}>
+            Request an invitation and we&rsquo;ll email you if your access is approved.
+            There is no credit card and submitting a request does not create an account.
+          </p>
+        </motion.div>
 
-        <div className={styles.grid}>
-          {PLANS.map((plan) => {
-            const price =
-              plan.highlight && !annual ? plan.price : plan.highlight ? plan.priceAnnual : plan.price;
-            return (
-              <article
-                key={plan.name}
-                className={styles.card}
-                data-highlight={plan.highlight}
-              >
-                {plan.highlight && (
-                  <div className={styles.toggle} role="tablist" aria-label="Vault type">
-                    <button
-                      role="tab"
-                      aria-selected={annual}
-                      data-active={annual}
-                      onClick={() => setAnnual(true)}
-                    >
-                      Personal
-                    </button>
-                    <button
-                      role="tab"
-                      aria-selected={!annual}
-                      data-active={!annual}
-                      onClick={() => setAnnual(false)}
-                    >
-                      Family
-                    </button>
-                  </div>
-                )}
-
-                <div className={styles.head}>
-                  <span className={styles.planName}>{plan.name}</span>
-                  {plan.highlight && <span className={styles.save}>Recommended</span>}
+        <motion.div className={styles.betaPanel} variants={revealVariants(20, 0.06)}>
+          <motion.ol className={styles.steps} variants={staggerContainer}>
+            {BETA_STEPS.map((step) => (
+              <motion.li key={step.index} className={styles.step} variants={staggerItem}>
+                <span className={styles.stepIndex}>{step.index}</span>
+                <div>
+                  <h3>{step.title}</h3>
+                  <p>{step.detail}</p>
                 </div>
-                <h3 className={styles.price}>{price}</h3>
-                <p className={styles.blurb}>{plan.blurb}</p>
+              </motion.li>
+            ))}
+          </motion.ol>
 
-                <ul className={styles.features}>
-                  {plan.features.map((f) => (
-                    <li key={f}>
-                      <IconCheck className={styles.check} />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <a
-                  href={plan.cta === "Contact us" ? "#contact" : "/request-access"}
-                  className={`${shared.btn} ${plan.highlight ? shared.btnDark : shared.btnGhost} ${styles.cardCta}`}
-                >
-                  {plan.cta}
-                </a>
-              </article>
-            );
-          })}
-        </div>
+          <motion.div className={styles.actionPanel} variants={staggerItem}>
+            <span className={styles.status}><i aria-hidden="true" /> Invitations are manually reviewed</span>
+            <h3>Start with a request, not an account.</h3>
+            <p>
+              If invited, you&rsquo;ll create sign-in credentials and use a separate
+              master key that never belongs in the request form.
+            </p>
+            <motion.a
+              href="/request-access"
+              className={`${shared.btn} ${shared.btnDark} ${styles.cta}`}
+              whileHover={reduceMotion ? undefined : HOVER_LIFT}
+              whileTap={reduceMotion ? undefined : TAP_PRESS}
+            >
+              Request access
+            </motion.a>
+          </motion.div>
+        </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
 }

@@ -16,8 +16,8 @@ const modeCopy: Record<AuthMode, { title: string; description: string }> = {
     description: "Use your account credentials. Your vault master key is entered separately after access is verified.",
   },
   "request-access": {
-    title: "Request private access",
-    description: "Tell us who you are. Every request is reviewed before an invitation is sent.",
+    title: "Request private-beta access",
+    description: "Free during private beta. Share your name and email; every request is manually reviewed before an invitation email is sent.",
   },
 };
 

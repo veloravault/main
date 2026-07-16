@@ -79,12 +79,12 @@ export function RequestAccessForm() {
     return (
       <div
         className={styles.completion}
-        aria-label="Request received. If an invitation becomes available, we’ll email you."
+        aria-label="Request received. We’ll review it and send an invitation email if access is approved."
         aria-live="polite"
       >
         <span className={styles.completionMark} aria-hidden="true">✓</span>
         <h2>Request received.</h2>
-        <p>If an invitation becomes available, we’ll email you.</p>
+        <p>We&rsquo;ll review it and send an invitation email if access is approved.</p>
       </div>
     );
   }

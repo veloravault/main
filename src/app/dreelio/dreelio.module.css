@@ -79,6 +79,14 @@
   overflow-x: clip;
 }
 
+.page :global(#features),
+.page :global(#benefits),
+.page :global(#security),
+.page :global(#pricing),
+.page :global(#contact) {
+  scroll-margin-top: 112px;
+}
+
 /* ---- layout helpers ---- */
 .container {
   width: 100%;

@@ -1,30 +1,61 @@
+"use client";
+
 import Image from "next/image";
+import { motion, useReducedMotion } from "framer-motion";
 import shared from "@/app/dreelio/dreelio.module.css";
 import styles from "./Hero.module.css";
+import { ParallaxMedia } from "./ParallaxMedia";
+import { VaultSeal } from "./VaultSeal";
+import {
+  HOVER_LIFT,
+  TAP_PRESS,
+  staggerContainer,
+  staggerItem,
+} from "./motion";
 
 export function Hero() {
+  const reduceMotion = useReducedMotion();
+
   return (
     <section className={styles.hero}>
-      <div className={`${shared.container} ${styles.inner}`}>
-        <h1 className={styles.title}>
+      <motion.div
+        className={`${shared.container} ${styles.inner}`}
+        initial={reduceMotion ? false : "hidden"}
+        animate="show"
+        variants={staggerContainer}
+      >
+        <motion.h1 className={styles.title} variants={staggerItem}>
           One private vault
           <br />
           for everything that matters
-        </h1>
-        <p className={styles.subtitle}>
+        </motion.h1>
+        <motion.p className={styles.subtitle} variants={staggerItem}>
           Passwords, documents, notes, and financial essentials — encrypted on
-          your device before they&rsquo;re ever saved. Only you hold the key.
-        </p>
-        <div className={styles.actions}>
-          <a href="#pricing" className={`${shared.btn} ${shared.btnDark}`}>
+          your device before they&rsquo;re stored. Free during private beta, by invitation.
+        </motion.p>
+        <motion.div className={styles.actions} variants={staggerItem}>
+          <motion.a
+            href="#pricing"
+            className={`${shared.btn} ${shared.btnDark}`}
+            whileHover={reduceMotion ? undefined : HOVER_LIFT}
+            whileTap={reduceMotion ? undefined : TAP_PRESS}
+          >
             Request access
-          </a>
-          <a href="#features" className={`${shared.btn} ${shared.btnGhost}`}>
+          </motion.a>
+          <motion.a
+            href="#features"
+            className={`${shared.btn} ${shared.btnGhost}`}
+            whileHover={reduceMotion ? undefined : HOVER_LIFT}
+            whileTap={reduceMotion ? undefined : TAP_PRESS}
+          >
             See features
-          </a>
-        </div>
+          </motion.a>
+        </motion.div>
 
-        <div className={styles.stage}>
+        <ParallaxMedia className={styles.stage} distance={12} delay={0.18}>
+          <motion.span className={styles.seal} variants={staggerItem}>
+            <VaultSeal />
+          </motion.span>
           <div className={styles.dashboard}>
             <Image
               src="/dreelio/img/hero-dashboard.png"
@@ -35,14 +66,17 @@ export function Hero() {
               sizes="(max-width: 1000px) 100vw, 1000px"
             />
           </div>
-          <span className={styles.badge}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-              <path d="M3 3h18v6H3zM3 9h12v6H3zM3 15h6v6H3z" />
-            </svg>
-            AES-256 encrypted
-          </span>
-        </div>
-      </div>
+          <motion.span
+            className={styles.badge}
+            initial={reduceMotion ? false : { opacity: 0, x: 10, scale: 0.96 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{ delay: 0.72, duration: 0.42 }}
+          >
+            <span className={styles.badgeDot} aria-hidden="true" />
+            AES-256-GCM · encrypted before storage
+          </motion.span>
+        </ParallaxMedia>
+      </motion.div>
     </section>
   );
 }

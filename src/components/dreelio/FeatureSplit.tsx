@@ -1,7 +1,19 @@
+"use client";
+
 import Image from "next/image";
+import { motion, useReducedMotion } from "framer-motion";
 import shared from "@/app/dreelio/dreelio.module.css";
 import styles from "./FeatureSplit.module.css";
 import { PILL_ICONS } from "./icons";
+import { ParallaxMedia } from "./ParallaxMedia";
+import {
+  HOVER_LIFT,
+  LANDING_VIEWPORT,
+  TAP_PRESS,
+  revealVariants,
+  staggerContainer,
+  staggerItem,
+} from "./motion";
 
 type Props = {
   id?: string;
@@ -14,8 +26,9 @@ type Props = {
 };
 
 export function FeatureSplit({ id, eyebrow, title, body, pills, image, reverse }: Props) {
+  const reduceMotion = useReducedMotion();
   const media = (
-    <div className={styles.frame}>
+    <ParallaxMedia className={styles.frame} distance={12}>
       <div className={styles.card}>
         <Image
           src={image.src}
@@ -26,34 +39,53 @@ export function FeatureSplit({ id, eyebrow, title, body, pills, image, reverse }
           className={styles.img}
         />
       </div>
-    </div>
+    </ParallaxMedia>
   );
 
   const copy = (
-    <div className={styles.copy}>
-      <p className={shared.eyebrow}>{eyebrow}</p>
-      <h2 className={`${shared.h2} ${styles.title}`}>{title}</h2>
-      <p className={`${shared.lead} ${styles.body}`}>{body}</p>
-      <a href="#pricing" className={`${shared.btn} ${shared.btnDark} ${styles.cta}`}>
+    <motion.div
+      className={styles.copy}
+      variants={revealVariants(20)}
+    >
+      <motion.p className={shared.eyebrow} variants={staggerItem}>{eyebrow}</motion.p>
+      <motion.h2 className={`${shared.h2} ${styles.title}`} variants={staggerItem}>{title}</motion.h2>
+      <motion.p className={`${shared.lead} ${styles.body}`} variants={staggerItem}>{body}</motion.p>
+      <motion.a
+        href="#pricing"
+        className={`${shared.btn} ${shared.btnDark} ${styles.cta}`}
+        variants={staggerItem}
+        whileHover={reduceMotion ? undefined : HOVER_LIFT}
+        whileTap={reduceMotion ? undefined : TAP_PRESS}
+      >
         Try Velora Vault free
-      </a>
-      <div className={styles.pills}>
+      </motion.a>
+      <motion.div className={styles.pills} variants={staggerContainer}>
         {pills.map((label) => {
           const Icon = PILL_ICONS[label as keyof typeof PILL_ICONS];
           return (
-            <span key={label} className={shared.featurePill}>
+            <motion.span key={label} className={shared.featurePill} variants={staggerItem}>
               {Icon ? <Icon /> : null}
               {label}
-            </span>
+            </motion.span>
           );
         })}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 
   return (
-    <section id={id} className={`${shared.section} ${styles.section}`}>
-      <div className={`${shared.container} ${styles.grid}`} data-reverse={reverse}>
+    <motion.section
+      id={id}
+      className={`${shared.section} ${styles.section}`}
+      initial={reduceMotion ? false : "hidden"}
+      whileInView="show"
+      viewport={LANDING_VIEWPORT}
+    >
+      <motion.div
+        className={`${shared.container} ${styles.grid}`}
+        data-reverse={reverse}
+        variants={staggerContainer}
+      >
         {reverse ? (
           <>
             {copy}
@@ -65,7 +97,7 @@ export function FeatureSplit({ id, eyebrow, title, body, pills, image, reverse }
             {copy}
           </>
         )}
-      </div>
-    </section>
+      </motion.div>
+    </motion.section>
   );
 }

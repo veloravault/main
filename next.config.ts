@@ -1,6 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      new URL("https://assets.nflxext.com/us/ffe/siteui/common/icons/**"),
+      new URL("https://storage.googleapis.com/pr-newsroom-wp/**"),
+      new URL("https://www.amazon.com/favicon.ico"),
+    ],
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',

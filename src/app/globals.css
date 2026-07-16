@@ -945,6 +945,16 @@ a:focus-visible {
 }
 
 @media (max-width: 767px) {
+  .apple-password-master-detail,
+  .apple-bank-master-detail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .apple-password-master-detail .apple-password-list,
+  .apple-bank-master-detail .apple-bank-list {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+  }
   .apple-group { border-radius: 18px; box-shadow: none; }
   .apple-sheet { border-radius: 28px 28px 0 0; }
   .apple-tabbar { min-height: calc(64px + env(safe-area-inset-bottom, 0px)); }

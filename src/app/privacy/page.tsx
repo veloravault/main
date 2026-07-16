@@ -55,14 +55,22 @@ export default function PrivacyPage() {
               us, stored on our servers, or written to any log.
             </p>
             <p>
-              PIN and biometric unlock use a separate, independently derived
-              key, so unlocking your device with a PIN never exposes your
-              actual vault encryption key.
+              PIN and supported platform-authenticator unlock are optional,
+              device-local convenience layers. They protect a local wrapper
+              and recover the master key into memory for the active unlocked
+              session; they do not replace the master key.
             </p>
             <p>
               In practice, this means we store encrypted data we cannot read.
               We do not have the ability to decrypt your vault contents, view
               your passwords, or open your documents.
+            </p>
+            <p>
+              AI-assisted import is an explicit exception to local-only content
+              processing: source text or images you select are sent to the
+              configured processing service before reviewed results are
+              encrypted and saved. See <a href="/security">How security works</a>
+              for the full recovery and threat boundaries.
             </p>
           </section>
 

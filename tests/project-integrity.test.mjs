@@ -416,6 +416,21 @@ test("desktop master-detail starts at the same breakpoint as the desktop sidebar
   assert.match(wallet, /className="wallet-mobile-sheet md:hidden"/);
 });
 
+test("mobile password and bank lists fill the shell content width", () => {
+  const css = read("src/app/globals.css");
+  const page = read("src/components/VaultApp.tsx");
+
+  assert.match(page, /max-w-6xl mx-auto w-full px-4/);
+  assert.match(
+    css,
+    /@media \(max-width:\s*767px\)[\s\S]*?\.apple-password-master-detail,\s*\.apple-bank-master-detail\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/,
+  );
+  assert.match(
+    css,
+    /\.apple-password-master-detail \.apple-password-list,\s*\.apple-bank-master-detail \.apple-bank-list\s*\{[^}]*width:\s*100%[^}]*max-width:\s*none[^}]*margin:\s*0/,
+  );
+});
+
 test("Passwords and Bank Vault adopt adaptive master-detail surfaces", () => {
   const passwords = read("src/components/PasswordVault.tsx");
   const bank = read("src/components/BankVault.tsx");

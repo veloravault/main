@@ -319,7 +319,7 @@ test("request page preserves entries for retry and exposes accessible completion
   assert.doesNotMatch(form, /method="get"/i);
   assert.match(form, /aria-live="polite"/);
   assert.match(form, /role="alert"/);
-  assert.match(form, /Request received\. If an invitation becomes available, we’ll email you\./);
+  assert.match(form, /Request received\. We’ll review it and send an invitation email if access is approved\./);
   assert.match(form, /navigator\.onLine/);
   assert.match(form, /Retry request/);
   assert.match(form, /setFullName/);

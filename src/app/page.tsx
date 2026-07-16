@@ -6,9 +6,8 @@ import { Devices } from "@/components/dreelio/Devices";
 import { FeatureSplit } from "@/components/dreelio/FeatureSplit";
 import { Features } from "@/components/dreelio/Features";
 import { Highlights } from "@/components/dreelio/Highlights";
-import { Testimonials } from "@/components/dreelio/Testimonials";
+import { SecurityArchitecture } from "@/components/dreelio/SecurityArchitecture";
 import { Pricing } from "@/components/dreelio/Pricing";
-import { Blog } from "@/components/dreelio/Blog";
 import { FinalCTA } from "@/components/dreelio/FinalCTA";
 import { Footer } from "@/components/dreelio/Footer";
 import { PROJECT_PILLS, FINANCE_PILLS } from "@/components/dreelio/data";
@@ -69,9 +68,8 @@ export default function HomePage() {
 
         <Features />
         <Highlights />
-        <Testimonials />
+        <SecurityArchitecture />
         <Pricing />
-        <Blog />
         <FinalCTA />
         <Footer />
       </main>

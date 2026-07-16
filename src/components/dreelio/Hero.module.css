@@ -63,6 +63,14 @@
   height: auto;
 }
 
+.seal {
+  position: absolute;
+  top: -52px;
+  left: -48px;
+  z-index: 2;
+  filter: drop-shadow(0 22px 30px rgba(0, 76, 150, 0.12));
+}
+
 .badge {
   position: absolute;
   top: 46%;
@@ -80,6 +88,14 @@
   box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.2);
 }
 
+.badgeDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pill-green);
+  box-shadow: 0 0 0 4px rgba(52, 199, 89, 0.12);
+}
+
 @media (max-width: 760px) {
   .hero {
     padding-top: 120px;
@@ -92,5 +108,12 @@
   }
   .badge {
     display: none;
+  }
+
+  .seal {
+    top: -34px;
+    left: -18px;
+    transform: scale(0.72);
+    transform-origin: left top;
   }
 }
