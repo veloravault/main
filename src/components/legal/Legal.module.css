@@ -1,59 +1,7 @@
-.header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 1px solid var(--line);
-}
-
-:global(.dark) .header {
-  background: rgba(0, 0, 0, 0.75);
-}
-
-.headerInner {
-  width: 100%;
-  max-width: 760px;
-  margin-inline: auto;
-  padding-inline: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-block: 18px;
-}
-
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  text-decoration: none;
-}
-
-.mark {
-  width: 20px;
-  height: 20px;
-}
-
-.back {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ink-body);
-  text-decoration: none;
-}
-
-.back:hover {
-  color: var(--ink);
-}
-
 .article {
   max-width: 760px;
   margin-inline: auto;
-  padding-block: 72px 120px;
+  padding-block: 132px 120px;
 }
 
 .title {
@@ -192,7 +140,7 @@
 
 @media (max-width: 600px) {
   .article {
-    padding-block: 48px 80px;
+    padding-block: 112px 80px;
   }
 
   .contactGrid {

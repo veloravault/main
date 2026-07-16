@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { OnboardingForm } from "@/components/auth/OnboardingForm";
+import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
 import { AuthorizationError, getMembershipForUser, requireUser } from "@/lib/server/access";
 import styles from "@/components/auth/auth-shell.module.css";
 
@@ -27,19 +28,21 @@ export default async function OnboardingPage() {
   if (membership?.status !== "invited") redirect("/request-access?state=not-approved");
 
   return (
-    <AuthShell
-      compact
-      eyebrow="Private setup · 02"
-      title="Two secrets. Two separate jobs."
-      description="Your sign-in password protects this account. Your existing master key decrypts your vault only in this browser and is never sent to us."
-      footer={(
-        <dl className={styles.keyGuide}>
-          <div><dt>Sign-in password</dt><dd>Stored by authentication</dd></div>
-          <div><dt>Vault master key</dt><dd>Held in local memory only</dd></div>
-        </dl>
-      )}
-    >
-      <OnboardingForm userId={user.id} email={user.email ?? "your invited email"} />
-    </AuthShell>
+    <PublicPageShell>
+      <AuthShell
+        compact
+        eyebrow="Private setup · 02"
+        title="Two secrets. Two separate jobs."
+        description="Your sign-in password protects this account. Your existing master key decrypts your vault only in this browser and is never sent to us."
+        footer={(
+          <dl className={styles.keyGuide}>
+            <div><dt>Sign-in password</dt><dd>Stored by authentication</dd></div>
+            <div><dt>Vault master key</dt><dd>Held in local memory only</dd></div>
+          </dl>
+        )}
+      >
+        <OnboardingForm userId={user.id} email={user.email ?? "your invited email"} />
+      </AuthShell>
+    </PublicPageShell>
   );
 }

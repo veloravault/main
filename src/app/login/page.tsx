@@ -1,4 +1,5 @@
 import { AuthGateway } from "@/components/auth/AuthGateway";
+import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
 import { parseSafeNextPath } from "@/lib/access/validation";
 
 export default async function LoginPage({
@@ -9,5 +10,9 @@ export default async function LoginPage({
   const { next } = await searchParams;
   const nextPath = parseSafeNextPath(typeof next === "string" ? next : null);
 
-  return <AuthGateway initialMode="sign-in" nextPath={nextPath} />;
+  return (
+    <PublicPageShell>
+      <AuthGateway initialMode="sign-in" nextPath={nextPath} />
+    </PublicPageShell>
+  );
 }

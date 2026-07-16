@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRightIcon, Loader2Icon } from "lucide-react";
 import { AuthShell } from "@/components/auth/AuthShell";
+import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
 import { supabase } from "@/lib/supabase";
 import styles from "@/components/auth/auth-shell.module.css";
 
@@ -42,36 +43,38 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <AuthShell
-      compact
-      eyebrow="Account recovery"
-      title={complete ? "Sign-in password updated" : "Reset sign-in password"}
-      description={complete
-        ? "Your account password was changed. Your vault master key was not changed."
-        : "This changes only your Supabase sign-in password. You will still need your existing vault master key to decrypt your data."}
-    >
-      {complete ? (
-        <Link href="/login" className={styles.actionLink}><span>Return to sign in</span><ArrowRightIcon width={17} height={17} aria-hidden="true" /></Link>
-      ) : (
-        <form onSubmit={submit} className={styles.formStack}>
-          <div className={styles.fieldGroup}>
-            <label className={styles.field} htmlFor="reset-password">
-              <span className={styles.fieldLabel}>New sign-in password</span>
-              <input id="reset-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" disabled={!ready || working} />
-            </label>
-            <label className={styles.field} htmlFor="reset-password-confirmation">
-              <span className={styles.fieldLabel}>Confirm password</span>
-              <input id="reset-password-confirmation" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password" disabled={!ready || working} />
-            </label>
-          </div>
-          {error && <p role="alert" className={styles.alert}>{error}</p>}
-          <button type="submit" disabled={!ready || working} className={styles.primaryAction}>
-            <span>{working ? "Updating password…" : "Update password"}</span>
-            {working ? <Loader2Icon width={17} height={17} className="animate-spin" aria-hidden="true" /> : <ArrowRightIcon width={17} height={17} aria-hidden="true" />}
-          </button>
-          <div className={styles.secondaryActions}><Link href="/login" className={styles.secondaryAction}>Back to sign in</Link></div>
-        </form>
-      )}
-    </AuthShell>
+    <PublicPageShell>
+      <AuthShell
+        compact
+        eyebrow="Account recovery"
+        title={complete ? "Sign-in password updated" : "Reset sign-in password"}
+        description={complete
+          ? "Your account password was changed. Your vault master key was not changed."
+          : "This changes only your Supabase sign-in password. You will still need your existing vault master key to decrypt your data."}
+      >
+        {complete ? (
+          <Link href="/login" className={styles.actionLink}><span>Return to sign in</span><ArrowRightIcon width={17} height={17} aria-hidden="true" /></Link>
+        ) : (
+          <form onSubmit={submit} className={styles.formStack}>
+            <div className={styles.fieldGroup}>
+              <label className={styles.field} htmlFor="reset-password">
+                <span className={styles.fieldLabel}>New sign-in password</span>
+                <input id="reset-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" disabled={!ready || working} />
+              </label>
+              <label className={styles.field} htmlFor="reset-password-confirmation">
+                <span className={styles.fieldLabel}>Confirm password</span>
+                <input id="reset-password-confirmation" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password" disabled={!ready || working} />
+              </label>
+            </div>
+            {error && <p role="alert" className={styles.alert}>{error}</p>}
+            <button type="submit" disabled={!ready || working} className={styles.primaryAction}>
+              <span>{working ? "Updating password…" : "Update password"}</span>
+              {working ? <Loader2Icon width={17} height={17} className="animate-spin" aria-hidden="true" /> : <ArrowRightIcon width={17} height={17} aria-hidden="true" />}
+            </button>
+            <div className={styles.secondaryActions}><Link href="/login" className={styles.secondaryAction}>Back to sign in</Link></div>
+          </form>
+        )}
+      </AuthShell>
+    </PublicPageShell>
   );
 }

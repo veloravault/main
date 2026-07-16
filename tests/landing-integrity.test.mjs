@@ -52,6 +52,9 @@ test("security architecture is semantic, static, and reduced-motion safe", () =>
   assert.doesNotMatch(architecture, /marquee|TESTIMONIALS/);
   assert.match(seal, /aria-hidden="true"/);
   assert.match(seal, /useReducedMotion/);
+  assert.match(seal, /<VeloraBrandMark/);
+  assert.doesNotMatch(seal, /styles\.(glass|loop|core)/);
+  assert.doesNotMatch(sealCss, /\.(glass|loop|core)\s*\{/);
   assert.match(sealCss, /@media \(prefers-reduced-motion: reduce\)/);
 });
 

@@ -11,8 +11,8 @@ test("shared auth shell owns presentation without authentication", () => {
   assert.match(shell, /export type AuthMode = "sign-in" \| "request-access"/);
   assert.match(shell, /Sign In/);
   assert.match(shell, /Request Access/);
-  assert.match(shell, /useTheme/);
   assert.match(shell, /AnimatePresence/);
+  assert.doesNotMatch(shell, /useTheme|themeToggle/);
   assert.doesNotMatch(shell, /supabase|signInWithPassword|signUp|masterKey|masterPassword/);
   assert.doesNotMatch(shell, /AppleLockIcon|styles\.mark/);
   assert.doesNotMatch(css, /\.mark(?:\s|\{|\.)/);

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import rootStyles from "../dreelio/dreelio.module.css";
 import styles from "@/components/legal/Legal.module.css";
-import { LegalHeader } from "@/components/legal/LegalHeader";
+import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
 
 export const metadata: Metadata = {
   title: "Contact Us — Velora Vault",
@@ -28,8 +28,7 @@ const CONTACT_CHANNELS = [
 
 export default function ContactPage() {
   return (
-    <div className={rootStyles.root}>
-      <LegalHeader />
+    <PublicPageShell>
       <article className={styles.article}>
         <div className={rootStyles.container}>
           <h1 className={styles.title}>Contact us</h1>
@@ -60,6 +59,6 @@ export default function ContactPage() {
           </div>
         </div>
       </article>
-    </div>
+    </PublicPageShell>
   );
 }

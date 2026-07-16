@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRightIcon } from "lucide-react";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { InviteFragmentBridge } from "@/components/auth/InviteFragmentBridge";
+import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
 import styles from "@/components/auth/auth-shell.module.css";
 
 export const metadata: Metadata = {
@@ -39,28 +40,30 @@ export default async function AcceptInvitePage({
       : "This invitation is incomplete or invalid. Return to the access page for help.";
 
   return (
-    <AuthShell
-      compact
-      eyebrow={canConfirm ? "Private invitation · 01" : awaitingFragment ? "Private invitation" : expired ? "Invitation expired" : "Invitation unavailable"}
-      title={title}
-      description={description}
-      footer={canConfirm ? "The link is verified only after you press Accept invitation." : undefined}
-    >
-      {canConfirm ? (
-        <form action="/auth/confirm" method="post" className={styles.formStack}>
-          <input type="hidden" name="token_hash" value={tokenHash} />
-          <input type="hidden" name="type" value="invite" />
-          <button className={styles.primaryAction} type="submit">
-            <span>Accept invitation</span><ArrowRightIcon width={17} height={17} aria-hidden="true" />
-          </button>
-        </form>
-      ) : awaitingFragment ? (
-        <InviteFragmentBridge />
-      ) : (
-        <Link className={styles.actionLink} href="/request-access">
-          <span>Return to access</span><ArrowRightIcon width={17} height={17} aria-hidden="true" />
-        </Link>
-      )}
-    </AuthShell>
+    <PublicPageShell>
+      <AuthShell
+        compact
+        eyebrow={canConfirm ? "Private invitation · 01" : awaitingFragment ? "Private invitation" : expired ? "Invitation expired" : "Invitation unavailable"}
+        title={title}
+        description={description}
+        footer={canConfirm ? "The link is verified only after you press Accept invitation." : undefined}
+      >
+        {canConfirm ? (
+          <form action="/auth/confirm" method="post" className={styles.formStack}>
+            <input type="hidden" name="token_hash" value={tokenHash} />
+            <input type="hidden" name="type" value="invite" />
+            <button className={styles.primaryAction} type="submit">
+              <span>Accept invitation</span><ArrowRightIcon width={17} height={17} aria-hidden="true" />
+            </button>
+          </form>
+        ) : awaitingFragment ? (
+          <InviteFragmentBridge />
+        ) : (
+          <Link className={styles.actionLink} href="/request-access">
+            <span>Return to access</span><ArrowRightIcon width={17} height={17} aria-hidden="true" />
+          </Link>
+        )}
+      </AuthShell>
+    </PublicPageShell>
   );
 }

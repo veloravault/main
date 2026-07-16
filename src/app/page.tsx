@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import styles from "./dreelio/dreelio.module.css";
-import { Nav } from "@/components/dreelio/Nav";
+import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
 import { Hero } from "@/components/dreelio/Hero";
 import { Devices } from "@/components/dreelio/Devices";
 import { FeatureSplit } from "@/components/dreelio/FeatureSplit";
@@ -9,7 +9,6 @@ import { Highlights } from "@/components/dreelio/Highlights";
 import { SecurityArchitecture } from "@/components/dreelio/SecurityArchitecture";
 import { Pricing } from "@/components/dreelio/Pricing";
 import { FinalCTA } from "@/components/dreelio/FinalCTA";
-import { Footer } from "@/components/dreelio/Footer";
 import { PROJECT_PILLS, FINANCE_PILLS } from "@/components/dreelio/data";
 
 export const metadata: Metadata = {
@@ -20,9 +19,8 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <div className={styles.root}>
+    <PublicPageShell>
       <main className={styles.page}>
-        <Nav />
         <Hero />
 
         <Devices />
@@ -71,8 +69,7 @@ export default function HomePage() {
         <SecurityArchitecture />
         <Pricing />
         <FinalCTA />
-        <Footer />
       </main>
-    </div>
+    </PublicPageShell>
   );
 }

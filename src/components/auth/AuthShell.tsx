@@ -2,8 +2,6 @@
 
 import type { ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { MoonIcon, SunIcon } from "lucide-react";
-import { useTheme } from "@/components/ThemeProvider";
 import styles from "./auth-shell.module.css";
 
 export type AuthMode = "sign-in" | "request-access";
@@ -34,31 +32,11 @@ export function AuthShell({
   footer,
   compact = false,
 }: AuthShellProps) {
-  const { resolvedTheme, setTheme } = useTheme();
   const reduceMotion = useReducedMotion();
   const contentKey = mode ?? title;
 
   return (
     <main className={styles.page}>
-      <button
-        type="button"
-        className={styles.themeToggle}
-        onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-        aria-label="Toggle appearance"
-      >
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.span
-            key={resolvedTheme === "dark" ? "sun" : "moon"}
-            initial={reduceMotion ? false : { opacity: 0, rotate: -30, scale: 0.82 }}
-            animate={{ opacity: 1, rotate: 0, scale: 1 }}
-            exit={reduceMotion ? undefined : { opacity: 0, rotate: 30, scale: 0.82 }}
-            transition={{ duration: 0.16 }}
-          >
-            {resolvedTheme === "dark" ? <SunIcon aria-hidden="true" /> : <MoonIcon aria-hidden="true" />}
-          </motion.span>
-        </AnimatePresence>
-      </button>
-
       <motion.section
         className={`${styles.stage} ${compact ? styles.compact : ""}`}
         initial={reduceMotion ? false : { opacity: 0, scale: 0.97, y: 12 }}

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import rootStyles from "../dreelio/dreelio.module.css";
 import styles from "@/components/legal/Legal.module.css";
-import { LegalHeader } from "@/components/legal/LegalHeader";
+import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — Velora Vault",
@@ -10,8 +10,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className={rootStyles.root}>
-      <LegalHeader />
+    <PublicPageShell>
       <article className={styles.article}>
         <div className={rootStyles.container}>
           <h1 className={styles.title}>Privacy Policy</h1>
@@ -171,6 +170,6 @@ export default function PrivacyPage() {
           </div>
         </div>
       </article>
-    </div>
+    </PublicPageShell>
   );
 }

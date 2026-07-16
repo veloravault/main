@@ -87,6 +87,7 @@ test("security architecture and public explainer match the implemented boundarie
 
 test("security explainer uses the public shell and an accessible motion story", () => {
   const page = read("src/app/security/page.tsx");
+  const shell = read("src/components/dreelio/PublicPageShell.tsx");
   const navigation = read("src/components/dreelio/data.ts");
   const contentPath = "src/components/dreelio/SecurityPageContent.tsx";
   const visualsPath = "src/components/dreelio/SecurityVisuals.tsx";
@@ -97,12 +98,12 @@ test("security explainer uses the public shell and an accessible motion story", 
   const content = read(contentPath);
   const visuals = read(visualsPath);
 
-  assert.match(page, /import \{ Nav \}/);
-  assert.match(page, /import \{ Footer \}/);
+  assert.match(page, /import \{ PublicPageShell \}/);
   assert.match(page, /import \{ SecurityPageContent \}/);
-  assert.match(page, /<Nav\s*\/>/);
+  assert.match(page, /<PublicPageShell>/);
   assert.match(page, /<SecurityPageContent\s*\/>/);
-  assert.match(page, /<Footer\s*\/>/);
+  assert.match(shell, /<Nav\s*\/>/);
+  assert.match(shell, /<Footer\s*\/>/);
   assert.doesNotMatch(page, /LegalHeader/);
   assert.match(navigation, /href: "\/#features"/);
   assert.match(navigation, /href: "\/#benefits"/);
@@ -122,4 +123,56 @@ test("security explainer uses the public shell and an accessible motion story", 
   assert.match(content, /cannot recover/i);
   assert.match(content, /offline guessing/i);
   assert.match(content, /manual entry/i);
+});
+
+test("every public page uses the shared Velora header and footer shell", () => {
+  const shellPath = "src/components/dreelio/PublicPageShell.tsx";
+  assert.equal(exists(shellPath), true, "missing shared public page shell");
+
+  const shell = read(shellPath);
+  assert.match(shell, /import \{ Nav \}/);
+  assert.match(shell, /import \{ Footer \}/);
+  assert.match(shell, /<Nav\s*\/>/);
+  assert.match(shell, /<Footer\s*\/>/);
+
+  for (const route of [
+    "src/app/page.tsx",
+    "src/app/security/page.tsx",
+    "src/app/privacy/page.tsx",
+    "src/app/terms/page.tsx",
+    "src/app/contact/page.tsx",
+    "src/app/request-access/page.tsx",
+    "src/app/login/page.tsx",
+    "src/app/accept-invite/page.tsx",
+    "src/app/reset-password/page.tsx",
+    "src/app/onboarding/page.tsx",
+    "src/app/blog/page.tsx",
+    "src/app/blog/[slug]/page.tsx",
+  ]) {
+    const page = read(route);
+    assert.match(page, /import \{ PublicPageShell \}/, `${route} must import PublicPageShell`);
+    assert.match(page, /<PublicPageShell>/, `${route} must render PublicPageShell`);
+    assert.doesNotMatch(page, /LegalHeader/, `${route} must not use the legacy legal header`);
+  }
+
+  for (const productRoute of ["src/app/vault/page.tsx", "src/app/admin/page.tsx"]) {
+    assert.doesNotMatch(
+      read(productRoute),
+      /PublicPageShell/,
+      `${productRoute} must retain its dedicated product shell`,
+    );
+  }
+
+  const authShell = read("src/components/auth/AuthShell.tsx");
+  assert.doesNotMatch(authShell, /themeToggle|useTheme|MoonIcon|SunIcon/);
+});
+
+test("policy content clears the fixed public navigation at every breakpoint", () => {
+  const legalCss = read("src/components/legal/Legal.module.css");
+
+  assert.match(legalCss, /\.article\s*\{[^}]*padding-block:\s*132px 120px/s);
+  assert.match(
+    legalCss,
+    /@media \(max-width: 600px\)[\s\S]*?\.article\s*\{[^}]*padding-block:\s*112px 80px/s,
+  );
 });
