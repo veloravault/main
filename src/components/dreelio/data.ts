@@ -2,10 +2,10 @@
 // the section components stay presentational.
 
 export const NAV_LINKS = [
-  { label: "Features", href: "#features" },
-  { label: "Benefits", href: "#benefits" },
+  { label: "Features", href: "/#features" },
+  { label: "Benefits", href: "/#benefits" },
   { label: "Security", href: "/security" },
-  { label: "Access", href: "#pricing" },
+  { label: "Access", href: "/#pricing" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -85,8 +85,8 @@ export const FOOTER_COLUMNS = [
     heading: "Pages",
     links: [
       { label: "Home", href: "/" },
-      { label: "Features", href: "#features" },
-      { label: "Access", href: "#pricing" },
+      { label: "Features", href: "/#features" },
+      { label: "Access", href: "/#pricing" },
       { label: "Security", href: "/security" },
     ],
   },

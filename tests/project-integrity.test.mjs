@@ -441,7 +441,9 @@ test("Passwords and Bank Vault adopt adaptive master-detail surfaces", () => {
     assert.match(source, /apple-master-list/);
     assert.match(source, /apple-detail-pane/);
   }
-  assert.match(passwords, /apple-mobile-detail-sheet/);
+  assert.match(passwords, /className="apple-password-detail apple-detail-pane/);
+  assert.match(passwords, /className="apple-password-detail-backdrop"/);
+  assert.match(passwords, /y: "100%"/);
   assert.match(bank, /apple-bank-detail/);
 
   assert.match(css, /\.apple-master-detail/);

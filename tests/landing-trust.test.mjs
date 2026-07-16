@@ -48,16 +48,19 @@ test("landing removes unfinished editorial content and unsupported availability 
 test("security architecture and public explainer match the implemented boundaries", () => {
   const architecturePath = "src/components/dreelio/SecurityArchitecture.tsx";
   const securityPath = "src/app/security/page.tsx";
+  const securityContentPath = "src/components/dreelio/SecurityPageContent.tsx";
   const sealPath = "src/components/dreelio/VaultSeal.tsx";
 
   assert.equal(exists(architecturePath), true, "missing landing security architecture");
   assert.equal(exists(securityPath), true, "missing public security explainer");
+  assert.equal(exists(securityContentPath), true, "missing public security content");
   assert.equal(exists(sealPath), true, "missing Velora sealed-aperture signature");
 
   const architecture = read(architecturePath);
   const security = read(securityPath);
+  const securityContent = read(securityContentPath);
   const seal = read(sealPath);
-  const combined = `${architecture}\n${security}`;
+  const combined = `${architecture}\n${security}\n${securityContent}`;
 
   for (const claim of [
     "AES-256-GCM",
@@ -68,15 +71,55 @@ test("security architecture and public explainer match the implemented boundarie
     "active membership",
   ]) {
     assert.match(combined, new RegExp(claim));
+    assert.match(securityContent, new RegExp(claim));
   }
 
-  assert.match(security, /cannot recover/i);
-  assert.match(security, /account password/i);
-  assert.match(security, /unlocked device/i);
-  assert.match(security, /browser extension/i);
-  assert.match(security, /offline guessing/i);
-  assert.match(security, /AI-assisted import/i);
-  assert.match(security, /before.*encrypted and saved/is);
+  assert.match(securityContent, /cannot recover/i);
+  assert.match(securityContent, /account password/i);
+  assert.match(securityContent, /unlocked device/i);
+  assert.match(securityContent, /browser extension/i);
+  assert.match(securityContent, /offline guessing/i);
+  assert.match(securityContent, /AI-assisted import/i);
+  assert.match(securityContent, /before.*encrypted and saved/is);
   assert.match(seal, /useReducedMotion/);
   assert.match(seal, /aria-hidden="true"/);
+});
+
+test("security explainer uses the public shell and an accessible motion story", () => {
+  const page = read("src/app/security/page.tsx");
+  const navigation = read("src/components/dreelio/data.ts");
+  const contentPath = "src/components/dreelio/SecurityPageContent.tsx";
+  const visualsPath = "src/components/dreelio/SecurityVisuals.tsx";
+
+  assert.equal(exists(contentPath), true, "missing security story client boundary");
+  assert.equal(exists(visualsPath), true, "missing security visual explanations");
+
+  const content = read(contentPath);
+  const visuals = read(visualsPath);
+
+  assert.match(page, /import \{ Nav \}/);
+  assert.match(page, /import \{ Footer \}/);
+  assert.match(page, /import \{ SecurityPageContent \}/);
+  assert.match(page, /<Nav\s*\/>/);
+  assert.match(page, /<SecurityPageContent\s*\/>/);
+  assert.match(page, /<Footer\s*\/>/);
+  assert.doesNotMatch(page, /LegalHeader/);
+  assert.match(navigation, /href: "\/#features"/);
+  assert.match(navigation, /href: "\/#benefits"/);
+  assert.match(navigation, /href: "\/#pricing"/);
+
+  assert.match(visuals, /export function SecurityFlowVisual/);
+  assert.match(visuals, /export function SecurityHeroVisual/);
+  assert.match(visuals, /export function RecoveryVisual/);
+  assert.match(visuals, /aria-hidden="true"/);
+  assert.match(visuals, /useReducedMotion/);
+  assert.match(visuals, /from "\.\/motion"/);
+  assert.match(visuals, /whileInView=\{reduceMotion \? undefined : "show"\}/);
+  assert.doesNotMatch(visuals, /does not keep a server copy/i);
+  assert.match(content, /useReducedMotion/);
+  assert.match(content, /LANDING_VIEWPORT/);
+  assert.match(content, /<SecurityHeroVisual\s*\/>/);
+  assert.match(content, /cannot recover/i);
+  assert.match(content, /offline guessing/i);
+  assert.match(content, /manual entry/i);
 });
