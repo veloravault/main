@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { SelectionToolbar } from "@/components/SelectionToolbar";
 import Papa from "papaparse";
 import { AdaptiveSheet, AdaptiveSheetBody, AdaptiveSheetFooter } from "@/components/ui/adaptive-sheet";
-import { ChevronRightIcon, UploadIcon, TrashIcon, CheckSquareIcon, SquareIcon, StarIcon, MoreHorizontalIcon, PlusIcon, XIcon, CopyIcon, EyeIcon, EyeOffIcon, TriangleAlertIcon, ShieldAlertIcon } from "lucide-react";
+import { ChevronRightIcon, UploadIcon, TrashIcon, CheckSquareIcon, SquareIcon, StarIcon, MoreHorizontalIcon, PlusIcon, XIcon, CopyIcon, EyeIcon, EyeOffIcon, TriangleAlertIcon, ShieldAlertIcon, KeyRoundIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   DropdownMenu,
@@ -88,6 +88,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
   // New Item State
   const [newTitle, setNewTitle] = useState("");
   const [newSecret, setNewSecret] = useState("");
+  const [showNewSecret, setShowNewSecret] = useState(false);
 
   // Bulk State
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -213,6 +214,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
       
       setNewTitle("");
       setNewSecret("");
+      setShowNewSecret(false);
       setIsAddOpen(false);
       invalidateCache("vault_items");
       fetchItems(true);
@@ -397,40 +399,29 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
       : null;
 
     return (
-      <>
-        <motion.button
-          type="button"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[99] bg-black/40 backdrop-blur-sm w-full h-full cursor-default"
-          aria-label="Close password details"
-          onClick={() => { setExpandedId(null); setRevealedIds(new Set()); }}
-        />
-        <motion.aside
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="password-detail-title"
-          initial={{ opacity: 0, y: "100%", scale: 1 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: "100%", scale: 1 }}
-          transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className="fixed z-[100] inset-x-0 bottom-0 md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-[420px] bg-secondary md:bg-popover/95 md:backdrop-blur-2xl rounded-t-[32px] md:rounded-[28px] md:border border-border/50 shadow-2xl flex flex-col max-h-[90vh] md:max-h-[85vh] overflow-hidden"
-        >
+      <motion.aside
+        key={item.id}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="password-detail-title"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 10 }}
+        transition={{ type: "spring", damping: 28, stiffness: 260 }}
+        className="apple-password-detail apple-detail-pane min-w-0 flex flex-col"
+      >
           {/* Top Actions: Favorite & Close */}
           <div className="absolute top-4 right-4 flex items-center gap-1 z-10">
             <button type="button" onClick={(e) => handleToggleFavorite(item.id, item.is_favorite, e)} className="p-2.5 text-muted-foreground hover:text-primary transition-colors rounded-full hover:bg-background/50" aria-label="Toggle favorite">
               <StarIcon className={`w-5 h-5 ${item.is_favorite ? "fill-primary text-primary" : ""}`} />
             </button>
-            <button type="button" onClick={() => { setExpandedId(null); setRevealedIds(new Set()); }} className="p-2.5 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-background/50 hidden md:flex" aria-label="Close password details">
+            <button type="button" onClick={() => { setExpandedId(null); setRevealedIds(new Set()); }} className="p-2.5 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-background/50 md:hidden" aria-label="Close password details">
               <XIcon className="w-5 h-5" />
             </button>
           </div>
 
           {/* Mobile drag indicator */}
-          <div className="w-full flex justify-center pt-3 pb-1 md:hidden">
-            <div className="w-12 h-1.5 rounded-full bg-border" />
-          </div>
+          <div className="apple-sheet-grabber" />
 
           {/* Profile-like Header */}
           <div className="flex flex-col items-center pt-8 md:pt-10 pb-6 px-6">
@@ -441,7 +432,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
           </div>
 
           {/* Fields */}
-          <div className="px-5 pb-8 overflow-y-auto scrollbar-hide">
+          <div className="px-5 pb-8">
             {advisory && (
               <div className={`flex items-start gap-2.5 mb-4 px-4 py-3 rounded-[18px] ${isReused ? "bg-red-500/10" : "bg-amber-500/10"}`}>
                 <TriangleAlertIcon className={`w-[18px] h-[18px] mt-0.5 shrink-0 ${isReused ? "text-red-500" : "text-amber-500"}`} />
@@ -460,8 +451,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
               </button>
             </div>
           </div>
-        </motion.aside>
-      </>
+      </motion.aside>
     );
   };
 
@@ -544,30 +534,37 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
               <PlusIcon className="w-4 h-4" />
               <span className="hidden min-[380px]:inline">New</span>
           </button>
-          <AdaptiveSheet open={isAddOpen} onOpenChange={setIsAddOpen} title="New Password" description="Add a credential encrypted with your existing master key." size="sm" className="vault-create-sheet">
+          <AdaptiveSheet open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if (!open) setShowNewSecret(false); }} title="New Password" description="Add a credential encrypted with your existing master key." size="sm" className="vault-create-sheet">
             <form onSubmit={handleAddItem} className="vault-create-form">
-            <AdaptiveSheetBody className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-[13px] text-muted-foreground ml-1 uppercase tracking-wider font-medium">Title</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Netflix, Bank"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[17px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[13px] text-muted-foreground ml-1 uppercase tracking-wider font-medium">Password</label>
-                <input
-                  type="password"
-                  placeholder="••••••••••••"
-                  value={newSecret}
-                  onChange={(e) => setNewSecret(e.target.value)}
-                  className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[17px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                  required
-                />
+            <AdaptiveSheetBody>
+              <div className="rounded-2xl border border-border/60 bg-secondary/60 overflow-hidden">
+                <div className="px-4 py-3 border-b border-border/50">
+                  <label className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold block mb-1">Title</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Netflix, Bank"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    className="w-full bg-transparent text-[17px] text-foreground focus:outline-none"
+                    required
+                  />
+                </div>
+                <div className="px-4 py-3">
+                  <label className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold block mb-1">Password</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type={showNewSecret ? "text" : "password"}
+                      placeholder="••••••••••••"
+                      value={newSecret}
+                      onChange={(e) => setNewSecret(e.target.value)}
+                      className="w-full bg-transparent text-[17px] font-mono tracking-wide text-foreground focus:outline-none"
+                      required
+                    />
+                    <button type="button" onClick={() => setShowNewSecret((v) => !v)} className="shrink-0 text-muted-foreground/50 hover:text-primary transition-colors" aria-label={showNewSecret ? "Hide password" : "Show password"}>
+                      {showNewSecret ? <EyeOffIcon className="w-[18px] h-[18px]" /> : <EyeIcon className="w-[18px] h-[18px]" />}
+                    </button>
+                  </div>
+                </div>
               </div>
             </AdaptiveSheetBody>
             <AdaptiveSheetFooter><Button type="button" variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button type="submit" className="import-primary-action">Save Password</Button></AdaptiveSheetFooter>
@@ -586,13 +583,13 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
         </div>
       </div>
 
-      <div className="apple-master-detail apple-password-master-detail w-full">
+      <div className="apple-master-detail apple-password-master-detail grid w-full items-start gap-5 md:grid-cols-[minmax(280px,0.82fr)_minmax(360px,1.18fr)] md:gap-6">
         {loading ? (
           <PasswordListSkeleton />
         ) : items.length === 0 ? (
           <EmptyState type="passwords" onCta={() => setIsAddOpen(true)} />
         ) : (
-          <motion.div layout="position" data-password-master className="apple-password-master apple-master-list space-y-7">
+          <motion.div layout="position" data-password-master className="apple-password-list apple-master-list space-y-7">
             <AnimatePresence>
             {Object.entries(
               items.reduce((acc, item) => {
@@ -724,148 +721,6 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
                             </div>
                             </div>
                           </button>
-
-                          {/* Expanded detail — Apple Passwords style */}
-                          <AnimatePresence key="details-presence" initial={false}>
-                          {false && isExpanded && !isSelectionMode && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
-                              className="apple-detail-pane apple-mobile-detail-sheet overflow-hidden"
-                            >
-                              <div className="px-4 pb-4 pt-1 space-y-3 bg-black/[0.015] dark:bg-white/[0.02]">
-                                {/* Strength + dupe badges */}
-                                <div className="flex items-center gap-2">
-                                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${s.bg}/10 ${s.color}`}>
-                                    {s.label}
-                                  </span>
-                                  {dupeIds.has(item.id) && (
-                                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">
-                                      Reused
-                                    </span>
-                                  )}
-                                  {/* Strength bar */}
-                                  <div className="flex-1 h-1 rounded-full bg-muted overflow-hidden">
-                                    <div className={`h-full rounded-full ${s.bg} transition-all`} style={{ width: `${s.score}%` }} />
-                                  </div>
-                                  {/* Favorite toggle */}
-                                  <button
-                                    onClick={(e) => handleToggleFavorite(item.id, item.is_favorite, e)}
-                                    className="text-muted-foreground hover:text-primary transition-colors focus:outline-none"
-                                  >
-                                    <motion.div
-                                      initial={false}
-                                      animate={{ 
-                                        scale: item.is_favorite ? [1, 1.3, 1] : 1,
-                                        rotate: item.is_favorite ? [0, 15, -10, 0] : 0
-                                      }}
-                                      transition={{ duration: 0.4, ease: "easeOut" }}
-                                    >
-                                      <StarIcon
-                                        className={`w-4 h-4 transition-colors ${item.is_favorite ? "fill-primary text-primary" : ""}`}
-                                        strokeWidth={item.is_favorite ? 0 : 2}
-                                      />
-                                    </motion.div>
-                                  </button>
-                                </div>
-
-                                {/* Password value & actions */}
-                                {(() => {
-                                  const parsed = parsePlaintext(item.plaintext);
-                                  const { username, password, notes } = parsed;
-                                  const hasStructured = parsed.isJson || username || password;
-
-                                  if (hasStructured) {
-                                    return (
-                                      <div className="space-y-3">
-                                        {username && (
-                                          <div className="apple-detail-row">
-                                            <label className="text-[12px] text-muted-foreground uppercase tracking-wider font-semibold mb-1 block pl-1">Username</label>
-                                            <div className="flex gap-2">
-                                              <div className="flex-1 bg-secondary rounded-xl px-4 py-3 font-mono text-[15px] text-foreground tracking-wide break-all select-all border border-border/50">
-                                                {username}
-                                              </div>
-                                              <button
-                                                onClick={() => copyToClipboard(username!, "Username")}
-                                                className="px-4 rounded-xl font-semibold bg-secondary hover:bg-secondary/80 active:scale-[0.98] transition-all border border-border/50 text-foreground"
-                                              >
-                                                Copy
-                                              </button>
-                                            </div>
-                                          </div>
-                                        )}
-                                        {password && (
-                                          <div className="apple-detail-row">
-                                            <label className="text-[12px] text-muted-foreground uppercase tracking-wider font-semibold mb-1 block pl-1">Password</label>
-                                            <div className="flex gap-2">
-                                              <div className="flex-1 bg-secondary rounded-xl px-4 py-3 font-mono text-[15px] text-foreground tracking-wide break-all select-all border border-border/50">
-                                                {password}
-                                              </div>
-                                              <button
-                                                onClick={() => copyToClipboard(password!, "Password")}
-                                                className="px-4 rounded-xl font-semibold bg-primary text-white hover:bg-primary/90 active:scale-[0.98] transition-all"
-                                              >
-                                                Copy
-                                              </button>
-                                            </div>
-                                          </div>
-                                        )}
-                                        {notes && (
-                                          <div className="apple-detail-row">
-                                            <label className="text-[12px] text-muted-foreground uppercase tracking-wider font-semibold mb-1 block pl-1">Extra Details</label>
-                                            <div className="flex gap-2">
-                                              <div className="flex-1 bg-secondary rounded-xl px-4 py-3 font-mono text-[14px] text-foreground tracking-wide whitespace-pre-wrap break-words select-all border border-border/50">
-                                                {notes}
-                                              </div>
-                                              <button
-                                                onClick={() => copyToClipboard(notes!, "Extra Details")}
-                                                className="px-4 rounded-xl font-semibold bg-secondary hover:bg-secondary/80 active:scale-[0.98] transition-all border border-border/50 text-foreground"
-                                              >
-                                                Copy
-                                              </button>
-                                            </div>
-                                          </div>
-                                        )}
-                                        <div className="pt-2">
-                                          <button
-                                            onClick={(e) => handleDeleteItem(item.id, e)}
-                                            className="w-full py-2.5 rounded-xl text-[15px] font-semibold bg-destructive/10 text-destructive hover:bg-destructive/20 active:scale-[0.98] transition-all"
-                                          >
-                                            Delete Password
-                                          </button>
-                                        </div>
-                                      </div>
-                                    );
-                                  }
-                                  
-                                  return (
-                                    <>
-                                      <div className="w-full bg-secondary rounded-xl px-4 py-3 font-mono text-[15px] text-foreground tracking-wide break-all select-all border border-border/50 whitespace-pre-wrap">
-                                        {item.plaintext}
-                                      </div>
-                                      <div className="flex gap-2 mt-4">
-                                        <button
-                                          onClick={() => copyToClipboard(item.plaintext)}
-                                          className="flex-1 py-2.5 rounded-xl text-[15px] font-semibold bg-primary text-white hover:bg-primary/90 active:scale-[0.98] transition-all"
-                                        >
-                                          Copy Password
-                                        </button>
-                                        <button
-                                          onClick={(e) => handleDeleteItem(item.id, e)}
-                                          className="px-5 py-2.5 rounded-xl text-[15px] font-semibold bg-destructive/10 text-destructive hover:bg-destructive/20 active:scale-[0.98] transition-all"
-                                        >
-                                          Delete
-                                        </button>
-                                      </div>
-                                    </>
-                                  );
-                                })()}
-                              </div>
-                            </motion.div>
-                          )}
-                          </AnimatePresence>
                         </motion.div>}
                         </ContextActions>
                       );
@@ -877,7 +732,21 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
             </AnimatePresence>
           </motion.div>
         )}
-        <AnimatePresence>{selectedItem && !isSelectionMode && renderPasswordDetail(selectedItem)}</AnimatePresence>
+
+        {!loading && items.length > 0 && !isSelectionMode && (
+          selectedItem ? (
+            <>
+              <button type="button" className="apple-password-detail-backdrop" aria-label="Close password details" onClick={() => { setExpandedId(null); setRevealedIds(new Set()); }} />
+              <AnimatePresence mode="wait">{renderPasswordDetail(selectedItem)}</AnimatePresence>
+            </>
+          ) : (
+            <aside className="apple-password-detail apple-detail-pane min-w-0 hidden md:flex flex-col items-center justify-center text-center py-20 px-6">
+              <KeyRoundIcon className="w-9 h-9 text-muted-foreground/30 mb-3" strokeWidth={1.25} />
+              <p className="text-[15px] font-medium text-foreground/70">Select a password</p>
+              <p className="text-[13px] text-muted-foreground mt-1 max-w-[220px] leading-relaxed">Choose an item from the list to view its details.</p>
+            </aside>
+          )
+        )}
       </div>
 
       {/* Floating Action Bar for Bulk Selection */}
