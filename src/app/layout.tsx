@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
@@ -61,11 +62,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = (await headers()).get("x-csp-nonce") ?? undefined;
+
   return (
     <html
       lang="en"
@@ -73,7 +76,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <Script id="velora-theme-bootstrap" strategy="beforeInteractive">
+        <Script id="velora-theme-bootstrap" strategy="beforeInteractive" nonce={nonce}>
           {themeBootstrap}
         </Script>
       </head>

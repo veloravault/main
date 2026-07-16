@@ -14,42 +14,59 @@ const PIN_ENCRYPTED_KEY = "vault_pin_encrypted_master";
 const LEGACY_PIN_ITERATIONS = 100_000;
 const PIN_ITERATIONS = 600_000;
 
+// Schemes control how the verifier hash and the encryption key are derived
+// from the same (pin, salt, iterations). "v1" (legacy) derives both from the
+// identical salt, which makes the PBKDF2 output byte-identical between them —
+// the stored "hash" was actually the literal AES-GCM key, so anyone reading
+// localStorage could decrypt the master key without the PIN. "v2" derives
+// each from a purpose-suffixed salt so the two outputs are independent; a v1
+// enrollment still verifies/decrypts correctly (for existing users) and gets
+// transparently upgraded to v2 on its next successful unlock, mirroring the
+// existing PIN_ITERATIONS upgrade path below.
+type PinScheme = "v1" | "v2";
+const CURRENT_PIN_SCHEME: PinScheme = "v2";
+
 type PinMetadata = {
   hash?: string;
   salt?: string;
   iterations?: number;
   ownerUserId?: string;
+  scheme?: PinScheme;
 };
 
 // ── Crypto helpers ────────────────────────────────────────────────────────────
 
-async function hashPin(pin: string, salt: string, iterations: number): Promise<string> {
+function domainSalt(scheme: PinScheme, salt: string, purpose: "verify" | "encrypt"): string {
+  return scheme === "v1" ? salt : `${salt}:${purpose}`;
+}
+
+async function hashPin(pin: string, salt: string, iterations: number, scheme: PinScheme): Promise<string> {
   const enc = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey(
     "raw", enc.encode(pin), "PBKDF2", false, ["deriveBits"]
   );
   const bits = await crypto.subtle.deriveBits(
-    { name: "PBKDF2", salt: enc.encode(salt), iterations, hash: "SHA-256" },
+    { name: "PBKDF2", salt: enc.encode(domainSalt(scheme, salt, "verify")), iterations, hash: "SHA-256" },
     keyMaterial, 256
   );
   return btoa(String.fromCharCode(...new Uint8Array(bits)));
 }
 
-async function derivePinKey(pin: string, salt: string, iterations: number): Promise<CryptoKey> {
+async function derivePinKey(pin: string, salt: string, iterations: number, scheme: PinScheme): Promise<CryptoKey> {
   const enc = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey(
     "raw", enc.encode(pin), "PBKDF2", false, ["deriveKey"]
   );
   return crypto.subtle.deriveKey(
-    { name: "PBKDF2", salt: enc.encode(salt), iterations, hash: "SHA-256" },
+    { name: "PBKDF2", salt: enc.encode(domainSalt(scheme, salt, "encrypt")), iterations, hash: "SHA-256" },
     keyMaterial,
     { name: "AES-GCM", length: 256 },
     false, ["encrypt", "decrypt"]
   );
 }
 
-async function encryptWithPin(data: string, pin: string, salt: string, iterations: number): Promise<string> {
-  const key = await derivePinKey(pin, salt, iterations);
+async function encryptWithPin(data: string, pin: string, salt: string, iterations: number, scheme: PinScheme): Promise<string> {
+  const key = await derivePinKey(pin, salt, iterations, scheme);
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const encrypted = await crypto.subtle.encrypt(
     { name: "AES-GCM", iv },
@@ -63,11 +80,11 @@ async function encryptWithPin(data: string, pin: string, salt: string, iteration
   return btoa(String.fromCharCode(...combined));
 }
 
-async function decryptWithPin(cipherB64: string, pin: string, salt: string, iterations: number): Promise<string> {
+async function decryptWithPin(cipherB64: string, pin: string, salt: string, iterations: number, scheme: PinScheme): Promise<string> {
   const combined = Uint8Array.from(atob(cipherB64), c => c.charCodeAt(0));
   const iv = combined.slice(0, 12);
   const ciphertext = combined.slice(12);
-  const key = await derivePinKey(pin, salt, iterations);
+  const key = await derivePinKey(pin, salt, iterations, scheme);
   const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ciphertext);
   return new TextDecoder().decode(decrypted);
 }
@@ -83,13 +100,13 @@ export async function savePinForMaster(
   const ownerUserId = requireAuthenticatedVaultUserId(userId);
   if (!isAuthenticatedUserCurrent(ownerUserId)) throw new Error("The authenticated account changed during PIN enrollment.");
   const salt = crypto.randomUUID();
-  const pinHash = await hashPin(pin, salt, PIN_ITERATIONS);
-  const encryptedMaster = await encryptWithPin(masterKey, pin, salt, PIN_ITERATIONS);
+  const pinHash = await hashPin(pin, salt, PIN_ITERATIONS, CURRENT_PIN_SCHEME);
+  const encryptedMaster = await encryptWithPin(masterKey, pin, salt, PIN_ITERATIONS, CURRENT_PIN_SCHEME);
   const committed = commitForExpectedAuthenticatedUser(
     ownerUserId,
     isAuthenticatedUserCurrent,
     (verifiedOwnerUserId) => {
-      localStorage.setItem(PIN_STORAGE_KEY, JSON.stringify({ hash: pinHash, salt, iterations: PIN_ITERATIONS, ownerUserId: verifiedOwnerUserId }));
+      localStorage.setItem(PIN_STORAGE_KEY, JSON.stringify({ hash: pinHash, salt, iterations: PIN_ITERATIONS, ownerUserId: verifiedOwnerUserId, scheme: CURRENT_PIN_SCHEME }));
       localStorage.setItem(PIN_ENCRYPTED_KEY, encryptedMaster);
     },
   );
@@ -140,7 +157,8 @@ export async function verifyPinAndRecoverMaster(
     if (!Number.isSafeInteger(iterations) || iterations < LEGACY_PIN_ITERATIONS || iterations > PIN_ITERATIONS) {
       throw new Error("Invalid PIN enrollment.");
     }
-    const inputHash = await hashPin(pin, parsed.salt, iterations);
+    const scheme: PinScheme = parsed.scheme === "v2" ? "v2" : "v1";
+    const inputHash = await hashPin(pin, parsed.salt, iterations, scheme);
     if (!isAuthenticatedUserCurrent(ownerUserId)) {
       throw new Error("The authenticated account changed during PIN verification.");
     }
@@ -156,8 +174,10 @@ export async function verifyPinAndRecoverMaster(
       throw new Error(`Wrong PIN. ${remaining} attempt${remaining === 1 ? "" : "s"} left.`);
     }
 
-    const masterKey = await decryptWithPin(encryptedMaster, pin, parsed.salt, iterations);
-    if (iterations < PIN_ITERATIONS) await savePinForMaster(pin, masterKey, ownerUserId, isAuthenticatedUserCurrent);
+    const masterKey = await decryptWithPin(encryptedMaster, pin, parsed.salt, iterations, scheme);
+    if (iterations < PIN_ITERATIONS || scheme !== CURRENT_PIN_SCHEME) {
+      await savePinForMaster(pin, masterKey, ownerUserId, isAuthenticatedUserCurrent);
+    }
     localStorage.removeItem("vault_pin_attempts");
     return masterKey;
   } catch (error) {

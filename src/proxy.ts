@@ -1,8 +1,29 @@
 import type { NextRequest } from "next/server";
 import { refreshSupabaseSession } from "@/lib/server/session-proxy";
 
+function buildCsp(nonce: string) {
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}'`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https://*.supabase.co https://unavatar.io",
+    "font-src 'self' data:",
+    "connect-src 'self' https://*.supabase.co",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "object-src 'none'",
+  ].join("; ");
+}
+
 export async function proxy(request: NextRequest) {
-  return refreshSupabaseSession(request);
+  const nonce = crypto.randomUUID().replace(/-/g, "");
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-csp-nonce", nonce);
+
+  const response = await refreshSupabaseSession(request, requestHeaders);
+  response.headers.set("Content-Security-Policy", buildCsp(nonce));
+  return response;
 }
 
 export const config = {
