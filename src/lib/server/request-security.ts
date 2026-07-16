@@ -28,7 +28,9 @@ export function assertSameOrigin(request: Request) {
   } catch {
     parsedOrigin = null;
   }
-  if (!parsedOrigin || parsedOrigin !== requiredAppUrl()) {
+  const expected = requiredAppUrl();
+  if (!parsedOrigin || parsedOrigin !== expected) {
+    console.error("ORIGIN_MISMATCH_DETAIL", { receivedOriginHeader: origin, parsedOrigin, expectedAppUrl: expected });
     throw new RequestSecurityError("ORIGIN_MISMATCH", 403);
   }
 }
