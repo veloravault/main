@@ -62,19 +62,32 @@ export async function POST(request: Request) {
 
     const supabase = await createServerSupabaseClient();
     const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: "invite" });
-    if (error || !data.user?.email) return redirectTo("/accept-invite?state=expired");
+    if (error || !data.user?.email) {
+      console.error("AUTH_CONFIRM_VERIFY_OTP_FAILED", { code: error?.code, message: error?.message, status: error?.status });
+      return redirectTo("/accept-invite?state=expired");
+    }
 
     try {
       const status = await reconcileConfirmedInvite({ userId: data.user.id, email: data.user.email });
       if (status === "invited") return redirectTo("/onboarding");
       if (status === "active") return redirectTo("/vault");
+      console.error("AUTH_CONFIRM_UNEXPECTED_STATUS", { userId: data.user.id, status });
       await supabase.auth.signOut();
       return redirectTo("/accept-invite?state=invalid");
-    } catch {
+    } catch (reconcileError) {
+      console.error("AUTH_CONFIRM_RECONCILE_THREW", {
+        userId: data.user.id,
+        name: reconcileError instanceof Error ? reconcileError.name : typeof reconcileError,
+        message: reconcileError instanceof Error ? reconcileError.message : String(reconcileError),
+      });
       await supabase.auth.signOut();
       return redirectTo("/accept-invite?state=invalid");
     }
-  } catch {
+  } catch (outerError) {
+    console.error("AUTH_CONFIRM_OUTER_CATCH", {
+      name: outerError instanceof Error ? outerError.name : typeof outerError,
+      message: outerError instanceof Error ? outerError.message : String(outerError),
+    });
     return redirectTo("/accept-invite?state=invalid");
   }
 }

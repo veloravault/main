@@ -224,8 +224,14 @@ export async function reconcileConfirmedInvite(input: {
     .in("status", ["inviting", "invited", "invite_failed"])
     .limit(2);
 
-  if (lookupError) throw new InviteReconciliationError("RECONCILIATION_FAILED");
-  if (matches?.length !== 1) throw new InviteReconciliationError("NO_ELIGIBLE_REQUEST");
+  if (lookupError) {
+    console.error("RECONCILE_INVITE_LOOKUP_FAILED", { email, code: lookupError.code, message: lookupError.message });
+    throw new InviteReconciliationError("RECONCILIATION_FAILED");
+  }
+  if (matches?.length !== 1) {
+    console.error("RECONCILE_INVITE_NO_ELIGIBLE_REQUEST", { email, matchCount: matches?.length ?? 0 });
+    throw new InviteReconciliationError("NO_ELIGIBLE_REQUEST");
+  }
 
   const now = new Date().toISOString();
   const { data, error } = await admin.rpc("reconcile_confirmed_invite", {
@@ -234,6 +240,15 @@ export async function reconcileConfirmedInvite(input: {
     p_now: now,
   });
   if (error || !["invited", "active", "suspended", "revoked"].includes(data)) {
+    console.error("RECONCILE_INVITE_RPC_FAILED", {
+      email,
+      userId: input.userId,
+      returnedData: data,
+      errorCode: error?.code,
+      errorMessage: error?.message,
+      errorDetails: error?.details,
+      errorHint: error?.hint,
+    });
     throw new InviteReconciliationError("RECONCILIATION_FAILED");
   }
   return data as MemberStatus;
