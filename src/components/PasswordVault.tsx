@@ -380,9 +380,9 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
           <span className={`text-[16px] font-medium text-foreground truncate ${concealed ? "font-mono tracking-wide" : ""}`}>
             {concealed && !revealedIds.has(item.id) ? "••••••••••••" : value}
           </span>
-          <span className="flex shrink-0 items-center gap-1">
-            {concealed && <button type="button" onClick={() => setRevealedIds((current) => { const next = new Set(current); if (next.has(item.id)) next.delete(item.id); else next.add(item.id); return next; })} className="text-muted-foreground/40 hover:text-primary transition-colors" aria-label={revealedIds.has(item.id) ? "Hide password" : "Show password"}>{revealedIds.has(item.id) ? <EyeOffIcon className="w-[18px] h-[18px]" /> : <EyeIcon className="w-[18px] h-[18px]" />}</button>}
-            <button type="button" onClick={() => copyToClipboard(value, copyLabel)} className="text-muted-foreground/40 hover:text-primary transition-colors" aria-label={`Copy ${label.toLowerCase()}`}>
+          <span className="flex shrink-0 items-center -mr-2">
+            {concealed && <button type="button" onClick={() => setRevealedIds((current) => { const next = new Set(current); if (next.has(item.id)) next.delete(item.id); else next.add(item.id); return next; })} className="flex items-center justify-center w-11 h-11 -my-3 text-muted-foreground/40 hover:text-primary active:text-primary transition-colors" aria-label={revealedIds.has(item.id) ? "Hide password" : "Show password"}>{revealedIds.has(item.id) ? <EyeOffIcon className="w-[18px] h-[18px]" /> : <EyeIcon className="w-[18px] h-[18px]" />}</button>}
+            <button type="button" onClick={() => copyToClipboard(value, copyLabel)} className="flex items-center justify-center w-11 h-11 -my-3 text-muted-foreground/40 hover:text-primary active:text-primary transition-colors" aria-label={`Copy ${label.toLowerCase()}`}>
               <CopyIcon className="w-[18px] h-[18px]" />
             </button>
           </span>
@@ -412,10 +412,10 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
       >
           {/* Top Actions: Favorite & Close */}
           <div className="absolute top-4 right-4 flex items-center gap-1 z-10">
-            <button type="button" onClick={(e) => handleToggleFavorite(item.id, item.is_favorite, e)} className="p-2.5 text-muted-foreground hover:text-primary transition-colors rounded-full hover:bg-background/50" aria-label="Toggle favorite">
+            <button type="button" onClick={(e) => handleToggleFavorite(item.id, item.is_favorite, e)} className="flex items-center justify-center w-11 h-11 text-muted-foreground hover:text-primary active:bg-background/50 transition-colors rounded-full" aria-label="Toggle favorite">
               <StarIcon className={`w-5 h-5 ${item.is_favorite ? "fill-primary text-primary" : ""}`} />
             </button>
-            <button type="button" onClick={() => { setExpandedId(null); setRevealedIds(new Set()); }} className="p-2.5 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-background/50 md:hidden" aria-label="Close password details">
+            <button type="button" onClick={() => { setExpandedId(null); setRevealedIds(new Set()); }} className="flex items-center justify-center w-11 h-11 text-muted-foreground hover:text-foreground active:bg-background/50 transition-colors rounded-full md:hidden" aria-label="Close password details">
               <XIcon className="w-5 h-5" />
             </button>
           </div>
@@ -560,7 +560,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
                       className="w-full bg-transparent text-[17px] font-mono tracking-wide text-foreground focus:outline-none"
                       required
                     />
-                    <button type="button" onClick={() => setShowNewSecret((v) => !v)} className="shrink-0 text-muted-foreground/50 hover:text-primary transition-colors" aria-label={showNewSecret ? "Hide password" : "Show password"}>
+                    <button type="button" onClick={() => setShowNewSecret((v) => !v)} className="flex items-center justify-center w-11 h-11 -my-3 -mr-2 shrink-0 text-muted-foreground/50 hover:text-primary active:text-primary transition-colors" aria-label={showNewSecret ? "Hide password" : "Show password"}>
                       {showNewSecret ? <EyeOffIcon className="w-[18px] h-[18px]" /> : <EyeIcon className="w-[18px] h-[18px]" />}
                     </button>
                   </div>

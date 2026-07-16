@@ -919,7 +919,7 @@ a:focus-visible {
 }
 @media (max-width: 767px) {
   .apple-password-detail-backdrop { display: block; position: fixed; inset: 0; z-index: 69; background: rgba(0, 0, 0, .28); backdrop-filter: blur(3px); }
-  .apple-password-detail { position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; max-height: min(82dvh, 680px); overflow-y: auto; border-radius: 28px 28px 0 0; box-shadow: 0 -20px 60px rgba(0, 0, 0, .2); }
+  .apple-password-detail { position: fixed; left: 0; right: 0; bottom: 0; z-index: 70; max-height: min(82dvh, 680px); overflow-y: auto; border-radius: 28px 28px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); box-shadow: 0 -20px 60px rgba(0, 0, 0, .2); }
 }
 
 /* Adaptive Passwords / Bank detail surfaces */
