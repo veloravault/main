@@ -1,6 +1,6 @@
 import Link from "next/link";
 import styles from "@/app/landing.module.css";
-import { PasswordVideoScene } from "./PasswordVideoScene";
+import { VideoScene } from "./VideoScene";
 
 function KeyFeatures({ items }: { items: string[] }) {
   return (
@@ -18,18 +18,6 @@ function KeyFeatures({ items }: { items: string[] }) {
   );
 }
 
-function DocumentScene() {
-  return (
-    <div className={`${styles.sceneVisual} ${styles.documentVisual}`} aria-hidden="true">
-      <div className={styles.documentStack}>
-        <span><i>PDF</i><strong>Identity</strong><small>2 documents</small></span>
-        <span><i>DOC</i><strong>Records</strong><small>8 documents</small></span>
-        <span><i>PDF</i><strong>Home</strong><small>4 documents</small></span>
-      </div>
-    </div>
-  );
-}
-
 function NoteScene() {
   return (
     <div className={`${styles.sceneVisual} ${styles.noteVisual}`} aria-hidden="true">
@@ -42,20 +30,6 @@ function NoteScene() {
         <span>✦</span>
         <div><strong>Magic Import</strong><small>Ready to review</small></div>
       </div>
-    </div>
-  );
-}
-
-function FinanceScene() {
-  return (
-    <div className={`${styles.sceneVisual} ${styles.financeVisual}`} aria-hidden="true">
-      <div className={styles.financeCard}>
-        <span>Velora Vault</span>
-        <i />
-        <strong>••••&nbsp;&nbsp;••••&nbsp;&nbsp;2486</strong>
-        <small>FINANCIAL ESSENTIAL</small>
-      </div>
-      <div className={styles.financeDetail}><span>Account detail</span><strong>Secured</strong></div>
     </div>
   );
 }
@@ -85,24 +59,35 @@ export function ProductScenes() {
             ]}
           />
         </div>
-        <PasswordVideoScene />
+        <VideoScene
+          src="/videos/add-password.mp4"
+          poster="/videos/add-password-poster.png"
+          label="Walkthrough: adding a new password to Velora Vault"
+        />
       </article>
 
       <article className={`${styles.featureScene} ${styles.reverseScene}`}>
         <div className={styles.featureCopy}>
           <span>Documents</span>
-          <h3>Important records, calmly arranged.</h3>
-          <p>Give private documents a secure home that is easy to navigate.</p>
+          <h3>Upload a document in seconds.</h3>
+          <p>
+            Drop in a file, let AI Vision suggest a title, and it&apos;s
+            encrypted before it&apos;s stored.
+          </p>
           <KeyFeatures
             items={[
               "Upload PDFs and files by category",
-              "Titles kept clear without manual renaming",
+              "Optional AI Vision suggests a clear title",
               "Search across every stored document",
               "Nothing indexed outside your vault",
             ]}
           />
         </div>
-        <DocumentScene />
+        <VideoScene
+          src="/videos/add-document.mp4"
+          poster="/videos/add-document-poster.png"
+          label="Walkthrough: uploading a new document to Velora Vault"
+        />
       </article>
 
       <article className={styles.featureScene}>
@@ -125,8 +110,11 @@ export function ProductScenes() {
       <article className={`${styles.featureScene} ${styles.reverseScene}`}>
         <div className={styles.featureCopy}>
           <span>Financial essentials</span>
-          <h3>The details you need, discreetly held.</h3>
-          <p>Keep cards, accounts and everyday financial references together.</p>
+          <h3>Add a card in seconds.</h3>
+          <p>
+            Nickname it, enter the details, and it&apos;s encrypted before it
+            saves — PIN fields stay optional.
+          </p>
           <KeyFeatures
             items={[
               "Cards and account references in one place",
@@ -136,7 +124,11 @@ export function ProductScenes() {
             ]}
           />
         </div>
-        <FinanceScene />
+        <VideoScene
+          src="/videos/add-card.mp4"
+          poster="/videos/add-card-poster.png"
+          label="Walkthrough: adding a new card to Velora Vault"
+        />
       </article>
 
       <div className={styles.productCta}>

@@ -3,7 +3,15 @@
 import { useEffect, useRef } from "react";
 import styles from "@/app/landing.module.css";
 
-export function PasswordVideoScene() {
+export function VideoScene({
+  src,
+  poster,
+  label,
+}: {
+  src: string;
+  poster: string;
+  label: string;
+}) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -27,19 +35,19 @@ export function PasswordVideoScene() {
   }, []);
 
   return (
-    <div className={`${styles.sceneVisual} ${styles.passwordVideoVisual}`}>
+    <div className={`${styles.sceneVisual} ${styles.demoVideoVisual}`}>
       <video
         ref={videoRef}
-        className={styles.passwordVideo}
+        className={styles.demoVideo}
         muted
         playsInline
         autoPlay
         loop
         controls
-        poster="/videos/add-password-poster.png"
-        aria-label="Walkthrough: adding a new password to Velora Vault"
+        poster={poster}
+        aria-label={label}
       >
-        <source src="/videos/add-password.mp4" type="video/mp4" />
+        <source src={src} type="video/mp4" />
       </video>
     </div>
   );
