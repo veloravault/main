@@ -150,6 +150,21 @@
   background: #eef6ff;
 }
 
+.compareLink {
+  position: relative;
+  z-index: 1;
+  margin-top: 14px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.compareLink:hover {
+  color: #fff;
+}
+
 @media (max-width: 820px) {
   .betaPanel {
     grid-template-columns: 1fr;

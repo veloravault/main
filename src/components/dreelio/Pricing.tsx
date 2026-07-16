@@ -62,6 +62,7 @@ export function Pricing() {
             >
               Request access
             </motion.a>
+            <a href="/pricing" className={styles.compareLink}>See pricing after beta</a>
           </motion.div>
         </motion.div>
       </div>

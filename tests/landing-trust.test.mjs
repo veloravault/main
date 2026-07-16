@@ -107,7 +107,7 @@ test("security explainer uses the public shell and an accessible motion story", 
   assert.doesNotMatch(page, /LegalHeader/);
   assert.match(navigation, /href: "\/#features"/);
   assert.match(navigation, /href: "\/#benefits"/);
-  assert.match(navigation, /href: "\/#pricing"/);
+  assert.match(navigation, /href: "\/pricing"/);
 
   assert.match(visuals, /export function SecurityFlowVisual/);
   assert.match(visuals, /export function SecurityHeroVisual/);
