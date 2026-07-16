@@ -1,12 +1,20 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useVaultKey } from "@/components/auth/VaultKeyProvider";
 import { getExpectedUserAuthorization, updateExpectedUserPassword } from "@/lib/authToken";
 import { supabase } from "@/lib/supabase";
+import { getStrength, type StrengthLevel } from "@/lib/passwordHealth";
 import { ArrowRightIcon } from "lucide-react";
 import styles from "@/components/auth/auth-shell.module.css";
+
+const STRENGTH_COLOR_VAR: Record<StrengthLevel, string> = {
+  weak: "var(--auth-red)",
+  fair: "var(--auth-amber)",
+  strong: "var(--auth-blue)",
+  "very-strong": "var(--auth-green)",
+};
 
 export function OnboardingForm({ userId, email }: { userId: string; email: string }) {
   const router = useRouter();
@@ -16,6 +24,7 @@ export function OnboardingForm({ userId, email }: { userId: string; email: strin
   const [masterKeyConfirmation, setMasterKeyConfirmation] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const masterKeyStrength = useMemo(() => getStrength(masterKey), [masterKey]);
 
   async function completeOnboarding(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -27,6 +36,10 @@ export function OnboardingForm({ userId, email }: { userId: string; email: strin
     }
     if (!masterKey) {
       setError("Enter your existing vault master key.");
+      return;
+    }
+    if (masterKeyStrength.level === "weak") {
+      setError("Your master key is too weak. Use a longer key with a mix of letters, numbers, and symbols — it's the only thing protecting your vault.");
       return;
     }
     if (masterKey !== masterKeyConfirmation) {
@@ -84,6 +97,19 @@ export function OnboardingForm({ userId, email }: { userId: string; email: strin
           <span className={styles.fieldLabel}>Existing vault master key</span>
           <input id="onboarding-master-key" type="password" autoComplete="off" value={masterKey} onChange={(event) => setMasterKeyValue(event.target.value)} disabled={submitting} required />
           <small className={styles.fieldHint}>Never sent, stored, logged, or added to your account.</small>
+          {masterKey && (
+            <div className={styles.strengthMeter} aria-live="polite">
+              <span className={styles.strengthTrack}>
+                <span
+                  className={styles.strengthFill}
+                  style={{ width: `${masterKeyStrength.score}%`, backgroundColor: STRENGTH_COLOR_VAR[masterKeyStrength.level] }}
+                />
+              </span>
+              <span className={styles.strengthLabel} style={{ color: STRENGTH_COLOR_VAR[masterKeyStrength.level] }}>
+                {masterKeyStrength.label}
+              </span>
+            </div>
+          )}
         </label>
         <label className={styles.field} htmlFor="onboarding-master-key-confirmation">
           <span className={styles.fieldLabel}>Confirm master key</span>

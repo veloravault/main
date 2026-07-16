@@ -8,6 +8,8 @@
   --auth-fill: rgba(118, 118, 128, 0.12);
   --auth-blue: #007aff;
   --auth-red: #d70015;
+  --auth-amber: #ff9500;
+  --auth-green: #34c759;
   position: relative;
   display: grid;
   min-height: 100dvh;
@@ -31,6 +33,8 @@
   --auth-fill: rgba(118, 118, 128, 0.24);
   --auth-blue: #0a84ff;
   --auth-red: #ff6961;
+  --auth-amber: #ff9f0a;
+  --auth-green: #30d158;
   background:
     radial-gradient(circle at 50% 24%, rgba(10, 132, 255, 0.085), transparent 28rem),
     var(--auth-paper);
@@ -162,6 +166,11 @@
 .input:disabled { cursor: wait; opacity: 0.58; }
 .field input[aria-invalid="true"] { box-shadow: inset 3px 0 var(--auth-red); }
 .fieldHint { display: block; margin: -5px 15px 10px; color: var(--auth-muted); font-size: 10px; font-weight: 450; line-height: 1.4; }
+
+.strengthMeter { display: flex; align-items: center; gap: 8px; margin: -5px 15px 10px; }
+.strengthTrack { flex: 1; height: 3px; border-radius: 2px; background: var(--auth-fill); overflow: hidden; }
+.strengthFill { height: 100%; border-radius: 2px; transition: width 160ms ease, background-color 160ms ease; }
+.strengthLabel { flex: none; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; }
 
 .arrowButton {
   position: absolute;

@@ -1,6 +1,9 @@
 import type { NextRequest } from "next/server";
 import { refreshSupabaseSession } from "@/lib/server/session-proxy";
 
+const CSP_REPORT_ENDPOINT = "csp-endpoint";
+const CSP_REPORT_PATH = "/api/csp-report";
+
 function buildCsp(nonce: string) {
   return [
     "default-src 'self'",
@@ -13,6 +16,9 @@ function buildCsp(nonce: string) {
     "base-uri 'self'",
     "form-action 'self'",
     "object-src 'none'",
+    // Legacy directive for browsers that don't yet support report-to.
+    `report-uri ${CSP_REPORT_PATH}`,
+    `report-to ${CSP_REPORT_ENDPOINT}`,
   ].join("; ");
 }
 
@@ -23,6 +29,10 @@ export async function proxy(request: NextRequest) {
 
   const response = await refreshSupabaseSession(request, requestHeaders);
   response.headers.set("Content-Security-Policy", buildCsp(nonce));
+  response.headers.set(
+    "Reporting-Endpoints",
+    `${CSP_REPORT_ENDPOINT}="${CSP_REPORT_PATH}"`,
+  );
   return response;
 }
 
