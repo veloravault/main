@@ -95,6 +95,14 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
   const { scheduleDelete } = useOptimisticDelete({ items, setItems, toastLabel: (item) => item.title || "Password", commitDelete: async (item) => {
     const { error } = await supabase.from("vault_items").delete().eq("id", item.id);
     if (error) throw error;
@@ -404,10 +412,10 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
         role="dialog"
         aria-modal="true"
         aria-labelledby="password-detail-title"
-        initial={{ opacity: 0, y: 10 }}
+        initial={isDesktop ? { opacity: 0, y: 10 } : { opacity: 0, y: "100%" }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 10 }}
-        transition={{ type: "spring", damping: 28, stiffness: 260 }}
+        exit={isDesktop ? { opacity: 0, y: 10 } : { opacity: 0, y: "100%" }}
+        transition={isDesktop ? { type: "spring", damping: 28, stiffness: 260 } : { type: "spring", damping: 30, stiffness: 240 }}
         className="apple-password-detail apple-detail-pane min-w-0 flex flex-col"
       >
           {/* Top Actions: Favorite & Close */}
@@ -733,12 +741,25 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
           </motion.div>
         )}
 
+        <AnimatePresence>
+          {!!selectedItem && !isSelectionMode && (
+            <motion.button
+              key="password-detail-backdrop"
+              type="button"
+              className="apple-password-detail-backdrop"
+              aria-label="Close password details"
+              onClick={() => { setExpandedId(null); setRevealedIds(new Set()); }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            />
+          )}
+        </AnimatePresence>
+
         {!loading && items.length > 0 && !isSelectionMode && (
           selectedItem ? (
-            <>
-              <button type="button" className="apple-password-detail-backdrop" aria-label="Close password details" onClick={() => { setExpandedId(null); setRevealedIds(new Set()); }} />
-              <AnimatePresence mode="wait">{renderPasswordDetail(selectedItem)}</AnimatePresence>
-            </>
+            <AnimatePresence mode="wait">{renderPasswordDetail(selectedItem)}</AnimatePresence>
           ) : (
             <aside className="apple-password-detail apple-detail-pane min-w-0 hidden md:flex flex-col items-center justify-center text-center py-20 px-6">
               <KeyRoundIcon className="w-9 h-9 text-muted-foreground/30 mb-3" strokeWidth={1.25} />
