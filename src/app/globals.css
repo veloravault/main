@@ -902,7 +902,7 @@ a:focus-visible {
 .apple-tabbar { padding-bottom: env(safe-area-inset-bottom); }
 
 /* Apple Passwords master-detail — mirrors .apple-bank-* split view */
-.apple-password-list { max-width: 760px; margin-inline: auto; }
+.apple-password-list { width: 100%; max-width: 760px; margin-inline: auto; }
 .apple-password-detail {
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--separator) 60%, transparent);
