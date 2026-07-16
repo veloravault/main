@@ -5,6 +5,7 @@ export const NAV_LINKS = [
   { label: "Features", href: "/#features" },
   { label: "Benefits", href: "/#benefits" },
   { label: "Security", href: "/security" },
+  { label: "Blog", href: "/blog" },
   { label: "Access", href: "/#pricing" },
   { label: "Contact", href: "/contact" },
 ];
@@ -88,6 +89,7 @@ export const FOOTER_COLUMNS = [
       { label: "Features", href: "/#features" },
       { label: "Access", href: "/#pricing" },
       { label: "Security", href: "/security" },
+      { label: "Blog", href: "/blog" },
     ],
   },
   {
