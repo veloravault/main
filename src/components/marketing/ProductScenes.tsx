@@ -1,20 +1,5 @@
 import styles from "@/app/landing.module.css";
-
-function PasswordScene() {
-  return (
-    <div className={`${styles.sceneVisual} ${styles.passwordVisual}`} aria-hidden="true">
-      <div className={styles.sceneToolbar}>
-        <span />
-        <i />
-      </div>
-      <div className={styles.passwordList}>
-        <div><i>G</i><span><strong>Google</strong><small>personal@icloud.com</small></span><b>••••••</b></div>
-        <div><i>A</i><span><strong>Apple ID</strong><small>velora@icloud.com</small></span><b>••••••</b></div>
-        <div><i>N</i><span><strong>Notion</strong><small>Workspace</small></span><b>••••••</b></div>
-      </div>
-    </div>
-  );
-}
+import { PasswordVideoScene } from "./PasswordVideoScene";
 
 function DocumentScene() {
   return (
@@ -69,10 +54,13 @@ export function ProductScenes() {
       <article className={styles.featureScene}>
         <div className={styles.featureCopy}>
           <span>Passwords</span>
-          <h3>Your sign-ins, without the noise.</h3>
-          <p>Keep the credentials you rely on organized and close at hand.</p>
+          <h3>Add a password in seconds.</h3>
+          <p>
+            Title it, type it, save it — encrypted with your master key the
+            moment it lands in your vault.
+          </p>
         </div>
-        <PasswordScene />
+        <PasswordVideoScene />
       </article>
 
       <article className={`${styles.featureScene} ${styles.reverseScene}`}>

@@ -151,6 +151,7 @@
 .primaryCta:active { transform: scale(0.98); }
 
 .hero {
+  position: relative;
   display: grid;
   width: min(calc(100% - 48px), 1160px);
   min-height: min(860px, 100dvh);
@@ -159,6 +160,21 @@
   gap: 48px;
   margin-inline: auto;
   padding: 132px 0 72px;
+}
+
+.hero::before {
+  position: absolute;
+  z-index: -1;
+  top: -80px;
+  right: -10%;
+  bottom: -80px;
+  left: -10%;
+  background-image: radial-gradient(var(--landing-hairline) 1.2px, transparent 1.2px);
+  background-position: 0 0;
+  background-size: 26px 26px;
+  mask-image: radial-gradient(ellipse 60% 55% at 72% 42%, #000 0%, transparent 72%);
+  content: "";
+  pointer-events: none;
 }
 
 .heroCopy { max-width: 900px; }
@@ -236,10 +252,43 @@
 
 .apertureSection,
 .productSection,
-.securitySection {
+.securitySection,
+.highlightsSection {
   width: min(calc(100% - 48px), 1160px);
   margin-inline: auto;
 }
+
+.highlightsSection { padding: 24px 0 64px; }
+
+.highlightsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.highlightCard {
+  display: grid;
+  gap: 16px;
+  border: 1px solid var(--landing-hairline);
+  border-radius: 26px;
+  padding: 32px 28px;
+  background: var(--landing-white);
+}
+
+.highlightGlyph {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--landing-label-blue) 11%, transparent);
+  color: var(--landing-label-blue);
+}
+
+.highlightGlyph svg { width: 20px; height: 20px; }
+
+.highlightCard h3 { font-size: 17px; font-weight: 650; letter-spacing: -0.02em; }
+.highlightCard p { color: var(--landing-muted); font-size: 14px; line-height: 1.55; }
 
 .apertureSection {
   display: grid;
@@ -497,35 +546,17 @@
   background: var(--landing-soft);
 }
 
-.passwordVisual { display: grid; place-items: center; background: linear-gradient(145deg, var(--landing-white), var(--landing-soft)); }
-.sceneToolbar { position: absolute; top: 22px; right: 24px; left: 24px; display: flex; justify-content: space-between; }
-.sceneToolbar span { width: 116px; height: 10px; border-radius: 8px; background: var(--landing-hairline); }
-.sceneToolbar i { width: 28px; height: 28px; border-radius: 50%; background: #0071e3; }
+.passwordVideoVisual { display: grid; place-items: center; padding: 20px; background: linear-gradient(145deg, var(--landing-white), var(--landing-soft)); }
 
-.passwordList {
-  width: min(78%, 500px);
-  overflow: hidden;
-  border: 1px solid var(--landing-hairline);
+.passwordVideo {
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 4 / 3;
   border-radius: 22px;
-  background: color-mix(in srgb, var(--landing-white) 88%, transparent);
+  background: var(--landing-white);
   box-shadow: 0 26px 65px rgba(0,0,0,.1);
+  object-fit: cover;
 }
-
-.passwordList > div {
-  display: grid;
-  min-height: 88px;
-  grid-template-columns: 44px 1fr auto;
-  align-items: center;
-  gap: 13px;
-  padding: 12px 18px;
-}
-
-.passwordList > div + div { border-top: 1px solid var(--landing-hairline); }
-.passwordList i { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 13px; background: var(--landing-graphite); color: var(--landing-paper); font-size: 14px; font-style: normal; font-weight: 680; }
-.passwordList span { display: grid; gap: 4px; }
-.passwordList strong { font-size: 14px; font-weight: 650; }
-.passwordList small { color: var(--landing-muted); font-size: 11px; }
-.passwordList b { color: var(--landing-muted); font-family: var(--font-geist-mono), monospace; font-size: 11px; letter-spacing: .12em; }
 
 .documentVisual { display: grid; place-items: center; background: linear-gradient(145deg, #e9edf4, #f9f9fb); }
 :global(.dark) .documentVisual { background: linear-gradient(145deg, #24272d, #19191c); }
@@ -616,6 +647,7 @@
   .apertureSection { grid-template-columns: 1fr; min-height: auto; padding-top: 110px; }
   .apertureIntro { position: static; max-width: 680px; padding-top: 0; }
   .apertureStage { position: relative; top: auto; height: 680px; }
+  .highlightsGrid { grid-template-columns: 1fr; }
   .featureScene,
   .reverseScene { grid-template-columns: 1fr; gap: 44px; }
   .reverseScene .featureCopy { order: 0; }
@@ -668,7 +700,6 @@
   .smallScene { min-height: 650px; border-radius: 30px; padding: 38px 26px 0; }
   .smallScene .featureCopy { min-height: 230px; }
   .smallScene .sceneVisual { min-height: 350px; }
-  .passwordList { width: 88%; }
   .documentStack { width: 72%; }
   .securitySection { padding: 100px 0 120px; }
   .securityList { grid-template-columns: 1fr; margin-top: 50px; }
@@ -699,9 +730,6 @@
   .noteSurface { bottom: 14%; left: 3%; }
   .financeSurface { right: 3%; bottom: 13%; }
   .sceneVisual { min-height: 360px; }
-  .passwordList > div { min-height: 76px; grid-template-columns: 38px 1fr; padding-inline: 13px; }
-  .passwordList i { width: 36px; height: 36px; border-radius: 11px; }
-  .passwordList b { display: none; }
   .documentStack { width: 78%; height: 230px; }
   .documentStack > span { min-height: 190px; padding: 18px; }
   .smallScene { min-height: 610px; }

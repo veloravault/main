@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Highlights } from "@/components/marketing/Highlights";
 import { LandingFooter } from "@/components/marketing/LandingFooter";
 import { LandingHeader } from "@/components/marketing/LandingHeader";
 import { ProductScenes } from "@/components/marketing/ProductScenes";
@@ -43,6 +44,7 @@ export default function HomePage() {
           </p>
         </section>
 
+        <Highlights />
         <VaultAperture />
         <ProductScenes />
         <SecurityStory />
