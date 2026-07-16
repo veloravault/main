@@ -1,3 +1,9 @@
+-- WARNING: fresh-install script only. If invite_access_schema.sql has
+-- already been applied to this project, do NOT re-run this file — its
+-- storage/RLS policies are superseded by supabase/migrations/. Re-running
+-- against an already-migrated database will fail on existing-policy/
+-- existing-table conflicts rather than silently applying; never run only
+-- part of this file to "patch" a live project.
 -- Run this in the Supabase SQL Editor
 
 -- 1. Create a table for Secure Notes
