@@ -1,70 +1,80 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { AdmissionSteps } from "@/components/marketing/AdmissionSteps";
-import { Highlights } from "@/components/marketing/Highlights";
-import { LandingFooter } from "@/components/marketing/LandingFooter";
-import { LandingHeader } from "@/components/marketing/LandingHeader";
-import { ProductScenes } from "@/components/marketing/ProductScenes";
-import { SecurityDetails } from "@/components/marketing/SecurityDetails";
-import { SecurityStory } from "@/components/marketing/SecurityStory";
-import { TechFoundation } from "@/components/marketing/TechFoundation";
-import { VaultAperture } from "@/components/marketing/VaultAperture";
-import styles from "./landing.module.css";
+import styles from "./dreelio/dreelio.module.css";
+import { Nav } from "@/components/dreelio/Nav";
+import { Hero } from "@/components/dreelio/Hero";
+import { Devices } from "@/components/dreelio/Devices";
+import { FeatureSplit } from "@/components/dreelio/FeatureSplit";
+import { Features } from "@/components/dreelio/Features";
+import { Highlights } from "@/components/dreelio/Highlights";
+import { Testimonials } from "@/components/dreelio/Testimonials";
+import { Pricing } from "@/components/dreelio/Pricing";
+import { Blog } from "@/components/dreelio/Blog";
+import { FinalCTA } from "@/components/dreelio/FinalCTA";
+import { Footer } from "@/components/dreelio/Footer";
+import { PROJECT_PILLS, FINANCE_PILLS } from "@/components/dreelio/data";
 
 export const metadata: Metadata = {
-  title: "Velora Vault — Private by invitation",
+  title: "Velora Vault — One private vault for everything that matters",
   description:
-    "A private, encrypted home for passwords, documents, notes and financial essentials.",
+    "A private, encrypted home for passwords, documents, notes and financial essentials. Your master key never leaves your device.",
 };
 
 export default function HomePage() {
   return (
-    <div className={styles.page}>
-      <LandingHeader />
-      <main>
-        <section className={styles.hero} aria-labelledby="hero-title">
-          <div className={styles.heroCopy}>
-            <p className={styles.heroEyebrow}>Private by invitation.</p>
-            <h1 id="hero-title">
-              <span>Everything important.</span>
-              <span>Only yours.</span>
-            </h1>
-            <p className={styles.heroDescription}>
-              A calm, encrypted home for passwords, documents, notes and
-              financial essentials.
-            </p>
-            <div className={styles.heroActions}>
-              <Link className={styles.primaryCta} href="/request-access">
-                Request access <span aria-hidden="true">→</span>
-              </Link>
-              <Link className={styles.secondaryCta} href="/login">
-                Already invited? Sign in
-              </Link>
-            </div>
-          </div>
-          <p className={styles.heroAside} aria-hidden="true">
-            <span>Passwords</span><span>Documents</span><span>Notes</span><span>Financial essentials</span>
-          </p>
-        </section>
+    <div className={styles.root}>
+      <main className={styles.page}>
+        <Nav />
+        <Hero />
 
+        <Devices />
+
+        <FeatureSplit
+          eyebrow="Password vault"
+          title={<>Never reuse a weak password again</>}
+          body={
+            <>
+              <strong>Save every login once</strong>, and Velora Vault flags
+              weak, reused, or aging passwords automatically. Strength scoring
+              and duplicate detection keep you a step ahead.
+            </>
+          }
+          pills={PROJECT_PILLS}
+          image={{
+            src: "/dreelio/img/project-ui.png",
+            alt: "A preview of Velora Vault's password vault",
+            width: 508,
+            height: 615,
+          }}
+        />
+
+        <FeatureSplit
+          reverse
+          eyebrow="Wallet & bank vault"
+          title={<>Your cards and accounts, one tap away</>}
+          body={
+            <>
+              <strong>Scan a card with your camera</strong>, or type it in
+              once. Velora Vault keeps card numbers, PINs, and bank details
+              encrypted and ready whenever you need them.
+            </>
+          }
+          pills={FINANCE_PILLS}
+          image={{
+            src: "/dreelio/img/budget-ui.png",
+            alt: "A preview of Velora Vault's wallet and bank vault",
+            width: 508,
+            height: 614,
+          }}
+        />
+
+        <Features />
         <Highlights />
-        <VaultAperture />
-        <ProductScenes />
-        <SecurityStory />
-        <SecurityDetails />
-        <TechFoundation />
-        <AdmissionSteps />
-
-        <section className={styles.finalCta} aria-labelledby="final-cta-title">
-          <p className={styles.sectionEyebrow}>Admission is considered, not automatic</p>
-          <h2 id="final-cta-title">A quieter place for your digital life.</h2>
-          <p>Tell us your name and email. If an invitation becomes available, we’ll be in touch.</p>
-          <Link className={styles.primaryCta} href="/request-access">
-            Request access <span aria-hidden="true">→</span>
-          </Link>
-        </section>
+        <Testimonials />
+        <Pricing />
+        <Blog />
+        <FinalCTA />
+        <Footer />
       </main>
-      <LandingFooter />
     </div>
   );
 }

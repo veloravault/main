@@ -1,0 +1,88 @@
+.section {
+  padding-block: 60px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 72px;
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.title {
+  max-width: 12ch;
+}
+
+.body {
+  margin-top: 22px;
+  max-width: 44ch;
+}
+
+.cta {
+  margin-top: 30px;
+}
+
+.pills {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  gap: 14px;
+  margin-top: 74px;
+}
+
+/* media frame, Apple-style neutral gray backdrop behind the UI card */
+.frame {
+  border-radius: var(--radius-card);
+  padding: 46px 46px 0;
+  background: linear-gradient(170deg, #f5f5f7 0%, #fbfbfd 100%);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  box-shadow: 0 30px 60px -34px rgba(0, 0, 0, 0.16);
+}
+
+:global(.dark) .frame {
+  background: linear-gradient(170deg, #1c1c1e 0%, #111113 100%);
+}
+
+.card {
+  border-radius: 16px 16px 0 0;
+  overflow: hidden;
+  box-shadow: 0 20px 44px -22px rgba(0, 0, 0, 0.22);
+}
+
+.img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  /* image always on top on mobile, regardless of desktop order */
+  .grid[data-reverse="true"] .copy {
+    order: 2;
+  }
+  .grid[data-reverse="true"] .frame {
+    order: 1;
+  }
+  .pills {
+    margin-top: 36px;
+  }
+  .frame {
+    padding: 28px 28px 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .pills {
+    grid-template-columns: 1fr;
+  }
+}

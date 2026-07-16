@@ -1,0 +1,116 @@
+.footer {
+  background: var(--surface);
+  padding: 0 0 40px;
+}
+
+/* frosted glass panel, matching the nav pill's treatment */
+.card {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-card);
+  padding: 48px 56px;
+  box-shadow: 0 24px 60px -36px rgba(0, 0, 0, 0.18);
+}
+
+:global(.dark) .card {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+
+.brandCol {
+  max-width: 320px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.mark {
+  width: 21px;
+  height: 21px;
+}
+
+.desc {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-body);
+  margin: 18px 0 22px;
+}
+
+.linkCols {
+  display: flex;
+  gap: 72px;
+}
+
+.colHeading {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 0 0 18px;
+}
+
+.linkCol ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.linkCol a {
+  font-size: 15px;
+  color: var(--ink-body);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.linkCol a:hover {
+  color: var(--ink);
+}
+
+.divider {
+  height: 1px;
+  background: var(--line);
+  margin: 40px 0 24px;
+}
+
+.bottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.bottom p {
+  font-size: 14px;
+  color: var(--ink-body);
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  .card {
+    padding: 36px 28px;
+  }
+  .linkCols {
+    gap: 48px;
+  }
+}

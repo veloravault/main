@@ -1,0 +1,62 @@
+.section {
+  background: var(--surface);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.card {
+  background: var(--card-cream);
+  border-radius: var(--radius-card);
+  padding: 34px;
+  display: flex;
+  flex-direction: column;
+  min-height: 260px;
+}
+
+.icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--card-white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  box-shadow: 0 8px 22px -16px rgba(0, 0, 0, 0.4);
+}
+
+.icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: auto 0 12px;
+}
+
+.body {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-body);
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .card {
+    min-height: 0;
+  }
+  .title {
+    margin-top: 28px;
+  }
+}

@@ -1,0 +1,245 @@
+/* ============================================================
+   Dreelio clone — shared design tokens + primitives
+   Scoped under .root so nothing leaks into the vault app.
+   ============================================================ */
+
+.root {
+  /* palette — Apple's neutral grays + documented system accent colors */
+  --ink: #1d1d1f;
+  --ink-body: #424245;
+  --ink-muted: #86868b;
+  --eyebrow: #86868b;
+
+  --surface: #ffffff;
+  --surface-alt: #f5f5f7;
+  --surface-alt-soft: #fbfbfd;
+  --paper: #ffffff;
+
+  --card-cream: #f5f5f7;
+  --card-white: #ffffff;
+  --line: rgba(0, 0, 0, 0.08);
+
+  --accent: #0071e3;
+  --accent-hover: #0077ed;
+  --accent-active: #006edb;
+
+  --pill-blue: #007aff;
+  --pill-amber: #ff9500;
+  --pill-green: #34c759;
+  --pill-rust: #ff3b30;
+  --pill-dark: #1d1d1f;
+
+  --radius-card: 28px;
+  --radius-lg: 22px;
+  --radius-pill: 100px;
+
+  --maxw: 1200px;
+  --pad: 24px;
+
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  line-height: 1.5;
+}
+
+:global(.dark) .root {
+  --ink: #f5f5f7;
+  --ink-body: #a1a1a6;
+  --ink-muted: #86868b;
+  --eyebrow: #86868b;
+
+  --surface: #000000;
+  --surface-alt: #0a0a0c;
+  --surface-alt-soft: #111113;
+  --paper: #000000;
+
+  --card-cream: #1c1c1e;
+  --card-white: #2c2c2e;
+  --line: rgba(255, 255, 255, 0.12);
+
+  --accent: #0a84ff;
+  --accent-hover: #3396ff;
+  --accent-active: #0071e3;
+
+  --pill-dark: #3a3a3c;
+}
+
+.root *,
+.root *::before,
+.root *::after {
+  box-sizing: border-box;
+}
+
+/* Full-page background: flat white, Apple marketing-page style */
+.page {
+  background: var(--surface);
+  overflow-x: clip;
+}
+
+/* ---- layout helpers ---- */
+.container {
+  width: 100%;
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--pad);
+}
+
+.section {
+  padding-block: 96px;
+}
+
+.sectionTight {
+  padding-block: 64px;
+}
+
+/* ---- type ---- */
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--eyebrow);
+  margin: 0 0 20px;
+}
+
+.h2 {
+  font-size: clamp(34px, 4.4vw, 52px);
+  line-height: 1.14;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.lead {
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--ink-body);
+  margin: 0;
+}
+
+.center {
+  text-align: center;
+}
+
+.sectionHead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+/* ---- buttons ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 17px 26px;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.15s ease, background 0.2s ease, opacity 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btnDark {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btnDark:hover {
+  background: var(--accent-hover);
+}
+
+.btnDark:active {
+  background: var(--accent-active);
+}
+
+.btnGhost {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--ink);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.btnGhost:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+:global(.dark) .btnGhost {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+:global(.dark) .btnGhost:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.btnOutline {
+  background: transparent;
+  color: var(--ink);
+  border-color: rgba(0, 0, 0, 0.14);
+  padding: 13px 22px;
+}
+
+.btnOutline:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+:global(.dark) .btnOutline {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+:global(.dark) .btnOutline:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ---- feature pill (outlined, icon + label) ---- */
+.featurePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 20px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.6);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+:global(.dark) .featurePill {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.featurePill svg {
+  width: 18px;
+  height: 18px;
+  opacity: 0.85;
+}
+
+/* ---- category tag ---- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+}
