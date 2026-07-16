@@ -5,6 +5,7 @@ import { Highlights } from "@/components/marketing/Highlights";
 import { LandingFooter } from "@/components/marketing/LandingFooter";
 import { LandingHeader } from "@/components/marketing/LandingHeader";
 import { ProductScenes } from "@/components/marketing/ProductScenes";
+import { SecurityDetails } from "@/components/marketing/SecurityDetails";
 import { SecurityStory } from "@/components/marketing/SecurityStory";
 import { TechFoundation } from "@/components/marketing/TechFoundation";
 import { VaultAperture } from "@/components/marketing/VaultAperture";
@@ -50,6 +51,7 @@ export default function HomePage() {
         <VaultAperture />
         <ProductScenes />
         <SecurityStory />
+        <SecurityDetails />
         <TechFoundation />
         <AdmissionSteps />
 
