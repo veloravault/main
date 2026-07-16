@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AdmissionSteps } from "@/components/marketing/AdmissionSteps";
+import { Highlights } from "@/components/marketing/Highlights";
 import { LandingFooter } from "@/components/marketing/LandingFooter";
 import { LandingHeader } from "@/components/marketing/LandingHeader";
 import { ProductScenes } from "@/components/marketing/ProductScenes";
 import { SecurityStory } from "@/components/marketing/SecurityStory";
+import { TechFoundation } from "@/components/marketing/TechFoundation";
 import { VaultAperture } from "@/components/marketing/VaultAperture";
 import styles from "./landing.module.css";
 
@@ -43,9 +46,12 @@ export default function HomePage() {
           </p>
         </section>
 
+        <Highlights />
         <VaultAperture />
         <ProductScenes />
         <SecurityStory />
+        <TechFoundation />
+        <AdmissionSteps />
 
         <section className={styles.finalCta} aria-labelledby="final-cta-title">
           <p className={styles.sectionEyebrow}>Admission is considered, not automatic</p>
