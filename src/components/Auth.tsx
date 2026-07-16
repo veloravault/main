@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Loader2Icon, SunIcon, MoonIcon } from "lucide-react";
-import { FaceIdIcon, AppleLockIcon } from "@/components/Icons";
+import { FaceIdIcon } from "@/components/Icons";
 import { useTheme } from "@/components/ThemeProvider";
 import { motion, AnimatePresence } from "framer-motion";
 import { savePinForMaster, hasPinLock } from "@/components/PinLock";
@@ -157,9 +157,6 @@ export function Auth({ onLogin }: { onLogin: (masterPass: string, expectedUserId
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", bounce: 0.3, duration: 0.5 }}
           >
-            <div className="w-16 h-16 rounded-[20px] bg-primary/10 flex items-center justify-center shadow-sm border border-primary/10">
-              <AppleLockIcon className="w-8 h-8 text-primary" />
-            </div>
             <div>
               <h1 className="text-[24px] font-semibold text-foreground tracking-tight mb-2">Speed up future logins</h1>
               <p className="text-[14px] text-muted-foreground leading-relaxed">

@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { SelectionToolbar } from "@/components/SelectionToolbar";
 import Papa from "papaparse";
 import { AdaptiveSheet, AdaptiveSheetBody, AdaptiveSheetFooter } from "@/components/ui/adaptive-sheet";
-import { ChevronRightIcon, UploadIcon, TrashIcon, CheckSquareIcon, SquareIcon, StarIcon, MoreHorizontalIcon, PlusIcon, XIcon, CopyIcon, EyeIcon, EyeOffIcon } from "lucide-react";
+import { ChevronRightIcon, UploadIcon, TrashIcon, CheckSquareIcon, SquareIcon, StarIcon, MoreHorizontalIcon, PlusIcon, XIcon, CopyIcon, EyeIcon, EyeOffIcon, TriangleAlertIcon, ShieldAlertIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   DropdownMenu,
@@ -388,6 +388,14 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
       </div>
     );
 
+    const isReused = dupeIds.has(item.id);
+    const isWeak = strength.level === "weak" || strength.level === "fair";
+    const advisory = isReused
+      ? "This password is used on another account. Change it so a single leak can't expose both."
+      : isWeak
+      ? "This password is easy to guess. Consider replacing it with something longer and more random."
+      : null;
+
     return (
       <>
         <motion.button
@@ -430,25 +438,27 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
               {item.title.charAt(0).toUpperCase()}
             </div>
             <h3 id="password-detail-title" className="text-[24px] font-bold tracking-tight text-foreground text-center leading-tight mb-1">{item.title}</h3>
-            <p className="text-[14.5px] font-medium text-muted-foreground text-center">{item.category}</p>
-            <div className="flex items-center gap-2 mt-3.5">
-              <span className={`text-[12px] font-bold px-3 py-1.5 rounded-full ${strength.bg}/15 ${strength.color}`}>{strength.label}</span>
-              {dupeIds.has(item.id) && <span className="text-[12px] font-bold px-3 py-1.5 rounded-full bg-red-500/15 text-red-500">Reused</span>}
-            </div>
           </div>
 
           {/* Fields */}
           <div className="px-5 pb-8 overflow-y-auto scrollbar-hide">
+            {advisory && (
+              <div className={`flex items-start gap-2.5 mb-4 px-4 py-3 rounded-[18px] ${isReused ? "bg-red-500/10" : "bg-amber-500/10"}`}>
+                <TriangleAlertIcon className={`w-[18px] h-[18px] mt-0.5 shrink-0 ${isReused ? "text-red-500" : "text-amber-500"}`} />
+                <p className={`text-[13.5px] leading-snug font-medium ${isReused ? "text-red-500" : "text-amber-500"}`}>{advisory}</p>
+              </div>
+            )}
             <div className="flex flex-col gap-[1px] bg-border/50 rounded-[24px] overflow-hidden shadow-sm ring-1 ring-border/50">
               {parsed.username && <DetailValue label="Username" value={parsed.username} />}
               {password && <DetailValue label="Password" value={password} concealed />}
               {parsed.notes && <DetailValue label="Notes" value={parsed.notes} copyLabel="Notes" />}
             </div>
-            
-            <button type="button" onClick={(e) => handleDeleteItem(item.id, e)} className="w-full mt-6 min-h-[56px] rounded-[20px] bg-destructive/10 text-destructive text-[16px] font-bold hover:bg-destructive/15 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-              <TrashIcon className="w-5 h-5" />
-              Delete Password
-            </button>
+
+            <div className="mt-6 rounded-[24px] overflow-hidden shadow-sm ring-1 ring-border/50">
+              <button type="button" onClick={(e) => handleDeleteItem(item.id, e)} className="w-full py-4 bg-background hover:bg-secondary/60 active:scale-[0.98] transition-all text-center text-destructive text-[16px] font-medium">
+                Delete Password
+              </button>
+            </div>
           </div>
         </motion.aside>
       </>
@@ -457,22 +467,29 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
 
   return (
     <div className="apple-surface vault-material-scope w-full relative pb-20">
-      {/* Vault Health Banner */}
+      {/* Security Recommendations */}
       {items.length >= 3 && (health.weak > 0 || health.reused > 0) && (
-        <div className="mb-6 flex items-center gap-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl px-5 py-4">
-          <div className="text-3xl font-bold text-amber-500">{health.score}</div>
-          <div className="flex-1">
-            <div className="text-[15px] font-semibold text-foreground">Vault Health: {health.label}</div>
-            <div className="text-[13px] text-muted-foreground mt-0.5">
+        <button
+          type="button"
+          onClick={() => {
+            const flagged = items.find((item) => dupeIds.has(item.id) || getStrength(item.plaintext).level === "weak" || getStrength(item.plaintext).level === "fair");
+            if (flagged) setExpandedId(flagged.id);
+          }}
+          className="w-full mb-6 flex items-center gap-3.5 bg-secondary/60 hover:bg-secondary rounded-[18px] px-4 py-3.5 transition-colors text-left"
+        >
+          <div className="w-9 h-9 rounded-[10px] bg-amber-500 flex items-center justify-center shrink-0">
+            <ShieldAlertIcon className="w-5 h-5 text-white" strokeWidth={2.25} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[15px] font-semibold text-foreground">Security Recommendations</div>
+            <div className="text-[13px] text-muted-foreground mt-0.5 truncate">
               {health.weak > 0 && `${health.weak} weak password${health.weak > 1 ? 's' : ''}`}
               {health.weak > 0 && health.reused > 0 && ' · '}
               {health.reused > 0 && `${health.reused} reused password${health.reused > 1 ? 's' : ''}`}
             </div>
           </div>
-          <div className="w-16 h-2 rounded-full bg-muted overflow-hidden">
-            <div className="h-full rounded-full bg-amber-500 transition-all" style={{ width: `${health.score}%` }} />
-          </div>
-        </div>
+          <ChevronRightIcon className="w-4 h-4 text-muted-foreground/60 shrink-0" strokeWidth={2} />
+        </button>
       )}
       <div className="vault-section-toolbar">
         <div className="vault-section-heading">
@@ -671,6 +688,12 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
                               <span className="text-[17px] font-bold text-foreground/50">
                                 {item.title.charAt(0).toUpperCase()}
                               </span>
+                              {(dupeIds.has(item.id) || s.level === "weak" || s.level === "fair") && (
+                                <span
+                                  className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-background ${dupeIds.has(item.id) || s.level === "weak" ? "bg-red-500" : "bg-amber-500"}`}
+                                  aria-hidden="true"
+                                />
+                              )}
                             </div>
 
                             {/* Title + Subtitle */}
