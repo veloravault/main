@@ -40,10 +40,19 @@ export function DangerSettings({ masterPassword }: { masterPassword: string }) {
 
       const { data: documents, error: documentError } = await userClient.from("vault_documents").select("storage_path");
       if (documentError) throw documentError;
-      const paths = (documents ?? []).map((document) => document.storage_path).filter(Boolean);
+      const paths = (documents ?? []).map((document) => document.storage_path).filter((path): path is string => Boolean(path));
       if (paths.length) {
-        const { error: storageError } = await userClient.storage.from("vault_documents").remove(paths);
-        if (storageError) throw storageError;
+        // Documents live in R2; the browser has no R2 credentials, so delete
+        // through the server route using this user's own access token.
+        const response = await vaultFetchWithAccessToken(accessToken, "/api/storage/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ keys: paths }),
+        });
+        if (!response.ok) {
+          const payload = await response.json().catch(() => ({})) as { error?: string };
+          throw new Error(payload.error ?? "Stored documents could not be deleted.");
+        }
       }
       const deletions = await Promise.all([
         userClient.from("vault_documents").delete().neq("id", "00000000-0000-0000-0000-000000000000"),

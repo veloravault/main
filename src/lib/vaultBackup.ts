@@ -1,6 +1,7 @@
 "use client";
 
 import { supabase } from "@/lib/supabase";
+import { downloadFromPresignedUrl, requestDownloadUrl } from "@/lib/r2Client";
 
 export interface BackupManifest {
   format: "telkarvault";
@@ -57,9 +58,14 @@ export async function exportEncryptedVaultBackup(onProgress?: (completed: number
   for (let index = 0; index < documentRows.length; index += 1) {
     const document = documentRows[index];
     if (!document.storage_path) throw new BackupExportError("A document is missing its encrypted storage path.", document.title);
-    const { data, error } = await supabase.storage.from("vault_documents").download(document.storage_path);
-    if (error || !data) throw new BackupExportError("The encrypted document could not be retrieved. No partial backup was created.", document.title);
-    documentBlobs.push({ storagePath: document.storage_path, base64Ciphertext: bytesToBase64(new Uint8Array(await data.arrayBuffer())) });
+    let encryptedBuffer: ArrayBuffer;
+    try {
+      const downloadUrl = await requestDownloadUrl(document.storage_path);
+      encryptedBuffer = await downloadFromPresignedUrl(downloadUrl);
+    } catch {
+      throw new BackupExportError("The encrypted document could not be retrieved. No partial backup was created.", document.title);
+    }
+    documentBlobs.push({ storagePath: document.storage_path, base64Ciphertext: bytesToBase64(new Uint8Array(encryptedBuffer)) });
     onProgress?.(index + 1, documentRows.length);
   }
 

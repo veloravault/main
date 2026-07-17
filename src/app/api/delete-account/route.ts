@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { authenticateRequest, getBearerToken } from "@/lib/server/auth";
 import { chunkValues, collectPaginated } from "@/lib/server/pagination";
+import { deleteObjects as deleteR2Objects, listKeys as listR2Keys, r2Configured } from "@/lib/server/r2";
 
 function serverError() {
   return NextResponse.json({ error: "The account could not be deleted. Try again." }, { status: 500 });
@@ -35,21 +36,12 @@ export async function POST(request: NextRequest) {
     const { error: signOutError } = await admin.auth.admin.signOut(accessToken, "global");
     if (signOutError) throw signOutError;
 
-    const documents = await collectPaginated(async (offset, limit) => {
-      const { data, error } = await admin
-        .from("vault_documents")
-        .select("storage_path")
-        .eq("user_id", user.id)
-        .order("id", { ascending: true })
-        .range(offset, offset + limit - 1);
-      if (error) throw error;
-      return data ?? [];
-    });
-    await removeStorageObjects(
-      admin,
-      "vault_documents",
-      documents.map((document) => document.storage_path).filter((path): path is string => Boolean(path)),
-    );
+    // Documents live in Cloudflare R2 under the `${userId}/` prefix. Delete by
+    // prefix so orphaned blobs (from any failed inserts) are cleaned up too.
+    if (r2Configured()) {
+      const documentKeys = await listR2Keys(`${user.id}/`);
+      await deleteR2Objects(documentKeys);
+    }
 
     const avatarFiles = await collectPaginated(async (offset, limit) => {
       const { data, error } = await admin.storage.from("avatars").list(user.id, {

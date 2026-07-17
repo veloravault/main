@@ -27,6 +27,13 @@ import { useOptimisticDelete } from "@/hooks/useOptimisticDelete";
 import { ContextActions } from "@/components/ui/context-actions";
 import { getVaultAccessToken } from "@/lib/authToken";
 import { buildSafeDocumentFilename, getAiRenameEligibility } from "@/lib/documentFilename";
+import {
+  deleteObjects,
+  downloadFromPresignedUrl,
+  requestDownloadUrl,
+  requestUploadUrl,
+  uploadToPresignedUrl,
+} from "@/lib/r2Client";
 
 interface VaultDocument {
   id: string;
@@ -55,8 +62,7 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { scheduleDelete } = useOptimisticDelete({ items: documents, setItems: setDocuments, toastLabel: (item) => item.title || "Document", commitDelete: async (item) => {
-    const { error: storageError } = await supabase.storage.from("vault_documents").remove([item.storage_path]);
-    if (storageError) throw storageError;
+    await deleteObjects([item.storage_path]);
     const { error } = await supabase.from("vault_documents").delete().eq("id", item.id);
     if (error) throw error;
     invalidateCache("vault_documents");
@@ -116,10 +122,8 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
     }
     
     try {
-      const { data, error } = await supabase.storage.from("vault_documents").download(doc.storage_path);
-      if (error) throw error;
-
-      const encryptedBuffer = await data.arrayBuffer();
+      const downloadUrl = await requestDownloadUrl(doc.storage_path);
+      const encryptedBuffer = await downloadFromPresignedUrl(downloadUrl);
       const decryptedBuffer = await decryptFile(encryptedBuffer, doc.salt, doc.iv, masterPassword);
 
       const blob = new Blob([decryptedBuffer], { type: getMimeType(doc.title) });
@@ -173,19 +177,14 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
 
       const arrayBuffer = await selectedFile.arrayBuffer();
       const encrypted = await encryptFile(arrayBuffer, masterPassword);
-      
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No user found");
 
-      const storagePath = `${user.id}/${Date.now()}_${finalFileName}.enc`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("vault_documents")
-        .upload(storagePath, encrypted.ciphertextBuffer, {
-          contentType: "application/octet-stream"
-        });
-
-      if (uploadError) throw uploadError;
+      // Reserve an R2 key + presigned URL. The server enforces the plan gate
+      // here (Free = no documents, over-quota = refused) before minting a URL.
+      const { url, key: storagePath } = await requestUploadUrl(encrypted.ciphertextBuffer.byteLength);
+      await uploadToPresignedUrl(url, encrypted.ciphertextBuffer);
 
       const category = await categorizeDocument(accessToken, finalFileName);
 
@@ -200,10 +199,9 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
       });
 
       if (dbError) {
-        // A plan quota trigger (Free = no documents, Plus/Family = 5 GB) can
-        // reject the row after the blob is already uploaded. Remove the orphan
-        // so we don't leak storage, then surface the friendly trigger message.
-        await supabase.storage.from("vault_documents").remove([storagePath]);
+        // The DB quota trigger is the final guard; if it rejects the row after
+        // the blob landed in R2, delete the orphan so storage doesn't leak.
+        await deleteObjects([storagePath]).catch(() => undefined);
         throw dbError;
       }
 
@@ -223,13 +221,8 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
 
   const handleDownload = async (doc: VaultDocument) => {
     try {
-      const { data, error } = await supabase.storage
-        .from("vault_documents")
-        .download(doc.storage_path);
-
-      if (error) throw error;
-
-      const encryptedBuffer = await data.arrayBuffer();
+      const downloadUrl = await requestDownloadUrl(doc.storage_path);
+      const encryptedBuffer = await downloadFromPresignedUrl(downloadUrl);
       const decryptedBuffer = await decryptFile(
         encryptedBuffer,
         doc.salt,
@@ -273,8 +266,8 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
     if (selectedIds.size === 0) return;
     const docsToDelete = documents.filter(d => selectedIds.has(d.id));
     const pathsToRemove = docsToDelete.map(d => d.storage_path);
-    
-    await supabase.storage.from("vault_documents").remove(pathsToRemove);
+
+    await deleteObjects(pathsToRemove);
     const { error } = await supabase.from("vault_documents").delete().in("id", Array.from(selectedIds));
     
     if (!error) {
