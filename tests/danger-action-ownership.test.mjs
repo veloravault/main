@@ -63,7 +63,9 @@ test("danger actions use one verified token and a non-persisting token-scoped cl
   assert.match(danger, /vaultFetchWithAccessToken\([^,]+,\s*"\/api\/delete-account"/);
   assert.doesNotMatch(danger, /vaultFetch\(\s*"\/api\/delete-account"/);
   assert.match(danger, /userClient\.from\("vault_documents"\)/);
-  assert.match(danger, /userClient\.storage\.from\("vault_documents"\)/);
+  // Documents live in R2 (no browser credentials), so they are cleared through
+  // the user-token-scoped server route, not Supabase storage.
+  assert.match(danger, /vaultFetchWithAccessToken\([^,]+,\s*"\/api\/storage\/delete"/);
   assert.match(verification, /onVerified:\s*\(expectedUserId:\s*string\)\s*=>\s*void/);
   assert.match(verification, /isAuthenticatedUserCurrent\(expectedUserId\)/);
 });

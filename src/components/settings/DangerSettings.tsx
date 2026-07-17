@@ -41,6 +41,20 @@ export function DangerSettings({ masterPassword }: { masterPassword: string }) {
       const { data: documents, error: documentError } = await userClient.from("vault_documents").select("storage_path");
       if (documentError) throw documentError;
       const paths = (documents ?? []).map((document) => document.storage_path).filter((path): path is string => Boolean(path));
+
+      // Delete the database rows FIRST so no row is ever left pointing at an
+      // already-deleted R2 blob. If the R2 cleanup below fails, the leftover
+      // blobs are unreachable orphans (swept by the prefix delete on account
+      // deletion) rather than broken document references the user can still see.
+      const deletions = await Promise.all([
+        userClient.from("vault_documents").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
+        userClient.from("vault_items").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
+        userClient.from("secure_notes").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
+        userClient.from("secure_wallet").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
+      ]);
+      const deletionError = deletions.find((result) => result.error)?.error;
+      if (deletionError) throw deletionError;
+
       if (paths.length) {
         // Documents live in R2; the browser has no R2 credentials, so delete
         // through the server route using this user's own access token.
@@ -54,14 +68,6 @@ export function DangerSettings({ masterPassword }: { masterPassword: string }) {
           throw new Error(payload.error ?? "Stored documents could not be deleted.");
         }
       }
-      const deletions = await Promise.all([
-        userClient.from("vault_documents").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
-        userClient.from("vault_items").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
-        userClient.from("secure_notes").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
-        userClient.from("secure_wallet").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
-      ]);
-      const deletionError = deletions.find((result) => result.error)?.error;
-      if (deletionError) throw deletionError;
       setAction(null);
       setConfirmation("");
       toast("Vault data cleared", "success");

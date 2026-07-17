@@ -117,6 +117,16 @@ export async function POST(req: NextRequest) {
         break;
     }
   } catch (error) {
+    // The idempotency row was already inserted above. If processing failed, a
+    // Razorpay retry would otherwise hit the unique constraint and be dismissed
+    // as a duplicate — permanently dropping this plan change. Roll the record
+    // back so the retry reprocesses. (Best-effort: if the delete itself fails,
+    // we're no worse off than before this guard.)
+    const { error: rollbackError } = await admin
+      .from("payment_events")
+      .delete()
+      .eq("razorpay_event_id", eventId);
+    if (rollbackError) console.error("payment_events rollback failed:", rollbackError);
     console.error(`webhook handling failed for ${eventType}:`, error);
     return NextResponse.json({ error: "Could not process event." }, { status: 500 });
   }

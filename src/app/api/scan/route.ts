@@ -30,10 +30,12 @@ export async function POST(req: NextRequest) {
     if (!matches || !ALLOWED_IMAGE_TYPES.has(matches[1])) return badRequest("Use a JPEG, PNG, or WebP image.");
     if (matches[2].length > MAX_BASE64_CHARACTERS) return badRequest("Image is too large to scan.", 413);
 
-    await consumeAiCredit(user.id, "scan");
-
+    // Check the service is actually available BEFORE spending a Free-plan
+    // user's monthly AI credit — otherwise a missing key burns a scan for a 503.
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return badRequest("Image scanning is unavailable.", 503);
+
+    await consumeAiCredit(user.id, "scan");
 
     const ai = new GoogleGenAI({ apiKey });
 

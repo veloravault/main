@@ -32,11 +32,19 @@ function buildCsp(nonce: string) {
 
 export async function proxy(request: NextRequest) {
   const nonce = crypto.randomUUID().replace(/-/g, "");
+  const csp = buildCsp(nonce);
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-csp-nonce", nonce);
+  // Next.js only nonces its own framework/hydration inline scripts when it can
+  // read the nonce from the Content-Security-Policy header present on the
+  // REQUEST (it parses the `'nonce-…'` token during SSR). Setting the policy on
+  // the response alone leaves those inline scripts without a nonce, so the
+  // production script-src (no 'unsafe-inline') blocks them and the app fails to
+  // hydrate. Forward the same policy on the request so Next can apply the nonce.
+  requestHeaders.set("Content-Security-Policy", csp);
 
   const response = await refreshSupabaseSession(request, requestHeaders);
-  response.headers.set("Content-Security-Policy", buildCsp(nonce));
+  response.headers.set("Content-Security-Policy", csp);
   response.headers.set(
     "Reporting-Endpoints",
     `${CSP_REPORT_ENDPOINT}="${CSP_REPORT_PATH}"`,

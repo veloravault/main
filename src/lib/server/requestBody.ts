@@ -15,6 +15,11 @@ export class InvalidJsonBodyError extends Error {
 export async function readBoundedJson(request: Request, maxBytes: number): Promise<Record<string, unknown>> {
   if (!Number.isSafeInteger(maxBytes) || maxBytes < 1) throw new Error("Invalid request body limit.");
 
+  // Only accept declared JSON. Mirrors the stricter reader in request-security.ts
+  // so every JSON endpoint enforces the same media type.
+  const mediaType = request.headers.get("content-type")?.split(";", 1)[0]?.trim().toLowerCase();
+  if (mediaType !== "application/json") throw new InvalidJsonBodyError();
+
   const declaredLength = Number(request.headers.get("content-length") ?? 0);
   if (Number.isFinite(declaredLength) && declaredLength > maxBytes) throw new PayloadTooLargeError();
 
