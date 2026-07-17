@@ -22,7 +22,7 @@ export type ImportSource =
 
 export type ImportExtractionResponse =
   | { ok: true; drafts: ImportDraft[] }
-  | { ok: false; code: "UNSUPPORTED" | "INVALID_INPUT" | "EXTRACTION_FAILED"; message: string };
+  | { ok: false; code: "UNSUPPORTED" | "INVALID_INPUT" | "EXTRACTION_FAILED" | "AI_LIMIT_REACHED"; message: string };
 
 export interface GlobalImportPassword { title?: string; url?: string; username?: string; password?: string; extra_details?: string; category?: string; }
 export interface GlobalImportNote { title?: string; content?: string; category?: string; }

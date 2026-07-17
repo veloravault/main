@@ -69,7 +69,7 @@
 .search input { min-width: 0; flex: 1; border: 0; background: transparent; color: var(--admin-ink); font: inherit; font-size: 14px; outline: 0; }
 .search input::placeholder { color: var(--admin-muted); }
 .search kbd { border: 1px solid var(--admin-line); border-radius: 6px; padding: 2px 5px; background: color-mix(in srgb, var(--admin-ink) 3%, transparent); font-family: inherit; font-size: 10px; }
-.adminIdentity { display: flex; min-width: 0; align-items: center; justify-content: flex-end; gap: 10px; }
+.adminIdentity { grid-column: 2; display: flex; min-width: 0; align-items: center; justify-content: flex-end; gap: 10px; }
 .adminIdentity > span { display: grid; width: 34px; height: 34px; flex: 0 0 auto; place-items: center; border: 1px solid var(--admin-line); border-radius: 50%; background: var(--admin-ink); color: var(--admin-bg); font-size: 12px; font-weight: 700; }
 .adminIdentity > div { display: grid; min-width: 0; gap: 1px; }
 .adminIdentity small { color: var(--admin-muted); font-size: 9px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; }
@@ -235,6 +235,7 @@
   .search { height: 40px; border-radius: 999px; }
   .search input { font-size: 16px; }
   .search kbd { display: none; }
+  .adminIdentity { grid-column: 3; }
   .adminIdentity > span { width: 32px; height: 32px; }
   .mobileSignOut { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 10px; color: var(--admin-muted); }
   .mobileSignOut svg { width: 17px; height: 17px; }

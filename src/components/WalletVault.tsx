@@ -264,7 +264,7 @@ export function WalletVault({ masterPassword, focusedItemId, refreshVersion = 0 
       fetchItems();
     } catch (err) {
       console.error("Failed to add wallet item:", err);
-      toast("Failed to save the wallet item. Please try again.", "error");
+      toast(err instanceof Error ? err.message : "Failed to save the wallet item. Please try again.", "error");
     }
   };
 

@@ -2,7 +2,7 @@ import "server-only";
 
 import { createSupabaseAdminClient } from "@/lib/server/supabase-admin";
 
-export type AiUsageKind = "scan" | "document_name" | "categorize";
+export type AiUsageKind = "scan" | "document_name" | "categorize" | "import";
 
 /** Thrown when a Free-plan user has exhausted their monthly AI allowance. */
 export class AiLimitReachedError extends Error {

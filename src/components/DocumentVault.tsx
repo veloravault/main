@@ -217,7 +217,7 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
       fetchDocuments();
     } catch (err: unknown) {
       console.error("Failed to upload document:", err);
-      toast("Upload failed. Please try again.", "error");
+      toast(err instanceof Error ? err.message : "Upload failed. Please try again.", "error");
     } finally {
       setUploading(false);
     }

@@ -4,7 +4,7 @@ import { GoogleGenAI } from "@google/genai";
 import type { GlobalImportResult, ImportExtractionResponse } from "@/lib/import/types";
 import { isGlobalImportResult, normalizeImportResult } from "@/lib/import/normalize";
 import { requireActiveMemberForToken } from "@/lib/server/access";
-import { consumeAiCredit } from "@/lib/server/aiUsage";
+import { AiLimitReachedError, consumeAiCredit } from "@/lib/server/aiUsage";
 
 export type { GlobalImportResult } from "@/lib/import/types";
 
@@ -205,98 +205,6 @@ export async function categorizeNote(accessToken: string, title: string): Promis
   }
 }
 
-export async function parseNotesToPasswords(accessToken: string, rawText: string): Promise<Array<Record<string, unknown>>> {
-  await requireActiveMemberForToken(accessToken);
-  rawText = requireShortText(rawText, "pasted text", MAX_TEXT_INPUT);
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) {
-    throw new Error("GROQ_API_KEY is not set");
-  }
-
-  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "llama-3.1-8b-instant",
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content: "You are an intelligent data extraction assistant. The user will provide a messy, unstructured text note containing passwords. Your task is to extract all the credentials/passwords and return a JSON object with a single key 'passwords' containing an array of objects. Each object must have exactly the following string keys: 'title' (the service/platform name), 'url' (if a URL is provided, otherwise guess the primary domain based on the 'title', e.g., if title is 'Call of Duty', guess 'callofduty.com'. Do NOT use the email domain as the service URL unless the service itself is an email provider), 'username' (the email, username, or main identifier, if any), 'password' (the main password, if found), 'extra_details' (any extra fields like PINs, Customer IDs, Card Details, Recovery Codes, formatted clearly with line breaks), and 'category' (a broad category like 'Entertainment', 'Finance', 'Work', 'Social', 'Other'). If there is no 'password' but there are PINs or other secrets, put them in 'extra_details'. If some fields are missing, leave them as empty strings. Ensure the response is valid JSON."
-        },
-        {
-          role: "user",
-          content: rawText
-        }
-      ],
-      temperature: 0.1
-    })
-  });
-
-  if (!response.ok) {
-    console.error("Groq API error:", await response.text());
-    throw new Error("Failed to parse notes");
-  }
-
-  const data = await response.json();
-  try {
-    const parsed = JSON.parse(data.choices[0].message.content);
-    return parsed.passwords || [];
-  } catch (err) {
-    console.error("Failed to parse AI JSON response", err);
-    return [];
-  }
-}
-
-export async function parseBulkNotes(accessToken: string, rawText: string): Promise<Array<Record<string, unknown>>> {
-  await requireActiveMemberForToken(accessToken);
-  rawText = requireShortText(rawText, "pasted text", MAX_TEXT_INPUT);
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) {
-    throw new Error("GROQ_API_KEY is not set");
-  }
-
-  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "llama-3.1-8b-instant",
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content: "You are an intelligent data extraction assistant. The user will provide a massive block of unstructured text that contains multiple distinct notes mashed together. Your task is to find the logical boundaries between these different notes and extract them into an array of distinct items. Return a JSON object with a single key 'notes' containing an array of objects. Each object must have exactly the following string keys: 'title' (a short, generated title for the note), 'content' (the actual text content of the note), and 'category' (a broad category like 'Personal', 'Work', 'Ideas', 'Finance', 'Travel', 'Other'). Ensure the response is valid JSON."
-        },
-        {
-          role: "user",
-          content: rawText
-        }
-      ],
-      temperature: 0.1
-    })
-  });
-
-  if (!response.ok) {
-    console.error("Groq API error:", await response.text());
-    throw new Error("Failed to parse bulk notes");
-  }
-
-  const data = await response.json();
-  try {
-    const parsed = JSON.parse(data.choices[0].message.content);
-    return parsed.notes || [];
-  } catch (err) {
-    console.error("Failed to parse AI JSON response", err);
-    return [];
-  }
-}
-
 async function parseGlobalBulkData(rawText: string): Promise<GlobalImportResult> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
@@ -379,20 +287,25 @@ CRITICAL RULES:
 }
 
 export async function extractGlobalImportDrafts(accessToken: string, rawText: string): Promise<ImportExtractionResponse> {
+  let userId: string;
   try {
-    await requireActiveMemberForToken(accessToken);
+    userId = (await requireActiveMemberForToken(accessToken)).id;
   } catch {
     return { ok: false, code: "EXTRACTION_FAILED", message: "Your session has expired. Sign in again to continue." };
   }
   if (!rawText.trim()) return { ok: false, code: "INVALID_INPUT", message: "Paste some vault data before analyzing it." };
   if (rawText.length > MAX_TEXT_INPUT) return { ok: false, code: "INVALID_INPUT", message: "This import is too large. Split it into smaller batches." };
   try {
+    await consumeAiCredit(userId, "import");
     const result = await parseGlobalBulkData(rawText);
     if (!isGlobalImportResult(result)) return { ok: false, code: "EXTRACTION_FAILED", message: "The extracted data did not match the expected vault format." };
     const drafts = normalizeImportResult(result, "Pasted text");
     if (!drafts.length) return { ok: false, code: "EXTRACTION_FAILED", message: "No supported vault items were detected." };
     return { ok: true, drafts };
   } catch (error) {
+    if (error instanceof AiLimitReachedError) {
+      return { ok: false, code: "AI_LIMIT_REACHED", message: "You've used all 5 free AI actions this month. Upgrade to Plus for unlimited AI." };
+    }
     console.error("Global import extraction failed:", error);
     return { ok: false, code: "EXTRACTION_FAILED", message: "The pasted data could not be analyzed. Try a smaller batch or a different source." };
   }
