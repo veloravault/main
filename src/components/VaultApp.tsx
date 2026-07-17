@@ -28,6 +28,7 @@ import {
   KeyRoundIcon,
   FileTextIcon,
   LogOutIcon,
+  SparklesIcon,
   FileIcon,
   UserCircleIcon,
   CreditCardIcon,
@@ -45,6 +46,7 @@ import {
 } from "lucide-react";
 import { VeloraMark } from "@/components/VeloraMark";
 import { PresetAvatar, isAvatarKind } from "@/components/PresetAvatar";
+import type { SettingsAutoUpgrade } from "@/components/settings/settings-types";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { createPortal } from "react-dom";
 
@@ -127,6 +129,8 @@ export default function VaultApp() {
   const [focusedItemId, setFocusedItemId] = useState<string | null>(null);
   const [isGlobalImportOpen, setIsGlobalImportOpen] = useState(false);
   const [refreshVersion, setRefreshVersion] = useState(0);
+  const [settingsAutoUpgrade, setSettingsAutoUpgrade] = useState<SettingsAutoUpgrade | null>(null);
+  const [settingsInitialSection, setSettingsInitialSection] = useState<"account" | "plan">("account");
   const connectivity = useConnectivity();
   const wasOnline = useRef(connectivity.isOnline);
   const headerSearchRef = useRef<HTMLInputElement>(null);
@@ -154,6 +158,24 @@ export default function VaultApp() {
     });
     return () => subscription.unsubscribe();
   }, [clearMasterKey]);
+
+  // ?upgrade=plus&period=monthly -> land straight on Plan & usage with
+  // checkout auto-triggered, instead of the plain dashboard. Set by the
+  // pricing page (signed-in users) or onboarding completion (new users who
+  // picked a paid plan before signing up).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const plan = params.get("upgrade");
+    const period = params.get("period");
+    if ((plan === "plus" || plan === "family") && (period === "monthly" || period === "yearly")) {
+      window.history.replaceState(null, "", "/vault");
+      queueMicrotask(() => {
+        setActiveTab("profile");
+        setSettingsInitialSection("plan");
+        setSettingsAutoUpgrade({ plan, period });
+      });
+    }
+  }, []);
 
   // Cmd+K -> open search overlay
   useEffect(() => {
@@ -403,6 +425,13 @@ export default function VaultApp() {
             </div>
           </div>
           <button
+            onClick={() => { setSettingsInitialSection("plan"); handleNavigate("profile"); }}
+            className="w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-[8px] text-[14px] text-primary hover:bg-primary/8 transition-colors"
+          >
+            <SparklesIcon className="w-[16px] h-[16px] shrink-0" strokeWidth={1.75} />
+            Upgrade plan
+          </button>
+          <button
             onClick={handleLogout}
             className="w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-[8px] text-[14px] text-muted-foreground hover:text-destructive hover:bg-destructive/8 transition-colors"
           >
@@ -640,7 +669,7 @@ export default function VaultApp() {
             <div style={{ display: activeTab === "notes"     ? undefined : "none" }}><NotesVault {...nonWalletProps} /></div>
             <div style={{ display: activeTab === "wallet"    ? undefined : "none" }}><WalletVault {...sharedProps} /></div>
             <div style={{ display: activeTab === "banks"     ? undefined : "none" }}><BankVault {...nonWalletProps} /></div>
-            <div style={{ display: activeTab === "profile"   ? undefined : "none" }}><Settings masterPassword={masterPassword} onLock={handleLockVault} /></div>
+            <div style={{ display: activeTab === "profile"   ? undefined : "none" }}><Settings masterPassword={masterPassword} onLock={handleLockVault} initialSection={settingsInitialSection} autoUpgrade={settingsAutoUpgrade} /></div>
           </div>
         </div>
 

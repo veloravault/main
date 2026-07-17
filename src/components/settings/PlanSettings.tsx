@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckIcon, Loader2Icon, SparklesIcon } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { vaultFetch } from "@/lib/authToken";
 import { openSubscriptionCheckout } from "@/lib/razorpayCheckout";
 import { PLAN_IDS, formatBytes, isPlanId, type PlanId } from "@/lib/plans";
 import { PRICING_TIERS } from "@/components/dreelio/pricing-data";
+import type { SettingsAutoUpgrade } from "@/components/settings/settings-types";
 
 type BillingPeriod = "monthly" | "yearly";
 type PaidPlanId = Extract<PlanId, "plus" | "family">;
@@ -92,15 +93,16 @@ async function loadAll(): Promise<[AccountUsage, SubscriptionRow | null]> {
   return Promise.all([fetchUsage(), fetchLatestSubscription()]);
 }
 
-export function PlanSettings() {
+export function PlanSettings({ autoUpgrade }: { autoUpgrade?: SettingsAutoUpgrade | null }) {
   const [usage, setUsage] = useState<AccountUsage | null>(null);
   const [subscription, setSubscription] = useState<SubscriptionRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [period, setPeriod] = useState<BillingPeriod>("monthly");
+  const [period, setPeriod] = useState<BillingPeriod>(autoUpgrade?.period ?? "monthly");
   const [processingPlan, setProcessingPlan] = useState<PaidPlanId | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const toast = useToast();
+  const autoUpgradeTriggered = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -134,13 +136,14 @@ export function PlanSettings() {
     return false;
   };
 
-  const upgrade = async (plan: PaidPlanId) => {
+  const upgrade = async (plan: PaidPlanId, periodOverride?: BillingPeriod) => {
+    const effectivePeriod = periodOverride ?? period;
     setProcessingPlan(plan);
     try {
       const response = await vaultFetch("/api/payments/create-subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan, period }),
+        body: JSON.stringify({ plan, period: effectivePeriod }),
       });
       const payload = await response.json() as { subscriptionId?: string; keyId?: string; error?: string };
       if (!response.ok || !payload.subscriptionId || !payload.keyId) throw new Error(payload.error ?? "Could not start checkout.");
@@ -174,6 +177,14 @@ export function PlanSettings() {
       setProcessingPlan(null);
     }
   };
+
+  useEffect(() => {
+    if (!autoUpgrade || autoUpgradeTriggered.current || !usage) return;
+    if (usage.plan === autoUpgrade.plan) return; // Already on it — nothing to do.
+    autoUpgradeTriggered.current = true;
+    queueMicrotask(() => { void upgrade(autoUpgrade.plan, autoUpgrade.period); });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usage, autoUpgrade]);
 
   const cancel = async () => {
     setCancelling(true);

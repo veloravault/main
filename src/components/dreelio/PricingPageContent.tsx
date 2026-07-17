@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { CheckIcon } from "lucide-react";
 import shared from "@/app/dreelio/dreelio.module.css";
 import styles from "@/app/pricing/pricing.module.css";
-import { PRICING_COMPARISON, PRICING_FAQ, PRICING_TIERS } from "./pricing-data";
+import { supabase } from "@/lib/supabase";
+import { setPlanIntentCookie } from "@/lib/planIntent";
+import { PRICING_COMPARISON, PRICING_FAQ, PRICING_TIERS, type PricingTier } from "./pricing-data";
 import { APPLE_EASE, HOVER_LIFT, LANDING_VIEWPORT, TAP_PRESS, revealVariants, staggerContainer, staggerItem } from "./motion";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
@@ -32,7 +35,34 @@ const priceDigits = {
 export function PricingPageContent() {
   const reduceMotion = useReducedMotion();
   const [billing, setBilling] = useState<Billing>("monthly");
+  const [signedIn, setSignedIn] = useState(false);
   const { openAuth } = useAuthModal();
+  const router = useRouter();
+
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => { if (active) setSignedIn(data.session != null); });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (active) setSignedIn(session != null);
+    });
+    return () => { active = false; subscription.unsubscribe(); };
+  }, []);
+
+  const selectPlan = (tier: PricingTier) => {
+    if (signedIn) {
+      // Already signed in — skip the auth modal entirely and land straight on
+      // the plan, checkout auto-triggered (see VaultApp's `upgrade` param).
+      if (tier.id === "free") { router.push("/vault"); return; }
+      router.push(`/vault?upgrade=${tier.id}&period=${billing === "annual" ? "yearly" : "monthly"}`);
+      return;
+    }
+    if (tier.id !== "free") {
+      // Remembered through signup + email confirmation + onboarding, so
+      // checkout opens automatically the moment onboarding finishes.
+      setPlanIntentCookie({ plan: tier.id, period: billing === "annual" ? "yearly" : "monthly" });
+    }
+    openAuth("sign-up");
+  };
 
   return (
     <main className={styles.page}>
@@ -109,10 +139,10 @@ export function PricingPageContent() {
               <motion.div whileTap={reduceMotion ? undefined : TAP_PRESS}>
                 <button
                   type="button"
-                  onClick={() => openAuth("sign-up")}
+                  onClick={() => selectPlan(tier)}
                   className={`${styles.cta} ${tier.featured ? styles.ctaFeatured : styles.ctaPlain}`}
                 >
-                  {tier.cta}
+                  {signedIn && tier.id !== "free" ? `Upgrade to ${tier.name}` : tier.cta}
                 </button>
               </motion.div>
 
@@ -210,11 +240,21 @@ export function PricingPageContent() {
         variants={revealVariants(18)}
       >
         <div>
-          <h2>Get started for free</h2>
-          <p>Create your account in under a minute. No credit card required.</p>
+          <h2>{signedIn ? "Continue to your vault" : "Get started for free"}</h2>
+          <p>
+            {signedIn
+              ? "Manage your plan, storage, and vault from one place."
+              : "Create your account in under a minute. No credit card required."}
+          </p>
         </div>
         <motion.div whileHover={reduceMotion ? undefined : HOVER_LIFT} whileTap={reduceMotion ? undefined : TAP_PRESS}>
-          <button type="button" onClick={() => openAuth("sign-up")} className={styles.primaryAction}>Sign up free</button>
+          <button
+            type="button"
+            onClick={() => signedIn ? router.push("/vault") : openAuth("sign-up")}
+            className={styles.primaryAction}
+          >
+            {signedIn ? "Open vault" : "Sign up free"}
+          </button>
         </motion.div>
       </motion.div>
     </main>

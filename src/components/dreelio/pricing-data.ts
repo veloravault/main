@@ -4,6 +4,7 @@
 // conversion at that integration boundary, not before.
 
 export interface PricingTier {
+  id: "free" | "plus" | "family";
   name: string;
   tagline: string;
   monthlyPrice: number;
@@ -15,6 +16,7 @@ export interface PricingTier {
 
 export const PRICING_TIERS: PricingTier[] = [
   {
+    id: "free",
     name: "Free",
     tagline: "Everything you need to stop reusing passwords.",
     monthlyPrice: 0,
@@ -29,6 +31,7 @@ export const PRICING_TIERS: PricingTier[] = [
     ],
   },
   {
+    id: "plus",
     name: "Plus",
     tagline: "For one person who wants everything in one vault.",
     monthlyPrice: 49,
@@ -45,6 +48,7 @@ export const PRICING_TIERS: PricingTier[] = [
     ],
   },
   {
+    id: "family",
     name: "Family",
     tagline: "Up to five separate vaults, one bill.",
     monthlyPrice: 99,

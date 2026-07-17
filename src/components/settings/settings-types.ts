@@ -3,9 +3,16 @@ import { AlertTriangleIcon, ArchiveIcon, PaletteIcon, ShieldCheckIcon, SparklesI
 
 export type SettingsSection = "account" | "plan" | "security" | "appearance" | "backup" | "danger" | "legal";
 
+export interface SettingsAutoUpgrade {
+  plan: "plus" | "family";
+  period: "monthly" | "yearly";
+}
+
 export interface SettingsProps {
   masterPassword: string;
   onLock: () => void;
+  initialSection?: SettingsSection;
+  autoUpgrade?: SettingsAutoUpgrade | null;
 }
 
 export interface SettingsSectionMeta {

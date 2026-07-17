@@ -13,8 +13,8 @@ import { BackupSettings } from "@/components/settings/BackupSettings";
 import { LegalSettings } from "@/components/settings/LegalSettings";
 import { DangerSettings } from "@/components/settings/DangerSettings";
 
-export function Settings({ masterPassword, onLock }: SettingsProps) {
-  const [selected, setSelected] = useState<SettingsSection | null>(null);
+export function Settings({ masterPassword, onLock, initialSection, autoUpgrade }: SettingsProps) {
+  const [selected, setSelected] = useState<SettingsSection | null>(initialSection ?? null);
   const active = selected ?? "account";
   const meta = SETTINGS_SECTIONS.find((section) => section.id === active)!;
 
@@ -35,7 +35,7 @@ export function Settings({ masterPassword, onLock }: SettingsProps) {
               transition={{ duration: 0.2, ease: "easeInOut" }}
             >
               {active === "account" && <AccountSettings />}
-              {active === "plan" && <PlanSettings />}
+              {active === "plan" && <PlanSettings autoUpgrade={autoUpgrade} />}
               {active === "appearance" && <AppearanceSettings />}
               {active === "security" && <SecuritySettings masterPassword={masterPassword} onLock={onLock} />}
               {active === "backup" && <BackupSettings />}

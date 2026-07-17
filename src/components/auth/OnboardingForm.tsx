@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { getStrength, type StrengthLevel } from "@/lib/passwordHealth";
 import { ArrowRightIcon } from "lucide-react";
 import { PresetAvatar, type AvatarKind } from "@/components/PresetAvatar";
+import { clearPlanIntentCookie, readPlanIntentCookie } from "@/lib/planIntent";
 import styles from "@/components/auth/auth-shell.module.css";
 
 const STRENGTH_COLOR_VAR: Record<StrengthLevel, string> = {
@@ -73,7 +74,12 @@ export function OnboardingForm({ userId, email }: { userId: string; email: strin
 
       setMasterKeyValue("");
       setMasterKeyConfirmation("");
-      router.replace("/vault");
+
+      // If they picked a paid plan on the pricing page before signing up,
+      // land straight in checkout instead of the plain dashboard.
+      const intent = readPlanIntentCookie();
+      clearPlanIntentCookie();
+      router.replace(intent ? `/vault?upgrade=${intent.plan}&period=${intent.period}` : "/vault");
       router.refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Setup could not be completed. Try again.");
