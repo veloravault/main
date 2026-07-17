@@ -14,7 +14,6 @@ type AuthShellProps = {
   children: ReactNode;
   footer?: ReactNode;
   compact?: boolean;
-  embedded?: boolean;
 };
 
 export function AuthShell({
@@ -25,7 +24,6 @@ export function AuthShell({
   children,
   footer,
   compact = false,
-  embedded = false,
 }: AuthShellProps) {
   const reduceMotion = useReducedMotion();
   const contentKey = mode ?? title;
@@ -70,5 +68,5 @@ export function AuthShell({
     </motion.section>
   );
 
-  return <main className={embedded ? styles.embeddedPage : styles.page}>{stage}</main>;
+  return <main className={styles.page}>{stage}</main>;
 }

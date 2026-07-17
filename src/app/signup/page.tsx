@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AuthGateway } from "@/components/auth/AuthGateway";
-import { AccountFrame } from "@/components/auth/AccountFrame";
+import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
 
 export const metadata: Metadata = {
   title: "Sign up — Velora Vault",
@@ -20,8 +20,8 @@ export default async function SignUpPage({
   const notice = typeof state === "string" ? STATE_NOTICES[state] : undefined;
 
   return (
-    <AccountFrame>
+    <PublicPageShell>
       <AuthGateway initialMode="sign-up" notice={notice} />
-    </AccountFrame>
+    </PublicPageShell>
   );
 }

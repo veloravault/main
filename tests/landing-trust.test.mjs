@@ -160,6 +160,8 @@ test("every public page uses the shared Velora header and footer shell", () => {
     "src/app/onboarding/page.tsx",
     "src/app/blog/page.tsx",
     "src/app/blog/[slug]/page.tsx",
+    "src/app/login/page.tsx",
+    "src/app/signup/page.tsx",
   ]) {
     const page = read(route);
     assert.match(page, /import \{ PublicPageShell \}/, `${route} must import PublicPageShell`);
