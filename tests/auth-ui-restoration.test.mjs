@@ -41,15 +41,16 @@ test("gateway maps the second segment to sign-up", () => {
 test("the complete account journey shares presentation and preserves secure handlers", () => {
   const confirmSignup = read("src/app/confirm-signup/page.tsx");
   const onboardingPage = read("src/app/onboarding/page.tsx");
-  const onboardingForm = read("src/components/auth/OnboardingForm.tsx");
+  const onboardingFlow = read("src/components/auth/OnboardingFlow.tsx");
   const reset = read("src/app/reset-password/page.tsx");
 
-  for (const source of [confirmSignup, onboardingPage, reset]) assert.match(source, /AuthShell/);
+  for (const source of [confirmSignup, reset]) assert.match(source, /AuthShell/);
   assert.match(confirmSignup, /action="\/auth\/confirm-signup"/);
   assert.match(onboardingPage, /requireUser/);
   assert.match(onboardingPage, /getMembershipForUser/);
-  assert.doesNotMatch(onboardingForm, /getExpectedUserAuthorization/);
-  assert.match(onboardingForm, /setMasterKey\(masterKey, userId\)/);
+  assert.match(onboardingPage, /OnboardingFlow/);
+  assert.doesNotMatch(onboardingFlow, /getExpectedUserAuthorization/);
+  assert.match(onboardingFlow, /setMasterKey\(masterKey, userId\)/);
   assert.match(reset, /exchangeCodeForSession/);
   assert.match(reset, /auth\.updateUser\(\{ password \}\)/);
 });

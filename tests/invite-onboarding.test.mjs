@@ -9,7 +9,7 @@ const file = (path) => new URL(`../${path}`, import.meta.url);
 const read = (path) => readFileSync(file(path), "utf8");
 
 test("onboarding only sets the master key — the sign-in password is set at signup, not here", () => {
-  const path = "src/components/auth/OnboardingForm.tsx";
+  const path = "src/components/auth/OnboardingFlow.tsx";
   assert.equal(existsSync(file(path)), true, `${path} must exist`);
   const source = read(path);
 
@@ -22,7 +22,12 @@ test("onboarding only sets the master key — the sign-in password is set at sig
   assert.match(source, /setMasterKey\(masterKey,\s*userId\)/);
   assert.match(source, /setMasterKeyValue\(["']{2}\)/);
   assert.match(source, /setMasterKeyConfirmation\(["']{2}\)/);
-  assert.match(source, /router\.replace\(["']\/vault["']\)/);
+  // After onboarding, a paid-plan intent captured before signup routes straight
+  // to checkout; otherwise land on the plain vault.
+  assert.match(source, /readPlanIntentCookie\(\)/);
+  assert.match(source, /clearPlanIntentCookie\(\)/);
+  assert.match(source, /router\.replace\(\s*intent\s*\?/);
+  assert.match(source, /:\s*["']\/vault["']\)/);
 
   const liveRecheckIndex = source.indexOf("supabase.auth.getUser()");
   const activationIndex = source.indexOf('fetch("/api/onboarding/complete"');

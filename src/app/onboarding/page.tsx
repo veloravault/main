@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { AuthShell } from "@/components/auth/AuthShell";
-import { OnboardingForm } from "@/components/auth/OnboardingForm";
+import { OnboardingFlow } from "@/components/auth/OnboardingFlow";
 import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
 import { AuthorizationError, getMembershipForUser, requireUser } from "@/lib/server/access";
-import styles from "@/components/auth/auth-shell.module.css";
 
 export const metadata: Metadata = {
-  title: "Set your master key — Velora Vault",
-  description: "Set your Velora Vault master key.",
+  title: "Set up your vault — Velora Vault",
+  description: "Set up your Velora Vault.",
   robots: { index: false, follow: false },
 };
 
@@ -40,20 +38,7 @@ export default async function OnboardingPage() {
 
   return (
     <PublicPageShell>
-      <AuthShell
-        compact
-        eyebrow="Vault setup"
-        title="Your master key protects everything."
-        description="It decrypts your vault only in this browser and is never sent to us, stored on our servers, or recoverable if lost."
-        footer={(
-          <dl className={styles.keyGuide}>
-            <div><dt>Sign-in password</dt><dd>Set when you signed up</dd></div>
-            <div><dt>Vault master key</dt><dd>Held in local memory only</dd></div>
-          </dl>
-        )}
-      >
-        <OnboardingForm userId={user.id} email={user.email ?? "your account email"} />
-      </AuthShell>
+      <OnboardingFlow userId={user.id} email={user.email ?? "your account email"} />
     </PublicPageShell>
   );
 }

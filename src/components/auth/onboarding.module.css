@@ -1,0 +1,71 @@
+/* Onboarding-specific pieces. Colors come from the --auth-* tokens defined on
+   .page / .modalCard in auth-shell.module.css (this module renders inside .page). */
+
+.progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 auto 20px;
+}
+
+.dotTrack { position: relative; display: grid; place-items: center; width: 22px; height: 8px; }
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--auth-fill);
+  transition: background-color 180ms ease;
+}
+.dot[data-filled="true"] { background: color-mix(in srgb, var(--auth-blue) 55%, var(--auth-fill)); }
+
+.dotActive {
+  position: absolute;
+  inset: 0;
+  width: 22px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--auth-blue);
+}
+
+.introBadge {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--auth-blue) 12%, transparent);
+  color: var(--auth-blue);
+}
+
+.introList { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+
+.introItem {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 13px 15px;
+  border: 1px solid var(--auth-line);
+  border-radius: 13px;
+  background: var(--auth-field);
+  color: var(--auth-ink);
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+.introItem svg { margin-top: 1px; color: var(--auth-blue); }
+
+.stepFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.stepFooter:only-child { justify-content: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .dot, .dotActive { transition-duration: 0.01ms; }
+}
