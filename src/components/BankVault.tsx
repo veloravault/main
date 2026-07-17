@@ -137,7 +137,7 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
       if (data.data.name) void typeText(data.data.name, setBankName);
     } catch (err) {
       console.error(err);
-      alert("Failed to scan image. Please try again.");
+      alert(err instanceof Error ? err.message : "Failed to scan image. Please try again.");
     } finally {
       setIsScanning(false);
       if (fileInputRef.current) fileInputRef.current.value = "";

@@ -22,7 +22,6 @@ export const PRICING_TIERS: PricingTier[] = [
     cta: "Sign up free",
     features: [
       "Unlimited passwords & secure notes",
-      "Up to 10 documents (500 MB total)",
       "Up to 3 wallet & bank records",
       "Password health monitoring — weak & reused alerts",
       "Face ID / Touch ID and PIN unlock",
@@ -32,13 +31,13 @@ export const PRICING_TIERS: PricingTier[] = [
   {
     name: "Plus",
     tagline: "For one person who wants everything in one vault.",
-    monthlyPrice: 199,
-    annualPrice: 1149,
+    monthlyPrice: 49,
+    annualPrice: 499,
     featured: true,
     cta: "Sign up",
     features: [
       "Everything in Free",
-      "Unlimited documents (10 GB storage)",
+      "Documents up to 5 GB storage",
       "Unlimited wallet & bank records",
       "Unlimited AI-assisted import & camera scanning",
       "Priority email support",
@@ -48,8 +47,8 @@ export const PRICING_TIERS: PricingTier[] = [
   {
     name: "Family",
     tagline: "Up to five separate vaults, one bill.",
-    monthlyPrice: 349,
-    annualPrice: 1949,
+    monthlyPrice: 99,
+    annualPrice: 999,
     cta: "Sign up",
     features: [
       "Everything in Plus, for each member",
@@ -65,7 +64,7 @@ export const PRICING_FAQ: { question: string; answer: string }[] = [
   {
     question: "Is the Free tier actually free?",
     answer:
-      "Yes — free forever, no credit card required. It includes unlimited passwords and notes, with limits on documents, wallet records, and AI-assisted imports. Upgrade to Plus or Family whenever you need more.",
+      "Yes — free forever, no credit card required. It includes unlimited passwords and notes, with limits on wallet records and AI-assisted imports, and no document storage. Upgrade to Plus or Family whenever you need more.",
   },
   {
     question: "What happens to my data if I'm over a plan limit?",

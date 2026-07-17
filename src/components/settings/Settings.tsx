@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ChevronLeftIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AccountSettings } from "@/components/settings/AccountSettings";
+import { PlanSettings } from "@/components/settings/PlanSettings";
 import { AppearanceSettings } from "@/components/settings/AppearanceSettings";
 import { SettingsNavigation } from "@/components/settings/SettingsNavigation";
 import { SETTINGS_SECTIONS, type SettingsProps, type SettingsSection } from "@/components/settings/settings-types";
@@ -34,6 +35,7 @@ export function Settings({ masterPassword, onLock }: SettingsProps) {
               transition={{ duration: 0.2, ease: "easeInOut" }}
             >
               {active === "account" && <AccountSettings />}
+              {active === "plan" && <PlanSettings />}
               {active === "appearance" && <AppearanceSettings />}
               {active === "security" && <SecuritySettings masterPassword={masterPassword} onLock={onLock} />}
               {active === "backup" && <BackupSettings />}

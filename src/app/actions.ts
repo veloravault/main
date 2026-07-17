@@ -4,6 +4,7 @@ import { GoogleGenAI } from "@google/genai";
 import type { GlobalImportResult, ImportExtractionResponse } from "@/lib/import/types";
 import { isGlobalImportResult, normalizeImportResult } from "@/lib/import/normalize";
 import { requireActiveMemberForToken } from "@/lib/server/access";
+import { consumeAiCredit } from "@/lib/server/aiUsage";
 
 export type { GlobalImportResult } from "@/lib/import/types";
 
@@ -18,10 +19,11 @@ function requireShortText(value: string, label: string, maxLength = 255) {
 }
 
 export async function analyzeImageName(accessToken: string, base64Image: string, mimeType: string): Promise<string> {
-  await requireActiveMemberForToken(accessToken);
+  const user = await requireActiveMemberForToken(accessToken);
   if (!ALLOWED_DOCUMENT_MIME_TYPES.has(mimeType) || !base64Image || base64Image.length > MAX_INLINE_BASE64) {
     throw new Error("This file cannot be analyzed for naming.");
   }
+  await consumeAiCredit(user.id, "document_name");
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not set");
@@ -125,8 +127,15 @@ export async function enrichPasswordMetadata(accessToken: string, title: string)
 }
 
 export async function categorizeDocument(accessToken: string, title: string): Promise<string> {
-  await requireActiveMemberForToken(accessToken);
+  const user = await requireActiveMemberForToken(accessToken);
   title = requireShortText(title, "document title");
+  // Best-effort metering: never block a categorize call, but record the usage.
+  try {
+    await consumeAiCredit(user.id, "categorize");
+  } catch {
+    // If the allowance is exhausted we still categorize (paid plans only reach
+    // documents anyway); the uncounted call is acceptable.
+  }
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) return "Uncategorized";
 

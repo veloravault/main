@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI, Type } from "@google/genai";
 import { authenticateActiveMemberRequest } from "@/lib/server/auth";
+import { AiLimitReachedError, consumeAiCredit } from "@/lib/server/aiUsage";
 import { InvalidJsonBodyError, PayloadTooLargeError, readBoundedJson } from "@/lib/server/requestBody";
 
 const MAX_REQUEST_BYTES = 8_500_000;
@@ -28,6 +29,8 @@ export async function POST(req: NextRequest) {
     const matches = imageBase64.match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/);
     if (!matches || !ALLOWED_IMAGE_TYPES.has(matches[1])) return badRequest("Use a JPEG, PNG, or WebP image.");
     if (matches[2].length > MAX_BASE64_CHARACTERS) return badRequest("Image is too large to scan.", 413);
+
+    await consumeAiCredit(user.id, "scan");
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return badRequest("Image scanning is unavailable.", 503);
@@ -110,6 +113,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ data: parsed });
 
   } catch (error: unknown) {
+    if (error instanceof AiLimitReachedError) {
+      return NextResponse.json(
+        { error: "You've used all 5 AI scans this month. Upgrade to Plus for unlimited AI.", code: error.code },
+        { status: 429 },
+      );
+    }
     if (error instanceof PayloadTooLargeError) return badRequest("Image is too large to scan.", 413);
     if (error instanceof InvalidJsonBodyError) return badRequest("Request body must be valid JSON.");
     console.error("Gemini scan failed:", error);

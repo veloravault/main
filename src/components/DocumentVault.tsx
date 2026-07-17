@@ -196,9 +196,16 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
         iv: encrypted.iv,
         salt: encrypted.salt,
         category: category,
+        size_bytes: encrypted.ciphertextBuffer.byteLength,
       });
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        // A plan quota trigger (Free = no documents, Plus/Family = 5 GB) can
+        // reject the row after the blob is already uploaded. Remove the orphan
+        // so we don't leak storage, then surface the friendly trigger message.
+        await supabase.storage.from("vault_documents").remove([storagePath]);
+        throw dbError;
+      }
 
       setSelectedFile(null);
       setRenameFeedback(null);

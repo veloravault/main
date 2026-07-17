@@ -534,7 +534,38 @@
 .settings-preview-content > div i { height: 86px; border: 1px solid var(--separator); border-radius: 15px; background: var(--elevated-bg); }
 .settings-theme-mobile { display: none; }
 
+/* Plan & usage */
+.settings-plan-current { padding: 22px 22px 24px; }
+.settings-plan-badge-row { display: flex; align-items: center; gap: 12px; }
+.settings-plan-badge { display: inline-flex; align-items: center; height: 26px; padding: 0 12px; border-radius: 999px; font-size: 13px; font-weight: 700; letter-spacing: .01em; color: var(--muted-foreground); background: var(--fill-tertiary); }
+.settings-plan-badge.is-plus { color: #fff; background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 60%, #7c5cff)); }
+.settings-plan-badge.is-family { color: #fff; background: linear-gradient(135deg, #8a5cff, #d05cff); }
+.settings-plan-price { color: var(--muted-foreground); font-size: 14px; font-weight: 600; }
+.settings-plan-tagline { margin-top: 8px; color: var(--muted-foreground); font-size: 14px; }
+.settings-plan-meter { margin-top: 20px; }
+.settings-plan-meter-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.settings-plan-meter-head > span { color: var(--foreground); font-size: 14px; font-weight: 560; }
+.settings-plan-meter-head > strong { color: var(--muted-foreground); font-size: 13px; font-weight: 560; }
+.settings-plan-bar { height: 8px; overflow: hidden; border-radius: 999px; background: var(--fill-tertiary); }
+.settings-plan-bar > i { display: block; height: 100%; border-radius: 999px; background: var(--primary); transition: width var(--motion-medium) ease; }
+.settings-plan-bar.is-full > i { background: var(--destructive); }
+.settings-plan-bar.is-locked { opacity: .6; }
+.settings-plan-bar.is-locked > i { background: repeating-linear-gradient(45deg, var(--muted) 0 6px, transparent 6px 12px); }
+.settings-plan-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; }
+.settings-plan-option { display: flex; flex-direction: column; gap: 8px; padding: 18px; border: 1px solid var(--separator); border-radius: 18px; background: var(--elevated-bg); }
+.settings-plan-option.is-current { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary) inset; }
+.settings-plan-option-head { display: flex; align-items: baseline; justify-content: space-between; }
+.settings-plan-option-head > strong { font-size: 16px; font-weight: 680; }
+.settings-plan-option-head > span { color: var(--muted-foreground); font-size: 13px; font-weight: 600; }
+.settings-plan-option > p { flex: 1; color: var(--muted-foreground); font-size: 13px; line-height: 1.4; }
+.settings-plan-action { min-height: 40px; width: 100%; gap: 6px; border-radius: 11px; font-weight: 640; }
+.settings-plan-current-pill { display: inline-flex; align-items: center; gap: 5px; height: 40px; color: var(--primary); font-size: 13px; font-weight: 650; }
+.settings-plan-current-pill svg { width: 15px; height: 15px; }
+.settings-plan-note { margin-top: 16px; color: var(--muted-foreground); font-size: 12.5px; }
+
 @media (max-width: 767px) {
+  .settings-plan-options { grid-template-columns: 1fr; }
+  .settings-plan-current { padding: 18px; }
   .vault-settings { min-height: 100%; border-radius: 0; background: transparent; }
   .settings-page-header { margin-bottom: 18px; }
   .settings-page-header h1 { font-size: 32px; }

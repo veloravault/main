@@ -160,7 +160,7 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to scan image. Please try again.");
+      alert(err instanceof Error ? err.message : "Failed to scan image. Please try again.");
     } finally {
       setIsScanning(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
