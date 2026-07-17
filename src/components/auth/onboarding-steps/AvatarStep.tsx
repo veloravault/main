@@ -18,21 +18,12 @@ export function AvatarStep({
           type="button"
           className={shell.avatarChoice}
           aria-pressed={selected === kind}
-          onClick={() => onSelect(selected === kind ? null : kind)}
+          onClick={() => (selected === kind ? onSelect(null) : onSelect(kind))}
         >
           <span className={shell.avatarChoicePreview}><PresetAvatar kind={kind} /></span>
           {kind === "male" ? "Male" : "Female"}
         </button>
       ))}
-      <button
-        key="skip"
-        type="button"
-        className={shell.avatarChoice}
-        aria-pressed={selected === null}
-        onClick={() => onSelect(null)}
-      >
-        Skip
-      </button>
     </div>
   );
 }
