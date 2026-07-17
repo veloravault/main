@@ -98,12 +98,12 @@ export function Nav() {
             Sign in
           </motion.a>
           <motion.a
-            href="/request-access"
+            href="/signup"
             className={`${shared.btn} ${shared.btnDark} ${styles.cta}`}
             whileHover={reduceMotion ? undefined : HOVER_LIFT}
             whileTap={reduceMotion ? undefined : TAP_PRESS}
           >
-            Request access
+            Sign up
           </motion.a>
           <ThemeToggle
             className={styles.themeToggle}
@@ -155,11 +155,11 @@ export function Nav() {
             Sign in
           </a>
           <a
-            href="/request-access"
+            href="/signup"
             className={`${shared.btn} ${shared.btnDark}`}
             onClick={() => setOpen(false)}
           >
-            Request access
+            Sign up
           </a>
         </motion.div>
         )}

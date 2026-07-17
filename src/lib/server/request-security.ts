@@ -1,5 +1,3 @@
-import { createHmac } from "node:crypto";
-
 export class RequestSecurityError extends Error {
   readonly code: string;
   readonly status: number;
@@ -56,30 +54,6 @@ export function assertSameOrigin(request: Request) {
   throw new RequestSecurityError("ORIGIN_MISMATCH", 403);
 }
 
-export function fingerprintAccessRequest(email: string, forwardedIp: string, windowStart: string) {
-  const normalizedEmail = email.trim().toLowerCase();
-  const normalizedIp = normalizeForwardedIp(forwardedIp);
-  return fingerprint(
-    `access-request:email-ip:v1|${normalizedEmail}|${normalizedIp}|${windowStart}`,
-  );
-}
-
-export function fingerprintAccessRequestIp(forwardedIp: string, windowStart: string) {
-  const normalizedIp = normalizeForwardedIp(forwardedIp);
-  return fingerprint(`access-request:ip:v1|${normalizedIp}|${windowStart}`);
-}
-
-function normalizeForwardedIp(forwardedIp: string) {
-  return forwardedIp.split(",", 1)[0]?.trim().toLowerCase() || "unknown";
-}
-
-function fingerprint(value: string) {
-  const secret = process.env.ACCESS_REQUEST_HMAC_SECRET?.trim();
-  if (!secret) throw new Error("ACCESS_REQUEST_HMAC_SECRET_NOT_CONFIGURED");
-  return createHmac("sha256", secret)
-    .update(value)
-    .digest("hex");
-}
 
 export async function readBoundedJson(request: Request, maxBytes: number): Promise<Record<string, unknown>> {
   if (!Number.isSafeInteger(maxBytes) || maxBytes < 1) throw new Error("INVALID_BODY_LIMIT");

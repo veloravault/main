@@ -16,7 +16,7 @@ export default function PrivacyPage() {
           <h1 className={styles.title}>Privacy Policy</h1>
           <p className={styles.updated}>Last updated: July 17, 2026</p>
           <p className={styles.intro}>
-            Velora Vault is a private, invite-only home for your passwords,
+            Velora Vault is a private, encrypted home for your passwords,
             documents, notes, and financial essentials. This policy explains
             what we collect, what we can and cannot see, and how your data is
             protected.
@@ -24,12 +24,11 @@ export default function PrivacyPage() {
 
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>What we collect</h2>
-            <p>We collect the minimum needed to run an invite-only service:</p>
+            <p>We collect the minimum needed to run your account:</p>
             <ul>
               <li>
-                <strong>Account information</strong> — your name and email
-                address, provided when you request access and again when you
-                accept an invitation.
+                <strong>Account information</strong> — your email address and
+                sign-in password, provided when you sign up.
               </li>
               <li>
                 <strong>Encrypted vault contents</strong> — your passwords,
@@ -77,9 +76,9 @@ export default function PrivacyPage() {
             <h2 className={styles.sectionTitle}>How we use your information</h2>
             <p>We use the information above only to:</p>
             <ul>
-              <li>Operate the request-access and invitation flow</li>
+              <li>Create and confirm your account when you sign up</li>
               <li>Authenticate you and maintain your session</li>
-              <li>Enforce that only active, invited members can access data</li>
+              <li>Enforce that only your own active account can access your data</li>
               <li>Detect and prevent abuse or unauthorized access</li>
               <li>Provide customer support when you contact us</li>
             </ul>
@@ -93,9 +92,9 @@ export default function PrivacyPage() {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Access control</h2>
             <p>
-              Velora Vault is invite-only. Every request to your data is
-              checked at the database level against your active membership
-              status, not just whether you are signed in. If your access is
+              Every request to your data is checked at the database level
+              against your own account and its active status, not just
+              whether you are signed in. If your access is suspended or
               revoked, your encrypted data becomes inaccessible even to our
               own systems in the normal course of operation.
             </p>
@@ -164,8 +163,7 @@ export default function PrivacyPage() {
               <strong>The short version:</strong>{" "}
               your master key never leaves your device, so we can&rsquo;t
               read your vault even if we wanted to. We only handle
-              what&rsquo;s needed to run an invite-only account system
-              around it.
+              what&rsquo;s needed to run the account system around it.
             </p>
           </div>
         </div>

@@ -2,8 +2,6 @@
 
 import {
   ActivityIcon,
-  Clock3Icon,
-  SendIcon,
   UsersIcon,
 } from "lucide-react";
 import type { AdminView } from "./types";
@@ -14,10 +12,8 @@ const NAVIGATION: Array<{
   id: AdminView;
   label: string;
   description: string;
-  icon: typeof Clock3Icon;
+  icon: typeof UsersIcon;
 }> = [
-  { id: "pending", label: "Pending", description: "Awaiting review", icon: Clock3Icon },
-  { id: "invited", label: "Invited", description: "Invitation sent", icon: SendIcon },
   { id: "members", label: "Members", description: "Vault access", icon: UsersIcon },
   { id: "activity", label: "Activity", description: "Owner actions", icon: ActivityIcon },
 ];
@@ -51,7 +47,7 @@ export function AdminSidebar(props: {
           );
         })}
       </nav>
-      <p className={styles.sidebarFoot}>Approval actions are permanent once an invitation is sent.</p>
+      <p className={styles.sidebarFoot}>Revoking a member&rsquo;s access is permanent.</p>
     </aside>
   );
 }

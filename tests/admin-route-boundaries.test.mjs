@@ -5,9 +5,6 @@ import { test } from "node:test";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
 const adminRoutes = [
-  "src/app/api/admin/access-requests/route.ts",
-  "src/app/api/admin/access-requests/[id]/approve/route.ts",
-  "src/app/api/admin/access-requests/[id]/retry/route.ts",
   "src/app/api/admin/members/route.ts",
   "src/app/api/admin/members/[id]/route.ts",
 ];
@@ -32,61 +29,6 @@ test("admin mutations enforce same origin before parsing a body", () => {
     assert.ok(bodyIndex < 0 || originIndex < bodyIndex, `${file} must check origin before its body`);
     assert.doesNotMatch(source, /error\.message|JSON\.stringify\(error/);
   }
-});
-
-test("access request admin list is cursor-only, bounded to 25 DTO rows, and allowlists query parameters", () => {
-  const route = read("src/app/api/admin/access-requests/route.ts");
-  const repository = read("src/lib/server/access-repository.ts");
-
-  assert.match(route, /status/);
-  assert.match(route, /search/);
-  assert.match(route, /cursor/);
-  assert.match(route, /INVALID_QUERY/);
-  assert.match(repository, /ACCESS_REQUEST_PAGE_SIZE\s*=\s*25/);
-  assert.match(repository, /\.order\("requested_at",\s*\{\s*ascending:\s*false\s*\}\)/);
-  assert.match(repository, /\.order\("id",\s*\{\s*ascending:\s*false\s*\}\)/);
-  assert.match(repository, /\.select\("id,full_name,email,status,requested_at,updated_at,invite_started_at,invited_at,invite_attempts,last_error_code"\)/);
-  assert.match(repository, /SAFE_INVITATION_ERROR_CODES/);
-  assert.match(repository, /safeInvitationErrorCode\(row\.last_error_code\)/);
-  assert.doesNotMatch(repository, /\.select\(\s*"\*"|\.range\(|offset/i);
-  assert.match(route, /UNSAFE_SEARCH/);
-  assert.match(route, /,%\(\)/);
-  assert.match(repository, /quotePostgrestFilterValue/);
-  assert.match(repository, /full_name\.ilike\.\$\{searchLiteral\},email\.ilike\.\$\{searchLiteral\}/);
-});
-
-test("invitation claims and completion use atomic service-role-only database RPCs", () => {
-  const repository = read("src/lib/server/access-repository.ts");
-  const schema = read("invite_access_schema.sql");
-  const approval = read("src/lib/access/approval.ts");
-
-  assert.match(repository, /claim_access_request_invitation/);
-  assert.match(repository, /complete_access_request_invitation/);
-  assert.match(schema, /create or replace function public\.claim_access_request_invitation/i);
-  assert.match(schema, /invite_attempts\s*=\s*request\.invite_attempts\s*\+\s*1/i);
-  assert.match(schema, /status\s+in\s*\(\s*'pending'\s*,\s*'invite_failed'\s*\)/i);
-  assert.match(schema, /invite_started_at\s*<\s*p_stale_before/i);
-  assert.match(schema, /returns table \(id uuid, email text, full_name text, attempt integer\)/i);
-  assert.match(schema, /p_attempt integer/i);
-  assert.match(schema, /request\.invite_attempts\s*=\s*p_attempt/i);
-  assert.match(repository, /p_attempt:\s*attempt/);
-  assert.match(repository, /\.eq\("invite_attempts",\s*attempt\)/);
-  assert.match(approval, /claim\.request\.attempt/);
-  assert.match(schema, /revoke all on function public\.claim_access_request_invitation[\s\S]*from public, anon, authenticated/i);
-});
-
-test("provider reconciles before sending and maps errors to a closed safe-code set", () => {
-  const invitations = read("src/lib/server/invitations.ts");
-
-  assert.match(invitations, /import "server-only"/);
-  assert.match(invitations, /auth\.admin\.listUsers/);
-  assert.match(invitations, /auth\.admin\.inviteUserByEmail/);
-  assert.match(invitations, /data:\s*\{\s*full_name:\s*fullName\s*\}/);
-  assert.match(invitations, /redirectTo:\s*`\$\{requiredAppUrl\(\)\}\/accept-invite`/);
-  for (const code of ["DELIVERY_FAILED", "ALREADY_INVITED", "RATE_LIMITED", "CONFIGURATION_ERROR"]) {
-    assert.match(invitations, new RegExp(`\\b${code}\\b`));
-  }
-  assert.doesNotMatch(invitations, /return\s+(?:error\.)?message|throw\s+error/);
 });
 
 test("member mutation accepts only suspended or revoked and member lists are DTO-only", () => {
@@ -123,4 +65,17 @@ test("member status mutation is one locked transactional RPC with monotonic tran
   assert.match(schema, /action[\s\S]*case p_status[\s\S]*when 'suspended' then 'suspend'[\s\S]*else 'revoke'/i);
   assert.match(schema, /revoke all on function public\.mutate_member_status\(uuid, uuid, text, timestamptz\) from public, anon, authenticated/i);
   assert.match(schema, /grant execute on function public\.mutate_member_status\(uuid, uuid, text, timestamptz\) to service_role/i);
+});
+
+test("self-signup provisioning and activation are service-role-only RPCs that tolerate no linked access request", () => {
+  const repository = read("src/lib/server/access-repository.ts");
+  const migration = read("supabase/migrations/20260716232955_self_signup_membership.sql");
+
+  assert.match(repository, /rpc\("provision_self_signup_member"/);
+  assert.match(repository, /rpc\("activate_invited_member"/);
+  assert.match(migration, /create or replace function public\.provision_self_signup_member/i);
+  assert.match(migration, /revoke all on function public\.provision_self_signup_member\(uuid, text, timestamptz\) from public, anon, authenticated/i);
+  assert.match(migration, /grant execute on function public\.provision_self_signup_member\(uuid, text, timestamptz\) to service_role/i);
+  assert.match(migration, /create or replace function public\.activate_invited_member/i);
+  assert.match(migration, /if request_id is null then/i);
 });

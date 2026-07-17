@@ -1,6 +1,7 @@
-// Pricing tier content for the dedicated /pricing page. Numbers reflect the
-// planned post-beta pricing — the product is currently free for everyone
-// during private beta, which the page states explicitly.
+// Pricing tier content for the dedicated /pricing page. Prices are in INR.
+// Note for whoever wires up Razorpay checkout: Razorpay expects amounts in
+// the smallest currency unit (paise), i.e. these rupee values need x100
+// conversion at that integration boundary, not before.
 
 export interface PricingTier {
   name: string;
@@ -18,7 +19,7 @@ export const PRICING_TIERS: PricingTier[] = [
     tagline: "Everything you need to stop reusing passwords.",
     monthlyPrice: 0,
     annualPrice: 0,
-    cta: "Request access",
+    cta: "Sign up free",
     features: [
       "Unlimited passwords & secure notes",
       "Up to 10 documents (500 MB total)",
@@ -31,10 +32,10 @@ export const PRICING_TIERS: PricingTier[] = [
   {
     name: "Plus",
     tagline: "For one person who wants everything in one vault.",
-    monthlyPrice: 4.99,
-    annualPrice: 39,
+    monthlyPrice: 199,
+    annualPrice: 1149,
     featured: true,
-    cta: "Request access",
+    cta: "Sign up",
     features: [
       "Everything in Free",
       "Unlimited documents (10 GB storage)",
@@ -47,9 +48,9 @@ export const PRICING_TIERS: PricingTier[] = [
   {
     name: "Family",
     tagline: "Up to five separate vaults, one bill.",
-    monthlyPrice: 8.99,
-    annualPrice: 69,
-    cta: "Request access",
+    monthlyPrice: 349,
+    annualPrice: 1949,
+    cta: "Sign up",
     features: [
       "Everything in Plus, for each member",
       "Up to 5 separate private vaults",
@@ -62,14 +63,14 @@ export const PRICING_TIERS: PricingTier[] = [
 
 export const PRICING_FAQ: { question: string; answer: string }[] = [
   {
-    question: "Is Velora Vault really free right now?",
+    question: "Is the Free tier actually free?",
     answer:
-      "Yes. Every invited account currently has full access to every feature at no cost while the product is in private beta. The tiers on this page describe what pricing looks like once beta ends — nothing changes for you until then, and existing beta users will get advance notice before any billing starts.",
+      "Yes — free forever, no credit card required. It includes unlimited passwords and notes, with limits on documents, wallet records, and AI-assisted imports. Upgrade to Plus or Family whenever you need more.",
   },
   {
-    question: "What happens to my data if I don't upgrade?",
+    question: "What happens to my data if I'm over a plan limit?",
     answer:
-      "Nothing is deleted or locked. If you're above a Free-tier limit when beta pricing takes effect, you'll keep read access to everything you've already saved — you just won't be able to add more in that category until you're back under the limit or upgrade.",
+      "Nothing is deleted or locked. You keep read access to everything you've already saved — you just can't add more in that category until you're back under the limit or you upgrade.",
   },
   {
     question: "Can I change plans later?",

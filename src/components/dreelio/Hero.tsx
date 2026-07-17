@@ -31,16 +31,16 @@ export function Hero() {
         </motion.h1>
         <motion.p className={styles.subtitle} variants={staggerItem}>
           Passwords, documents, notes, and financial essentials — encrypted on
-          your device before they&rsquo;re stored. Free during private beta, by invitation.
+          your device before they&rsquo;re stored.
         </motion.p>
         <motion.div className={styles.actions} variants={staggerItem}>
           <motion.a
-            href="#pricing"
+            href="/signup"
             className={`${shared.btn} ${shared.btnDark}`}
             whileHover={reduceMotion ? undefined : HOVER_LIFT}
             whileTap={reduceMotion ? undefined : TAP_PRESS}
           >
-            Request access
+            Sign up free
           </motion.a>
           <motion.a
             href="#features"

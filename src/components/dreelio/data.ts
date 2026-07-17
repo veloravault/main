@@ -58,29 +58,6 @@ export const SECURITY_PRINCIPLES = [
   },
 ];
 
-export const BETA_STEPS = [
-  {
-    index: "01",
-    title: "Send your request",
-    detail: "Share your name and email. Never include a password or master key.",
-  },
-  {
-    index: "02",
-    title: "We review it",
-    detail: "Every beta request is manually reviewed. A request does not create an account.",
-  },
-  {
-    index: "03",
-    title: "Receive an invitation",
-    detail: "If approved, you receive a private invitation email with a time-limited setup link.",
-  },
-  {
-    index: "04",
-    title: "Create private access",
-    detail: "Accept the invitation, create sign-in credentials, then unlock with your separate master key.",
-  },
-];
-
 export const FOOTER_COLUMNS = [
   {
     heading: "Pages",

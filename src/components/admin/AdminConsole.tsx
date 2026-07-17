@@ -13,30 +13,21 @@ import { useToast } from "@/components/Toast";
 import { StateView } from "@/components/ui/state-view";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminSkeleton } from "./AdminSkeleton";
-import { ApprovalSheet } from "./ApprovalSheet";
-import { RequestQueue } from "./RequestQueue";
 import { normalizeAdminSearch } from "./admin-client";
 import {
-  isAccessRequest,
-  type AdminAccessRequest,
   type AdminMember,
-  type AdminRecord,
   type AdminView,
   type MemberFilter,
-  type PendingFilter,
 } from "./types";
 import styles from "@/app/admin/admin.module.css";
 import { VeloraMark } from "@/components/VeloraMark";
 
-const ADMIN_VIEWS: readonly AdminView[] = ["pending", "invited", "members", "activity"];
-const PENDING_FILTERS: readonly PendingFilter[] = ["pending", "inviting", "invite_failed"];
+const ADMIN_VIEWS: readonly AdminView[] = ["members", "activity"];
 const MEMBER_FILTERS: readonly MemberFilter[] = ["all", "invited", "active", "suspended", "revoked"];
-const VIEW_LABELS: Record<AdminView, string> = { pending: "Pending", invited: "Invited", members: "Members", activity: "Activity" };
+const VIEW_LABELS: Record<AdminView, string> = { members: "Members", activity: "Activity" };
 
 const TITLES: Record<AdminView, { eyebrow: string; title: string; description: string }> = {
-  pending: { eyebrow: "Invitation review", title: "Access, considered.", description: "Review each person before an account invitation leaves the vault." },
-  invited: { eyebrow: "Invitations", title: "Invited people", description: "A record of invitations confirmed by the server." },
-  members: { eyebrow: "Vault membership", title: "Members", description: "People whose invitation has entered the vault access lifecycle." },
+  members: { eyebrow: "Vault membership", title: "Members", description: "Everyone with an account, and their current vault access." },
   activity: { eyebrow: "Owner record", title: "Activity", description: "A calm record of access decisions made from this console." },
 };
 
@@ -44,40 +35,64 @@ function isAdminView(value: string | null): value is AdminView {
   return ADMIN_VIEWS.includes(value as AdminView);
 }
 
-function isPendingFilter(value: string | null): value is PendingFilter {
-  return PENDING_FILTERS.includes(value as PendingFilter);
-}
-
 function isMemberFilter(value: string | null): value is MemberFilter {
   return MEMBER_FILTERS.includes(value as MemberFilter);
 }
 
-function safePage(value: unknown): { items: AdminRecord[]; nextCursor: string | null } {
+function safePage(value: unknown): { items: AdminMember[]; nextCursor: string | null } {
   if (!value || typeof value !== "object" || !("items" in value) || !Array.isArray(value.items)) {
     throw new Error("INVALID_ADMIN_RESPONSE");
   }
   const nextCursor = "nextCursor" in value && typeof value.nextCursor === "string" ? value.nextCursor : null;
-  return { items: value.items as AdminRecord[], nextCursor };
+  return { items: value.items as AdminMember[], nextCursor };
 }
 
 function memberDate(value: string) {
   return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(value));
 }
 
-function MemberQueue(props: { items: AdminMember[]; searchActive: boolean; error: string | null; onRetry: () => void }) {
+function MemberQueue(props: {
+  items: AdminMember[];
+  searchActive: boolean;
+  error: string | null;
+  mutatingId: string | null;
+  onRetry: () => void;
+  onMutate: (member: AdminMember, status: "suspended" | "revoked") => void;
+}) {
   if (props.error) return <StateView kind="error" title="Members unavailable" description={props.error} action={{ label: "Try again", onClick: props.onRetry }} />;
   if (props.items.length === 0) {
-    return <StateView kind="empty" title={props.searchActive ? "No matching members" : "No members in this view"} description={props.searchActive ? "Try a different email address." : "Membership changes will appear here."} />;
+    return <StateView kind="empty" title={props.searchActive ? "No matching members" : "No members in this view"} description={props.searchActive ? "Try a different email address." : "New accounts will appear here as people join."} />;
   }
   return (
     <div className={styles.memberList} role="list" aria-label="Vault members">
-      {props.items.map((member) => (
-        <article className={styles.memberRow} key={member.id} role="listitem">
-          <span className={styles.memberGlyph}><LockKeyholeIcon aria-hidden="true" /></span>
-          <span className={styles.memberIdentity}><strong>{member.email}</strong><small>Approved {memberDate(member.approvedAt)}</small></span>
-          <span className={styles.memberStatus} data-status={member.status}>{member.status}</span>
-        </article>
-      ))}
+      {props.items.map((member) => {
+        const mutating = props.mutatingId === member.id;
+        const canSuspend = member.status === "invited" || member.status === "active";
+        const canRevoke = member.status !== "revoked";
+        return (
+          <article className={styles.memberRow} key={member.id} role="listitem">
+            <span className={styles.memberGlyph}><LockKeyholeIcon aria-hidden="true" /></span>
+            <span className={styles.memberIdentity}><strong>{member.email}</strong><small>Joined {memberDate(member.approvedAt)}</small></span>
+            <span className={styles.memberActions}>
+              <span className={styles.memberStatus} data-status={member.status}>{member.status}</span>
+              {canSuspend && (
+                <button type="button" disabled={mutating} onClick={() => props.onMutate(member, "suspended")}>
+                  Suspend
+                </button>
+              )}
+              {canRevoke && (
+                <button type="button" disabled={mutating} data-destructive onClick={() => {
+                  if (window.confirm(`Revoke vault access for ${member.email}? This can't be undone.`)) {
+                    props.onMutate(member, "revoked");
+                  }
+                }}>
+                  Revoke
+                </button>
+              )}
+            </span>
+          </article>
+        );
+      })}
     </div>
   );
 }
@@ -87,24 +102,20 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const toast = useToast();
-  const view = isAdminView(searchParams.get("view")) ? searchParams.get("view") as AdminView : "pending";
-  const pendingFilter = isPendingFilter(searchParams.get("status")) ? searchParams.get("status") as PendingFilter : "pending";
+  const view = isAdminView(searchParams.get("view")) ? searchParams.get("view") as AdminView : "members";
   const memberFilter = isMemberFilter(searchParams.get("status")) ? searchParams.get("status") as MemberFilter : "all";
   const rawUrlSearch = searchParams.get("search") ?? "";
   const urlSearch = normalizeAdminSearch(rawUrlSearch);
   const [searchInput, setSearchInput] = useState(urlSearch);
   const [searchQuery, setSearchQuery] = useState(urlSearch);
-  const [items, setItems] = useState<AdminRecord[]>([]);
+  const [items, setItems] = useState<AdminMember[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(view !== "activity");
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [appendError, setAppendError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<AdminAccessRequest | null>(null);
-  const [sendingId, setSendingId] = useState<string | null>(null);
+  const [mutatingId, setMutatingId] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
-  const triggerRef = useRef<HTMLButtonElement | null>(null);
-  const headingRef = useRef<HTMLHeadingElement | null>(null);
   const pendingUrlSearchRef = useRef<string | null>(null);
   const queryGenerationRef = useRef(0);
   const requestControllersRef = useRef<Set<AbortController>>(new Set());
@@ -177,17 +188,13 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
       const params = new URLSearchParams();
       if (searchQuery) params.set("search", searchQuery);
       if (cursor) params.set("cursor", cursor);
-      const endpoint = view === "members" ? "/api/admin/members" : "/api/admin/access-requests";
-      if (view === "pending") params.set("status", pendingFilter);
-      if (view === "invited") params.set("status", "invited");
-      if (view === "members" && memberFilter !== "all") params.set("status", memberFilter);
+      if (memberFilter !== "all") params.set("status", memberFilter);
 
-      const response = await fetch(`${endpoint}?${params}`, { signal: controller.signal, headers: { accept: "application/json" } });
+      const response = await fetch(`/api/admin/members?${params}`, { signal: controller.signal, headers: { accept: "application/json" } });
       if (response.status === 401) {
         if (generation !== queryGenerationRef.current || controller.signal.aborted) return;
         setItems([]);
         setNextCursor(null);
-        setSelected(null);
         setError(null);
         setAppendError(null);
         setAnnouncement("Your owner session expired. Sign in again.");
@@ -198,7 +205,6 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
         if (generation !== queryGenerationRef.current || controller.signal.aborted) return;
         setItems([]);
         setNextCursor(null);
-        setSelected(null);
         setAppendError(null);
         setError("This account no longer has access to the owner console.");
         setAnnouncement("Owner access could not be verified.");
@@ -224,7 +230,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
       if (append) setLoadingMore(false);
       else setLoading(false);
     }
-  }, [memberFilter, pendingFilter, router, searchQuery, view]);
+  }, [memberFilter, router, searchQuery, view]);
 
   useEffect(() => {
     const generation = ++queryGenerationRef.current;
@@ -243,56 +249,33 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
   }, [loadPage]);
 
   const selectView = (nextView: AdminView) => {
-    const status = nextView === "pending" ? "pending" : null;
-    updateUrl({ view: nextView === "pending" ? null : nextView, status, cursor: null }, "push");
+    updateUrl({ view: nextView === "members" ? null : nextView, status: null, cursor: null }, "push");
   };
 
-  const openApproval = (request: AdminAccessRequest, trigger: HTMLButtonElement) => {
-    triggerRef.current = trigger;
-    setSelected(request);
-  };
-
-  const closeApproval = () => {
-    setSelected(null);
-    window.requestAnimationFrame(() => {
-      if (triggerRef.current?.isConnected) triggerRef.current.focus();
-      else headingRef.current?.focus();
-    });
-  };
-
-  const reconcileInvitationState = useCallback(async () => {
-    await loadPage(null, false, queryGenerationRef.current);
-  }, [loadPage]);
-
-  const sendInvitation = async () => {
-    if (!selected || sendingId) return;
-    const target = selected;
-    const retry = target.status === "invite_failed";
-    setSendingId(target.id);
-    setAnnouncement(`Sending invitation to ${target.fullName}.`);
+  const mutateMember = async (member: AdminMember, status: "suspended" | "revoked") => {
+    if (mutatingId) return;
+    setMutatingId(member.id);
+    setAnnouncement(`Updating ${member.email}.`);
     try {
-      const endpoint = `/api/admin/access-requests/${encodeURIComponent(target.id)}/${retry ? "retry" : "approve"}`;
-      const response = await fetch(endpoint, { method: "POST", headers: { accept: "application/json" } });
-      const body: unknown = await response.json().catch(() => null);
-      const result = body && typeof body === "object" ? body as Record<string, unknown> : {};
+      const response = await fetch(`/api/admin/members/${encodeURIComponent(member.id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", accept: "application/json" },
+        body: JSON.stringify({ status }),
+      });
 
-      if (response.ok && result.status === "invited") {
-        setItems((current) => current.map((item) => item.id === target.id && isAccessRequest(item)
-          ? { ...item, status: "invited", invitedAt: new Date().toISOString(), lastErrorCode: null }
-          : item));
-        setAnnouncement(`Invitation sent to ${target.fullName}.`);
-        toast({ message: `Invitation sent to ${target.fullName}.`, type: "success" });
-      } else if (response.status === 409 && result.status === "already_processing") {
-        setItems((current) => current.map((item) => item.id === target.id && isAccessRequest(item) ? { ...item, status: "inviting" } : item));
-        setAnnouncement(`Invitation to ${target.fullName} is already sending.`);
-        toast({ message: "This invitation is already being sent.", type: "info" });
-      } else if (response.status === 502 && result.status === "invite_failed") {
-        const safeCode = typeof result.errorCode === "string" ? result.errorCode : "DELIVERY_FAILED";
-        setItems((current) => current.map((item) => item.id === target.id && isAccessRequest(item)
-          ? { ...item, status: "invite_failed", lastErrorCode: safeCode as AdminAccessRequest["lastErrorCode"] }
-          : item));
-        setAnnouncement(`Invitation failed for ${target.fullName}. Retry is available.`);
-        toast({ message: "The invitation was not confirmed. Retry is available.", type: "error" });
+      if (response.ok) {
+        const body = await response.json().catch(() => null) as { member?: AdminMember } | null;
+        setItems((current) => current.map((item) => item.id === member.id && body?.member ? body.member : item));
+        setAnnouncement(`${member.email} ${status}.`);
+        toast({ message: `${member.email} was ${status}.`, type: "success" });
+      } else if (response.status === 404) {
+        setAnnouncement(`${member.email} is no longer in this list.`);
+        toast({ message: "This member is no longer available. The list was refreshed.", type: "info" });
+        await loadPage(null, false, queryGenerationRef.current);
+      } else if (response.status === 409) {
+        setAnnouncement(`${member.email}'s status already changed.`);
+        toast({ message: "That status change no longer applies. The list was refreshed.", type: "info" });
+        await loadPage(null, false, queryGenerationRef.current);
       } else if (response.status === 401) {
         setItems([]);
         setAnnouncement("Your owner session expired. Sign in again.");
@@ -304,27 +287,18 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
         setAnnouncement("Owner access could not be verified.");
         toast({ message: "Owner access could not be verified.", type: "error" });
         router.refresh();
-      } else if (response.status === 404) {
-        setAnnouncement(`${target.fullName} is no longer in this queue.`);
-        toast({ message: "This request is no longer available. The queue was refreshed.", type: "info" });
-        await reconcileInvitationState();
       } else {
-        setAnnouncement(`The invitation state for ${target.fullName} is being refreshed.`);
-        toast({ message: "The result could not be confirmed. The queue was refreshed.", type: "info" });
-        await reconcileInvitationState();
+        setAnnouncement(`${member.email} could not be updated.`);
+        toast({ message: "The update could not be confirmed. Try again.", type: "error" });
       }
     } catch {
-      setAnnouncement(`The invitation state for ${target.fullName} is being refreshed.`);
-      toast({ message: "The connection dropped before confirmation. The queue was refreshed.", type: "info" });
-      await reconcileInvitationState();
+      setAnnouncement(`The connection dropped before ${member.email} could be updated.`);
+      toast({ message: "The connection dropped before confirmation. Try again.", type: "error" });
     } finally {
-      setSendingId(null);
-      closeApproval();
+      setMutatingId(null);
     }
   };
 
-  const requestItems = items.filter(isAccessRequest);
-  const memberItems = items.filter((item): item is AdminMember => !isAccessRequest(item));
   const title = TITLES[view];
 
   return (
@@ -337,7 +311,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
             <label className={styles.search}>
               <SearchIcon aria-hidden="true" />
               <span className="sr-only">Search this view</span>
-              <input value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder="Search name or email" maxLength={100} />
+              <input value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder="Search email" maxLength={100} />
               <kbd>⌘ K</kbd>
             </label>
             <div className={styles.adminIdentity}><span>{adminEmail.slice(0, 1).toUpperCase()}</span><div><small>Verified owner</small><strong>{adminEmail}</strong></div></div>
@@ -349,19 +323,10 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
 
           <div className={styles.content}>
             <div className={styles.heading}>
-              <div><p className={styles.eyebrow}>{title.eyebrow}</p><h1 ref={headingRef} tabIndex={-1}>{title.title}</h1><p>{title.description}</p></div>
+              <div><p className={styles.eyebrow}>{title.eyebrow}</p><h1 tabIndex={-1}>{title.title}</h1><p>{title.description}</p></div>
               <span className={styles.recordCount}><strong>{items.length}</strong><small>loaded</small></span>
             </div>
 
-            {view === "pending" && (
-              <div className={styles.filters} aria-label="Pending request filters">
-                {PENDING_FILTERS.map((filter) => (
-                  <button key={filter} type="button" aria-pressed={pendingFilter === filter} data-active={pendingFilter === filter || undefined} onClick={() => updateUrl({ status: filter, cursor: null }, "push")}>
-                    {filter === "pending" ? "Awaiting review" : filter === "inviting" ? "Sending" : "Needs retry"}
-                  </button>
-                ))}
-              </div>
-            )}
             {view === "members" && (
               <label className={styles.memberFilter}>
                 <span>Member status</span>
@@ -376,12 +341,17 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
               {loading ? <AdminSkeleton /> : view === "activity" ? (
                 <div className={styles.activityEmpty}>
                   <span><ActivityIcon aria-hidden="true" /></span>
-                  <StateView kind="empty" title="No recent activity" description="Owner invitation decisions will be recorded here as the log becomes available." />
+                  <StateView kind="empty" title="No recent activity" description="Owner access decisions will be recorded here as the log becomes available." />
                 </div>
-              ) : view === "members" ? (
-                <MemberQueue items={memberItems} searchActive={Boolean(searchQuery)} error={error} onRetry={() => void loadPage(null, false)} />
               ) : (
-                <RequestQueue items={requestItems} sendingId={sendingId} searchActive={Boolean(searchQuery)} error={error} onRetryLoad={() => void loadPage(null, false)} onApprove={openApproval} />
+                <MemberQueue
+                  items={items}
+                  searchActive={Boolean(searchQuery)}
+                  error={error}
+                  mutatingId={mutatingId}
+                  onRetry={() => void loadPage(null, false)}
+                  onMutate={(member, status) => void mutateMember(member, status)}
+                />
               )}
             </section>
 
@@ -403,7 +373,6 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
       </div>
 
       <p className="sr-only" aria-live="polite" aria-atomic="true">{announcement}</p>
-      <ApprovalSheet request={selected} open={Boolean(selected)} sending={Boolean(selected && sendingId === selected.id)} onOpenChange={(open) => { if (!open) closeApproval(); }} onConfirm={() => void sendInvitation()} />
     </main>
   );
 }

@@ -246,13 +246,13 @@ export function SecurityPageContent() {
         variants={reveal}
       >
         <div>
-          <p className={styles.eyebrow}>Private beta</p>
-          <h2>Review the boundaries before you request access.</h2>
+          <p className={styles.eyebrow}>Get started</p>
+          <h2>Review the boundaries before you sign up.</h2>
           <p>Security is strongest when the product and the user each know their part.</p>
         </div>
         <div className={styles.actions}>
           <motion.div whileHover={reduceMotion ? undefined : HOVER_LIFT} whileTap={reduceMotion ? undefined : TAP_PRESS}>
-            <Link href="/request-access" className={styles.primaryAction}>Request access</Link>
+            <Link href="/signup" className={styles.primaryAction}>Sign up free</Link>
           </motion.div>
           <Link href="/privacy" className={styles.secondaryAction}>Read the privacy policy</Link>
         </div>

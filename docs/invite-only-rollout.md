@@ -1,4 +1,8 @@
-# Invite-only production rollout
+# Invite-only production rollout (superseded)
+
+**This runbook describes the invite-only access model that Velora Vault no longer uses.** The application now uses open self-serve signup — see the README's "Signup architecture" section and `supabase/migrations/*_self_signup_membership.sql`. The invite-only tables, RPCs, and email template referenced below remain in the database, unused, but the routes and admin UI this runbook describes have been removed from the codebase. Kept for historical reference only; do not follow it for a current rollout.
+
+---
 
 This is the operator runbook for enabling Velora Vault's invite-only access model in a hosted Supabase project. Execute it in order, record evidence for every gate, and stop on the first unexpected result. No hosted changes are performed by this repository; cloning, building, or deploying the application does not apply SQL, edit Auth settings, send invitations, or change DNS.
 

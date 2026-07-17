@@ -5,29 +5,21 @@ import { test } from "node:test";
 const exists = (path) => existsSync(new URL(`../${path}`, import.meta.url));
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("landing tells one private-beta access story and explains the invitation flow", () => {
+test("landing tells one open-signup story with no private-beta framing", () => {
   const pricing = read("src/components/dreelio/Pricing.tsx");
   const hero = read("src/components/dreelio/Hero.tsx");
   const finalCta = read("src/components/dreelio/FinalCTA.tsx");
   const gateway = read("src/components/auth/AuthGateway.tsx");
-  const requestForm = read("src/components/access/RequestAccessForm.tsx");
+  const signUpForm = read("src/components/auth/SignUpForm.tsx");
   const data = read("src/components/dreelio/data.ts");
-  const combined = [pricing, hero, finalCta, gateway, requestForm, data].join("\n");
+  const combined = [pricing, hero, finalCta, gateway, signUpForm, data].join("\n");
 
-  assert.match(pricing, /Free during private beta/);
-  for (const step of [
-    "Send your request",
-    "We review it",
-    "Receive an invitation",
-    "Create private access",
-  ]) {
-    assert.match(data, new RegExp(step));
-  }
-  assert.match(combined, /manually reviewed/i);
-  assert.match(combined, /invitation email/i);
-  assert.match(requestForm, /Request received/);
-  assert.doesNotMatch(combined, /Free for everyone,\s*always/i);
-  assert.doesNotMatch(combined, /Try Velora Vault free/i);
+  assert.doesNotMatch(combined, /private beta/i);
+  assert.doesNotMatch(combined, /manually reviewed/i);
+  assert.doesNotMatch(combined, /invitation email/i);
+  assert.doesNotMatch(combined, /request access/i);
+  assert.doesNotMatch(combined, /BETA_STEPS/);
+  assert.match(combined, /sign up/i);
 });
 
 test("landing removes unfinished editorial content and unsupported availability claims", () => {
@@ -141,9 +133,10 @@ test("every public page uses the shared Velora header and footer shell", () => {
     "src/app/privacy/page.tsx",
     "src/app/terms/page.tsx",
     "src/app/contact/page.tsx",
-    "src/app/request-access/page.tsx",
+    "src/app/pricing/page.tsx",
+    "src/app/signup/page.tsx",
+    "src/app/confirm-signup/page.tsx",
     "src/app/login/page.tsx",
-    "src/app/accept-invite/page.tsx",
     "src/app/reset-password/page.tsx",
     "src/app/onboarding/page.tsx",
     "src/app/blog/page.tsx",

@@ -7,8 +7,8 @@ import { AuthorizationError, getMembershipForUser, requireUser } from "@/lib/ser
 import styles from "@/components/auth/auth-shell.module.css";
 
 export const metadata: Metadata = {
-  title: "Create your private access — Velora Vault",
-  description: "Complete your Velora Vault invitation.",
+  title: "Set your master key — Velora Vault",
+  description: "Set your Velora Vault master key.",
   robots: { index: false, follow: false },
 };
 
@@ -25,23 +25,34 @@ export default async function OnboardingPage() {
 
   const membership = await getMembershipForUser(user.id);
   if (membership?.status === "active") redirect("/vault");
-  if (membership?.status !== "invited") redirect("/request-access?state=not-approved");
+  switch (membership?.status) {
+    case "invited":
+      break;
+    case "suspended":
+      redirect("/login?state=suspended");
+      break;
+    case "revoked":
+      redirect("/login?state=revoked");
+      break;
+    default:
+      redirect("/signup?state=setup-incomplete");
+  }
 
   return (
     <PublicPageShell>
       <AuthShell
         compact
-        eyebrow="Private setup · 02"
-        title="Two secrets. Two separate jobs."
-        description="Your sign-in password protects this account. Your existing master key decrypts your vault only in this browser and is never sent to us."
+        eyebrow="Vault setup"
+        title="Your master key protects everything."
+        description="It decrypts your vault only in this browser and is never sent to us, stored on our servers, or recoverable if lost."
         footer={(
           <dl className={styles.keyGuide}>
-            <div><dt>Sign-in password</dt><dd>Stored by authentication</dd></div>
+            <div><dt>Sign-in password</dt><dd>Set when you signed up</dd></div>
             <div><dt>Vault master key</dt><dd>Held in local memory only</dd></div>
           </dl>
         )}
       >
-        <OnboardingForm userId={user.id} email={user.email ?? "your invited email"} />
+        <OnboardingForm userId={user.id} email={user.email ?? "your account email"} />
       </AuthShell>
     </PublicPageShell>
   );

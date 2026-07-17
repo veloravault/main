@@ -17,10 +17,14 @@ export default async function VaultPage() {
       case "MEMBERSHIP_INVITED":
         redirectPath = "/onboarding";
         break;
-      case "MEMBERSHIP_MISSING":
       case "MEMBERSHIP_SUSPENDED":
+        redirectPath = "/login?state=suspended";
+        break;
       case "MEMBERSHIP_REVOKED":
-        redirectPath = "/request-access?state=not-approved";
+        redirectPath = "/login?state=revoked";
+        break;
+      case "MEMBERSHIP_MISSING":
+        redirectPath = "/signup?state=setup-incomplete";
         break;
       default:
         throw error;

@@ -11,7 +11,9 @@ test("vault has a server membership gate and a separate client app", () => {
   assert.match(vaultPage, /AuthorizationError/);
   assert.match(vaultPage, /UNAUTHENTICATED[\s\S]*\/login\?next=\/vault/);
   assert.match(vaultPage, /MEMBERSHIP_INVITED[\s\S]*\/onboarding/);
-  assert.match(vaultPage, /MEMBERSHIP_MISSING[\s\S]*MEMBERSHIP_SUSPENDED[\s\S]*MEMBERSHIP_REVOKED[\s\S]*\/request-access\?state=not-approved/);
+  assert.match(vaultPage, /MEMBERSHIP_SUSPENDED[\s\S]*\/login\?state=suspended/);
+  assert.match(vaultPage, /MEMBERSHIP_REVOKED[\s\S]*\/login\?state=revoked/);
+  assert.match(vaultPage, /MEMBERSHIP_MISSING[\s\S]*\/signup\?state=setup-incomplete/);
   assert.match(vaultPage, /<VaultApp/);
   assert.doesNotMatch(vaultPage, /["']use client["']/);
 });

@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import styles from "./auth-shell.module.css";
 
-export type AuthMode = "sign-in" | "request-access";
+export type AuthMode = "sign-in" | "sign-up";
 
 type AuthShellProps = {
   title: string;
@@ -19,7 +19,7 @@ type AuthShellProps = {
 
 const modes: Array<{ value: AuthMode; label: string }> = [
   { value: "sign-in", label: "Sign In" },
-  { value: "request-access", label: "Request Access" },
+  { value: "sign-up", label: "Sign Up" },
 ];
 
 export function AuthShell({
@@ -78,9 +78,9 @@ export function AuthShell({
           <motion.div
             key={`content-${contentKey}`}
             className={styles.content}
-            initial={reduceMotion ? false : { opacity: 0, x: mode === "request-access" ? 14 : -14 }}
+            initial={reduceMotion ? false : { opacity: 0, x: mode === "sign-up" ? 14 : -14 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={reduceMotion ? undefined : { opacity: 0, x: mode === "request-access" ? -14 : 14 }}
+            exit={reduceMotion ? undefined : { opacity: 0, x: mode === "sign-up" ? -14 : 14 }}
             transition={{ type: "spring", stiffness: 420, damping: 34 }}
           >
             {children}

@@ -11,6 +11,12 @@ import { HOVER_LIFT, LANDING_VIEWPORT, TAP_PRESS, revealVariants, staggerContain
 
 type Billing = "monthly" | "annual";
 
+const INR = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  maximumFractionDigits: 0,
+});
+
 export function PricingPageContent() {
   const reduceMotion = useReducedMotion();
   const [billing, setBilling] = useState<Billing>("monthly");
@@ -24,14 +30,13 @@ export function PricingPageContent() {
         variants={revealVariants(18)}
       >
         <p className={shared.eyebrow}>Pricing</p>
-        <h1>Simple pricing, once beta ends</h1>
+        <h1>Simple, upfront pricing</h1>
         <p>
-          Velora Vault is invite-only right now, and every invited account has
-          full access to everything below at no cost. These tiers describe
-          what pricing looks like after private beta.
+          Start free, no credit card required. Upgrade to Plus or Family
+          whenever you need more storage or AI-assisted imports.
         </p>
         <div className={styles.betaNote}>
-          <i aria-hidden="true" /> Free for everyone during private beta
+          <i aria-hidden="true" /> No credit card required to sign up
         </div>
       </motion.div>
 
@@ -53,8 +58,8 @@ export function PricingPageContent() {
       >
         {PRICING_TIERS.map((tier) => {
           const isFree = tier.monthlyPrice === 0;
-          const price = billing === "monthly" ? tier.monthlyPrice : tier.annualPrice / 12;
-          const displayPrice = isFree ? "$0" : `$${price.toFixed(2).replace(/\.00$/, "")}`;
+          const price = billing === "monthly" ? tier.monthlyPrice : Math.round(tier.annualPrice / 12);
+          const displayPrice = INR.format(isFree ? 0 : price);
 
           return (
             <motion.article
@@ -72,12 +77,12 @@ export function PricingPageContent() {
                 {!isFree && <span className={styles.period}>/month</span>}
               </div>
               <p className={styles.billingNote}>
-                {isFree ? "Forever" : billing === "annual" ? `Billed $${tier.annualPrice}/year` : "Billed monthly"}
+                {isFree ? "Forever" : billing === "annual" ? `Billed ${INR.format(tier.annualPrice)}/year` : "Billed monthly"}
               </p>
 
               <motion.div whileTap={reduceMotion ? undefined : TAP_PRESS}>
                 <Link
-                  href="/request-access"
+                  href="/signup"
                   className={`${styles.cta} ${tier.featured ? styles.ctaFeatured : styles.ctaPlain}`}
                 >
                   {tier.cta}
@@ -127,11 +132,11 @@ export function PricingPageContent() {
         variants={revealVariants(18)}
       >
         <div>
-          <h2>Request access while it&rsquo;s free</h2>
-          <p>Private beta requests are reviewed manually, usually within a day or two.</p>
+          <h2>Get started for free</h2>
+          <p>Create your account in under a minute. No credit card required.</p>
         </div>
         <motion.div whileHover={reduceMotion ? undefined : HOVER_LIFT} whileTap={reduceMotion ? undefined : TAP_PRESS}>
-          <Link href="/request-access" className={styles.primaryAction}>Request access</Link>
+          <Link href="/signup" className={styles.primaryAction}>Sign up free</Link>
         </motion.div>
       </motion.div>
     </main>

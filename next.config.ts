@@ -30,9 +30,8 @@ const nextConfig: NextConfig = {
           { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=()" },
         ],
       },
-      { source: "/accept-invite", headers: sensitiveAuthHeaders },
-      { source: "/auth/confirm", headers: sensitiveAuthHeaders },
-      { source: "/auth/invite-session", headers: sensitiveAuthHeaders },
+      { source: "/confirm-signup", headers: sensitiveAuthHeaders },
+      { source: "/auth/confirm-signup", headers: sensitiveAuthHeaders },
     ];
   },
 };

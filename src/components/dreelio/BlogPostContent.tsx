@@ -105,10 +105,10 @@ export function BlogPostContent({
       >
         <div>
           <h2>Put this into practice in your own vault</h2>
-          <p>Velora Vault is in private beta — requests are reviewed manually.</p>
+          <p>Sign up free — no credit card required.</p>
         </div>
         <motion.div whileHover={reduceMotion ? undefined : HOVER_LIFT} whileTap={reduceMotion ? undefined : TAP_PRESS}>
-          <Link href="/request-access" className={styles.primaryAction}>Request access</Link>
+          <Link href="/signup" className={styles.primaryAction}>Sign up free</Link>
         </motion.div>
       </motion.div>
     </main>

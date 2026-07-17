@@ -1,10 +1,10 @@
 # Velora Vault
 
-Velora Vault is an invite-only encrypted vault built with Next.js 16 and Supabase. The public experience is a restrained product landing page and access request flow; approved members sign in to the existing vault application at `/vault`.
+Velora Vault is an encrypted password/document vault built with Next.js 16 and Supabase. Anyone can sign up; members sign in to the vault application at `/vault`.
 
 ## Local setup
 
-Requirements: Node.js 20 or newer, npm, and a Supabase project whose database and Auth settings follow [`docs/invite-only-rollout.md`](docs/invite-only-rollout.md).
+Requirements: Node.js 20 or newer, npm, and a Supabase project with `enable_signup = true` (see `supabase/config.toml`).
 
 ```bash
 npm install
@@ -23,24 +23,24 @@ npm run build
 npm audit --audit-level=high
 ```
 
-## Invite-only architecture
+## Signup architecture
 
-The access lifecycle is intentionally narrow:
+The account lifecycle:
 
-1. A visitor submits only name and email at `/request-access`.
-2. The server normalizes the request, applies same-origin/body/rate-limit controls, and stores a pending record.
-3. An owner whose immutable Supabase Auth UUID is in `ADMIN_USER_IDS` opens `/admin` and approves the request.
-4. The privileged server client sends one Supabase invitation. Public signup is not part of the application.
-5. The email opens `/accept-invite`. Its GET renders a confirmation screen but does not consume the token.
-6. The explicit POST to `/auth/confirm` verifies the invite and establishes the Supabase session.
-7. `/onboarding` creates the account sign-in password and activates the membership.
-8. The member enters the existing vault master key at `/vault` to decrypt vault data locally.
+1. A visitor sets an email and password at `/signup`.
+2. Supabase Auth creates the account and sends a confirmation email (`supabase/templates/confirmation.html`).
+3. The email opens `/confirm-signup`. Its GET renders a confirmation screen but does not consume the token.
+4. The explicit POST to `/auth/confirm-signup` verifies the token, establishes the Supabase session, and provisions an `app_members` row (`status='invited'`).
+5. `/onboarding` sets the vault master key and activates the membership (`status='active'`).
+6. The member enters the vault master key at `/vault` to decrypt vault data locally.
 
 The server-side authorization layer checks the authenticated user, admin UUID, and active `app_members` status at the operation that needs it. `src/proxy.ts` refreshes Supabase cookies only; it is not an authorization boundary. Postgres RLS separately requires ownership and an active membership for vault rows and private storage objects.
 
+Admins can suspend or revoke a member's access from `/admin` (Members view) at any time — this is the primary moderation lever now that signup is open, independent of how the account was created.
+
 ## Master-key boundary
 
-The Supabase sign-in password and the vault master key are different secrets. The sign-in password authenticates the account. The master key decrypts vault records and stays in client memory only. It is never sent to Supabase Auth, application Route Handlers, the network, waitlist rows, Auth metadata, logs, email, analytics, or persistent browser storage.
+The Supabase sign-in password and the vault master key are different secrets. The sign-in password authenticates the account, set once at signup. The master key decrypts vault records and stays in client memory only. It is never sent to Supabase Auth, application Route Handlers, the network, Auth metadata, logs, email, analytics, or persistent browser storage.
 
 Local PIN or biometric wrappers remain device-local conveniences bound to the authenticated user. They do not replace the master key or server authorization.
 
@@ -49,14 +49,14 @@ Local PIN or biometric wrappers remain device-local conveniences bound to the au
 | Route | Purpose |
 | --- | --- |
 | `/` | Public product landing page |
-| `/request-access` | Enumeration-safe waitlist request |
-| `/login` | Sign in for invited members |
-| `/accept-invite` | Non-consuming invitation review |
-| `/auth/confirm` | Same-origin invitation verification POST |
-| `/onboarding` | Sign-in password creation and membership activation |
+| `/signup` | Create an account |
+| `/login` | Sign in |
+| `/confirm-signup` | Non-consuming email confirmation review |
+| `/auth/confirm-signup` | Same-origin confirmation verification POST |
+| `/onboarding` | Master key setup and membership activation |
 | `/vault` | Active-member vault application |
-| `/admin` | Owner-only request queue |
+| `/admin` | Owner-only member console |
 
 ## Production rollout
 
-Repository code does not configure or mutate the hosted Supabase project. An operator must complete the ordered backup, SQL, Auth, SMTP, DNS, verification, and rollback procedure in [`docs/invite-only-rollout.md`](docs/invite-only-rollout.md). The invitation body to install in Supabase is [`docs/supabase/invite-email.html`](docs/supabase/invite-email.html).
+Repository code does not configure or mutate the hosted Supabase project's dashboard settings. An operator must confirm "Allow new users to sign up" is enabled, the "Confirm signup" email template is configured, and the `/confirm-signup` redirect URL is allow-listed, on the hosted Supabase project — these must match `supabase/config.toml` but are not automatically synced to a linked hosted project.

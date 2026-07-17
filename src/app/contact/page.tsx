@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 const CONTACT_CHANNELS = [
   {
     title: "General & account support",
-    body: "Questions about requesting access, your invitation, or how the vault works.",
+    body: "Questions about your account, signing up, or how the vault works.",
     email: "hello@velora.vault",
   },
   {

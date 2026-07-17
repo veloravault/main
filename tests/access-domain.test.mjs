@@ -2,23 +2,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   encodeInviteCursor,
-  parseAccessRequestInput,
   parseAdminUserIds,
   parseInviteCursor,
   parseSafeNextPath,
 } from "../src/lib/access/validation.ts";
-
-test("access requests normalize valid name and email", () => {
-  assert.deepEqual(parseAccessRequestInput({ fullName: "  Aarav   Thakur ", email: " AARAV@Example.COM " }), {
-    ok: true,
-    value: { fullName: "Aarav Thakur", email: "aarav@example.com" },
-  });
-});
-
-test("access requests reject unexpected or oversized fields", () => {
-  assert.equal(parseAccessRequestInput({ fullName: "A", email: "bad" }).ok, false);
-  assert.equal(parseAccessRequestInput({ fullName: "Aarav Thakur", email: "a@example.com", role: "admin" }).ok, false);
-});
 
 test("admin ids accept only UUIDs", () => {
   assert.deepEqual(parseAdminUserIds("550e8400-e29b-41d4-a716-446655440000, bad"), new Set(["550e8400-e29b-41d4-a716-446655440000"]));

@@ -120,11 +120,11 @@ export function BlogListContent() {
       >
         <div>
           <h2>Ready to put one vault behind everything?</h2>
-          <p>Private beta access is reviewed manually, usually within a day or two.</p>
+          <p>No credit card required to get started.</p>
         </div>
         <div className={styles.actions}>
           <motion.div whileHover={reduceMotion ? undefined : HOVER_LIFT} whileTap={reduceMotion ? undefined : TAP_PRESS}>
-            <Link href="/request-access" className={styles.primaryAction}>Request access</Link>
+            <Link href="/signup" className={styles.primaryAction}>Sign up free</Link>
           </motion.div>
           <Link href="/security" className={styles.secondaryAction}>How security works</Link>
         </div>

@@ -3,7 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import shared from "@/app/dreelio/dreelio.module.css";
 import styles from "./Pricing.module.css";
-import { BETA_STEPS } from "./data";
+import { PRICING_TIERS } from "./pricing-data";
 import {
   HOVER_LIFT,
   LANDING_VIEWPORT,
@@ -12,6 +12,8 @@ import {
   staggerContainer,
   staggerItem,
 } from "./motion";
+
+const FREE_HIGHLIGHTS = PRICING_TIERS[0].features.slice(0, 4);
 
 export function Pricing() {
   const reduceMotion = useReducedMotion();
@@ -26,43 +28,41 @@ export function Pricing() {
     >
       <div className={shared.container}>
         <motion.div className={shared.sectionHead} variants={revealVariants()}>
-          <p className={shared.eyebrow}>Private beta access</p>
-          <h2 className={shared.h2}>Free during private beta</h2>
+          <p className={shared.eyebrow}>Pricing</p>
+          <h2 className={shared.h2}>Start free. Upgrade when you need to.</h2>
           <p className={styles.intro}>
-            Request an invitation and we&rsquo;ll email you if your access is approved.
-            There is no credit card and submitting a request does not create an account.
+            No credit card to sign up. Create your account, set your master key, and your vault is ready.
           </p>
         </motion.div>
 
         <motion.div className={styles.betaPanel} variants={revealVariants(20, 0.06)}>
           <motion.ol className={styles.steps} variants={staggerContainer}>
-            {BETA_STEPS.map((step) => (
-              <motion.li key={step.index} className={styles.step} variants={staggerItem}>
-                <span className={styles.stepIndex}>{step.index}</span>
+            {FREE_HIGHLIGHTS.map((feature) => (
+              <motion.li key={feature} className={styles.step} variants={staggerItem}>
+                <span className={styles.stepIndex}>✓</span>
                 <div>
-                  <h3>{step.title}</h3>
-                  <p>{step.detail}</p>
+                  <h3 className={styles.stepFeature}>{feature}</h3>
                 </div>
               </motion.li>
             ))}
           </motion.ol>
 
           <motion.div className={styles.actionPanel} variants={staggerItem}>
-            <span className={styles.status}><i aria-hidden="true" /> Invitations are manually reviewed</span>
-            <h3>Start with a request, not an account.</h3>
+            <span className={styles.status}><i aria-hidden="true" /> Free tier, no card required</span>
+            <h3>Ready when you are.</h3>
             <p>
-              If invited, you&rsquo;ll create sign-in credentials and use a separate
-              master key that never belongs in the request form.
+              Sign up with an email and password. Your vault master key is set
+              separately and never touches our servers.
             </p>
             <motion.a
-              href="/request-access"
+              href="/signup"
               className={`${shared.btn} ${shared.btnDark} ${styles.cta}`}
               whileHover={reduceMotion ? undefined : HOVER_LIFT}
               whileTap={reduceMotion ? undefined : TAP_PRESS}
             >
-              Request access
+              Sign up free
             </motion.a>
-            <a href="/pricing" className={styles.compareLink}>See pricing after beta</a>
+            <a href="/pricing" className={styles.compareLink}>Compare all plans</a>
           </motion.div>
         </motion.div>
       </div>

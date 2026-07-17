@@ -22,7 +22,6 @@ test("environment example prefers current Supabase keys and labels legacy fallba
     "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
     "SUPABASE_SECRET_KEY",
     "ADMIN_USER_IDS",
-    "ACCESS_REQUEST_HMAC_SECRET",
     "APP_URL",
   ]) {
     assert.match(env, new RegExp(`^${name}=`, "m"), `${name} must be documented`);
@@ -30,7 +29,7 @@ test("environment example prefers current Supabase keys and labels legacy fallba
 
   assert.match(env, /legacy fallback only[^\n]*NEXT_PUBLIC_SUPABASE_ANON_KEY/i);
   assert.match(env, /legacy fallback only[^\n]*SUPABASE_SERVICE_ROLE_KEY/i);
-  assert.match(env, /ACCESS_REQUEST_HMAC_SECRET=generate_at_least_32_random_bytes/);
+  assert.doesNotMatch(env, /ACCESS_REQUEST_HMAC_SECRET/);
 });
 
 test("invite email is a scanner-safe single-action authentication message", () => {
@@ -88,7 +87,7 @@ test("invitation routes receive no-referrer, no-store, and noindex headers", () 
   assert.match(sensitiveHeaders[1], /Cache-Control[\s\S]*no-store/i);
   assert.match(sensitiveHeaders[1], /X-Robots-Tag[\s\S]*noindex, nofollow/i);
 
-  for (const source of ["/accept-invite", "/auth/confirm"]) {
+  for (const source of ["/confirm-signup", "/auth/confirm-signup"]) {
     assert.match(
       config,
       new RegExp(`source:\\s*[\"']${source}[\"']\\s*,\\s*headers:\\s*sensitiveAuthHeaders`, "i"),
@@ -99,13 +98,13 @@ test("invitation routes receive no-referrer, no-store, and noindex headers", () 
   assert.match(config, /source:\s*["']\/\(\.\*\)["'][\s\S]*X-Content-Type-Options[\s\S]*Permissions-Policy/i);
 });
 
-test("README explains local setup, invite architecture, and master-key boundary", () => {
+test("README explains local setup, signup architecture, and master-key boundary", () => {
   const readme = read("README.md");
 
   assert.match(readme, /npm install[\s\S]*env\.example\.txt[\s\S]*npm run dev/i);
-  assert.match(readme, /request-access[\s\S]*admin[\s\S]*approve[\s\S]*accept-invite[\s\S]*onboarding[\s\S]*vault/i);
+  assert.match(readme, /signup[\s\S]*confirm-signup[\s\S]*onboarding[\s\S]*vault/i);
   assert.match(readme, /master key[\s\S]*client memory[\s\S]*(never|not)[\s\S]*(Auth|network|storage)/i);
-  assert.match(readme, /docs\/invite-only-rollout\.md/);
+  assert.match(readme, /enable_signup\s*=\s*true/);
 });
 
 test("every legacy privileged-key consumer prefers the modern Supabase secret", () => {

@@ -227,6 +227,44 @@ begin
 end;
 $$;
 
+create or replace function public.provision_self_signup_member(
+  p_user_id uuid,
+  p_email text,
+  p_now timestamptz
+) returns text
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  member_status text;
+begin
+  if p_email is null or p_email <> lower(btrim(p_email)) then
+    raise exception using errcode = '22023', message = 'email must be canonical';
+  end if;
+
+  insert into public.app_members (user_id, email, status, approved_at)
+  values (p_user_id, p_email, 'invited', p_now)
+  on conflict (user_id) do nothing;
+
+  select member.status into member_status
+  from public.app_members as member
+  where member.user_id = p_user_id;
+
+  if not found then
+    raise exception using errcode = '23505', message = 'self-signup membership conflicts with an existing identity';
+  end if;
+
+  return member_status;
+end;
+$$;
+
+revoke all on function public.provision_self_signup_member(uuid, text, timestamptz) from public, anon, authenticated;
+grant execute on function public.provision_self_signup_member(uuid, text, timestamptz) to service_role;
+
+-- Note: self-signup members have access_request_id = NULL (no linked
+-- access_requests row). activate_invited_member below tolerates that case;
+-- see the "if request_id is null" branch.
 create or replace function public.activate_invited_member(
   p_user_id uuid,
   p_now timestamptz
@@ -252,7 +290,20 @@ begin
   end if;
 
   if request_id is null then
-    raise exception using errcode = 'P0002', message = 'invitation request link not found';
+    if member_status = 'active' then
+      return 'active';
+    end if;
+    if member_status <> 'invited' then
+      raise exception using errcode = 'P0002', message = 'invitation state is not activatable';
+    end if;
+
+    update public.app_members as member
+    set status = 'active',
+        activated_at = coalesce(member.activated_at, p_now)
+    where member.user_id = p_user_id
+      and member.status = 'invited';
+
+    return 'active';
   end if;
 
   select request.status, request.auth_user_id

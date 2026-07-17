@@ -3,7 +3,6 @@
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useVaultKey } from "@/components/auth/VaultKeyProvider";
-import { getExpectedUserAuthorization, updateExpectedUserPassword } from "@/lib/authToken";
 import { supabase } from "@/lib/supabase";
 import { getStrength, type StrengthLevel } from "@/lib/passwordHealth";
 import { ArrowRightIcon } from "lucide-react";
@@ -19,7 +18,6 @@ const STRENGTH_COLOR_VAR: Record<StrengthLevel, string> = {
 export function OnboardingForm({ userId, email }: { userId: string; email: string }) {
   const router = useRouter();
   const { setMasterKey } = useVaultKey();
-  const [password, setPassword] = useState("");
   const [masterKey, setMasterKeyValue] = useState("");
   const [masterKeyConfirmation, setMasterKeyConfirmation] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -30,12 +28,8 @@ export function OnboardingForm({ userId, email }: { userId: string; email: strin
     event.preventDefault();
     setError("");
 
-    if (password.length < 8) {
-      setError("Use at least 8 characters for your sign-in password.");
-      return;
-    }
     if (!masterKey) {
-      setError("Enter your existing vault master key.");
+      setError("Choose a vault master key.");
       return;
     }
     if (masterKeyStrength.level === "weak") {
@@ -49,11 +43,8 @@ export function OnboardingForm({ userId, email }: { userId: string; email: strin
 
     setSubmitting(true);
     try {
-      const { accessToken } = await getExpectedUserAuthorization(userId);
-      await updateExpectedUserPassword(accessToken, password);
-
-      const { data: scopedIdentity, error: scopedIdentityError } = await supabase.auth.getUser(accessToken);
-      if (scopedIdentityError || scopedIdentity.user?.id !== userId) {
+      const { data: liveIdentity, error: liveIdentityError } = await supabase.auth.getUser();
+      if (liveIdentityError || liveIdentity.user?.id !== userId) {
         throw new Error("Your secure session changed. Sign in again to continue.");
       }
 
@@ -65,15 +56,10 @@ export function OnboardingForm({ userId, email }: { userId: string; email: strin
       });
       if (!response.ok) throw new Error("Your account could not be activated. Please try again.");
 
-      const { data: liveIdentity, error: liveIdentityError } = await supabase.auth.getUser();
-      if (liveIdentityError || liveIdentity.user?.id !== userId) {
-        throw new Error("Your secure session changed. Sign in again to continue.");
-      }
       if (!setMasterKey(masterKey, userId)) {
         throw new Error("Your secure session changed. Sign in again to continue.");
       }
 
-      setPassword("");
       setMasterKeyValue("");
       setMasterKeyConfirmation("");
       router.replace("/vault");
@@ -86,15 +72,10 @@ export function OnboardingForm({ userId, email }: { userId: string; email: strin
 
   return (
     <form className={styles.formStack} onSubmit={completeOnboarding} noValidate>
-      <p className={styles.invitedEmail}>Invited as <strong>{email}</strong></p>
+      <p className={styles.invitedEmail}>Signed up as <strong>{email}</strong></p>
       <div className={styles.fieldGroup}>
-        <label className={styles.field} htmlFor="onboarding-password">
-          <span className={styles.fieldLabel}>New sign-in password</span>
-          <input id="onboarding-password" type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} disabled={submitting} required />
-          <small className={styles.fieldHint}>Used only to sign in to your account.</small>
-        </label>
         <label className={styles.field} htmlFor="onboarding-master-key">
-          <span className={styles.fieldLabel}>Existing vault master key</span>
+          <span className={styles.fieldLabel}>Vault master key</span>
           <input id="onboarding-master-key" type="password" autoComplete="off" value={masterKey} onChange={(event) => setMasterKeyValue(event.target.value)} disabled={submitting} required />
           <small className={styles.fieldHint}>Never sent, stored, logged, or added to your account.</small>
           {masterKey && (
@@ -118,7 +99,7 @@ export function OnboardingForm({ userId, email }: { userId: string; email: strin
       </div>
       {error && <p className={styles.alert} role="alert">{error}</p>}
       <button className={styles.primaryAction} type="submit" disabled={submitting}>
-        <span>{submitting ? "Creating private access…" : "Create private access"}</span>
+        <span>{submitting ? "Setting up your vault…" : "Set master key"}</span>
         <ArrowRightIcon width={17} height={17} aria-hidden="true" />
       </button>
       <p className={styles.securityNote}>The master key leaves this form only for local, in-memory vault access.</p>

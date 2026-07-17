@@ -37,18 +37,28 @@
 }
 
 .step {
-  min-height: 190px;
+  min-height: 148px;
   padding: 26px;
   background: var(--card-white);
 }
 
 .stepIndex {
-  display: block;
-  margin-bottom: 30px;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  margin-bottom: 22px;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
   color: var(--accent);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.14em;
+}
+
+.step h3.stepFeature {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .step h3,

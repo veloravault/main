@@ -8,12 +8,12 @@ test("shared auth shell owns presentation without authentication", () => {
   const shell = read("src/components/auth/AuthShell.tsx");
   const css = read("src/components/auth/auth-shell.module.css");
 
-  assert.match(shell, /export type AuthMode = "sign-in" \| "request-access"/);
+  assert.match(shell, /export type AuthMode = "sign-in" \| "sign-up"/);
   assert.match(shell, /Sign In/);
-  assert.match(shell, /Request Access/);
+  assert.match(shell, /Sign Up/);
   assert.match(shell, /AnimatePresence/);
   assert.doesNotMatch(shell, /useTheme|themeToggle/);
-  assert.doesNotMatch(shell, /supabase|signInWithPassword|signUp|masterKey|masterPassword/);
+  assert.doesNotMatch(shell, /supabase|signInWithPassword|signUp\(|masterKey|masterPassword/);
   assert.doesNotMatch(shell, /AppleLockIcon|styles\.mark/);
   assert.doesNotMatch(css, /\.mark(?:\s|\{|\.)/);
   assert.match(css, /100dvh/);
@@ -23,32 +23,32 @@ test("shared auth shell owns presentation without authentication", () => {
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
 });
 
-test("gateway maps the historical second segment to request access", () => {
+test("gateway maps the second segment to sign-up", () => {
   const gateway = read("src/components/auth/AuthGateway.tsx");
   const signIn = read("src/components/auth/SignInForm.tsx");
-  const request = read("src/components/access/RequestAccessForm.tsx");
+  const signUp = read("src/components/auth/SignUpForm.tsx");
 
   assert.match(gateway, /<SignInForm/);
-  assert.match(gateway, /<RequestAccessForm/);
+  assert.match(gateway, /<SignUpForm/);
   assert.match(gateway, /initialMode/);
-  assert.doesNotMatch(gateway, /signUp/);
   assert.match(signIn, /signInWithPassword/);
-  assert.doesNotMatch(signIn, /masterKey|masterPassword|signUp/);
-  assert.match(request, /JSON\.stringify\(\{ fullName, email, website \}\)/);
-  assert.doesNotMatch(request, /password|masterKey|masterPassword/);
+  assert.doesNotMatch(signIn, /masterKey|masterPassword|auth\.signUp/);
+  assert.match(signUp, /auth\.signUp\(/);
+  assert.match(signUp, /emailRedirectTo/);
+  assert.doesNotMatch(signUp, /masterKey|masterPassword/);
 });
 
 test("the complete account journey shares presentation and preserves secure handlers", () => {
-  const accept = read("src/app/accept-invite/page.tsx");
+  const confirmSignup = read("src/app/confirm-signup/page.tsx");
   const onboardingPage = read("src/app/onboarding/page.tsx");
   const onboardingForm = read("src/components/auth/OnboardingForm.tsx");
   const reset = read("src/app/reset-password/page.tsx");
 
-  for (const source of [accept, onboardingPage, reset]) assert.match(source, /AuthShell/);
-  assert.match(accept, /action="\/auth\/confirm"/);
+  for (const source of [confirmSignup, onboardingPage, reset]) assert.match(source, /AuthShell/);
+  assert.match(confirmSignup, /action="\/auth\/confirm-signup"/);
   assert.match(onboardingPage, /requireUser/);
   assert.match(onboardingPage, /getMembershipForUser/);
-  assert.match(onboardingForm, /getExpectedUserAuthorization/);
+  assert.doesNotMatch(onboardingForm, /getExpectedUserAuthorization/);
   assert.match(onboardingForm, /setMasterKey\(masterKey, userId\)/);
   assert.match(reset, /exchangeCodeForSession/);
   assert.match(reset, /auth\.updateUser\(\{ password \}\)/);

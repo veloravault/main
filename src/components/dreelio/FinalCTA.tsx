@@ -26,18 +26,18 @@ export function FinalCTA() {
         className={`${shared.container} ${styles.inner}`}
         variants={staggerContainer}
       >
-        <motion.h2 className={styles.title} variants={staggerItem}>Request a private-beta invitation</motion.h2>
+        <motion.h2 className={styles.title} variants={staggerItem}>Create your Velora Vault account</motion.h2>
         <motion.p className={styles.subtitle} variants={staggerItem}>
-          Every request is manually reviewed. If approved, your invitation email explains the next step.
+          Sign up in a minute. Confirm your email, set a master key, and your vault is ready.
         </motion.p>
         <motion.a
-          href="/request-access"
+          href="/signup"
           className={`${shared.btn} ${shared.btnDark}`}
           variants={staggerItem}
           whileHover={reduceMotion ? undefined : HOVER_LIFT}
           whileTap={reduceMotion ? undefined : TAP_PRESS}
         >
-          Request access
+          Sign up free
         </motion.a>
       </motion.div>
     </motion.section>
