@@ -1,6 +1,5 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element */
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 import { useRouter } from "next/navigation";
@@ -45,6 +44,7 @@ import {
   BuildingIcon,
 } from "lucide-react";
 import { VeloraMark } from "@/components/VeloraMark";
+import { PresetAvatar, isAvatarKind } from "@/components/PresetAvatar";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { createPortal } from "react-dom";
 
@@ -327,8 +327,7 @@ export default function VaultApp() {
 
 
 
-  const avatarLetter = sessionUser.email?.charAt(0).toUpperCase() ?? "U";
-  const avatarUrl = sessionUser.user_metadata?.avatar_url as string | undefined;
+  const avatarKind = isAvatarKind(sessionUser.user_metadata?.avatar_kind) ? sessionUser.user_metadata.avatar_kind : null;
   const displayName = (sessionUser.user_metadata?.full_name as string | undefined) ?? sessionUser.email?.split("@")[0] ?? "";
   const activeTitle = ALL_TABS_WITH_PROFILE.find((item) => item.tab === activeTab)?.label ?? "Dashboard";
 
@@ -395,10 +394,8 @@ export default function VaultApp() {
         {/* User + Sign out */}
         <div className="border-t px-3 py-3 space-y-1" style={{ borderColor: "var(--sidebar-border)" }}>
           <div className="flex items-center gap-2.5 px-1.5 py-1">
-            <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center text-[12px] font-bold text-muted-foreground shrink-0 overflow-hidden">
-              {avatarUrl
-                ? <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-                : avatarLetter}
+            <div className="w-7 h-7 rounded-full shrink-0 overflow-hidden">
+              <PresetAvatar kind={avatarKind} name={displayName} email={sessionUser.email} title={displayName} />
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-[12px] font-medium text-foreground truncate leading-tight">{displayName}</div>
@@ -439,7 +436,7 @@ export default function VaultApp() {
               {resolvedTheme === "dark" ? <SunIcon /> : <MoonIcon />}
             </button>
             <button type="button" onClick={() => handleNavigate("profile")} className="vault-header-profile" aria-label="Open profile">
-              <span className={activeTab === "profile" ? "is-active" : ""}>{avatarUrl ? <img src={avatarUrl} alt="" /> : avatarLetter}</span>
+              <span className={activeTab === "profile" ? "is-active" : ""}><PresetAvatar kind={avatarKind} name={displayName} email={sessionUser.email} title={displayName} /></span>
             </button>
             <button type="button" onClick={() => setSearchOpen(true)} className="vault-header-icon vault-header-mobile-search" aria-label="Search"><SearchIcon /></button>
             <div className="md:hidden"><MobileVaultMenu theme={theme} setTheme={setTheme} onNavigateBanks={() => handleNavigate("banks")} onNavigateSettings={() => handleNavigate("profile")} onMagicImport={() => setIsGlobalImportOpen(true)} onLock={handleLockVault} /></div>

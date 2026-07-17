@@ -6,6 +6,7 @@ import { useVaultKey } from "@/components/auth/VaultKeyProvider";
 import { supabase } from "@/lib/supabase";
 import { getStrength, type StrengthLevel } from "@/lib/passwordHealth";
 import { ArrowRightIcon } from "lucide-react";
+import { PresetAvatar, type AvatarKind } from "@/components/PresetAvatar";
 import styles from "@/components/auth/auth-shell.module.css";
 
 const STRENGTH_COLOR_VAR: Record<StrengthLevel, string> = {
@@ -15,9 +16,13 @@ const STRENGTH_COLOR_VAR: Record<StrengthLevel, string> = {
   "very-strong": "var(--auth-green)",
 };
 
+type Step = "avatar" | "master-key";
+
 export function OnboardingForm({ userId, email }: { userId: string; email: string }) {
   const router = useRouter();
   const { setMasterKey } = useVaultKey();
+  const [step, setStep] = useState<Step>("avatar");
+  const [avatarKind, setAvatarKind] = useState<AvatarKind | null>(null);
   const [masterKey, setMasterKeyValue] = useState("");
   const [masterKeyConfirmation, setMasterKeyConfirmation] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -48,6 +53,12 @@ export function OnboardingForm({ userId, email }: { userId: string; email: strin
         throw new Error("Your secure session changed. Sign in again to continue.");
       }
 
+      // Persist the avatar choice (skippable → initials fallback). Non-fatal.
+      if (avatarKind) {
+        const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar_kind: avatarKind } });
+        if (metadataError) console.error("Could not save avatar choice:", metadataError.message);
+      }
+
       const response = await fetch("/api/onboarding/complete", {
         method: "POST",
         credentials: "same-origin",
@@ -70,9 +81,43 @@ export function OnboardingForm({ userId, email }: { userId: string; email: strin
     }
   }
 
+  if (step === "avatar") {
+    return (
+      <div className={styles.formStack}>
+        <p className={styles.invitedEmail}>Signed up as <strong>{email}</strong></p>
+        <div className={styles.avatarChoiceGrid}>
+          {(["male", "female"] as const).map((kind) => (
+            <button
+              key={kind}
+              type="button"
+              className={styles.avatarChoice}
+              aria-pressed={avatarKind === kind}
+              onClick={() => setAvatarKind(kind)}
+            >
+              <span className={styles.avatarChoicePreview}><PresetAvatar kind={kind} /></span>
+              {kind === "male" ? "Male" : "Female"}
+            </button>
+          ))}
+        </div>
+        <button
+          className={styles.primaryAction}
+          type="button"
+          disabled={!avatarKind}
+          onClick={() => setStep("master-key")}
+        >
+          <span>Continue</span>
+          <ArrowRightIcon width={17} height={17} aria-hidden="true" />
+        </button>
+        <button type="button" className={styles.textLink} onClick={() => { setAvatarKind(null); setStep("master-key"); }}>
+          Skip — use my initials instead
+        </button>
+      </div>
+    );
+  }
+
   return (
     <form className={styles.formStack} onSubmit={completeOnboarding} noValidate>
-      <p className={styles.invitedEmail}>Signed up as <strong>{email}</strong></p>
+      <p className={styles.invitedEmail}>One last step — set your vault master key.</p>
       <div className={styles.fieldGroup}>
         <label className={styles.field} htmlFor="onboarding-master-key">
           <span className={styles.fieldLabel}>Vault master key</span>
@@ -101,6 +146,9 @@ export function OnboardingForm({ userId, email }: { userId: string; email: strin
       <button className={styles.primaryAction} type="submit" disabled={submitting}>
         <span>{submitting ? "Setting up your vault…" : "Set master key"}</span>
         <ArrowRightIcon width={17} height={17} aria-hidden="true" />
+      </button>
+      <button type="button" className={styles.textLink} onClick={() => setStep("avatar")} disabled={submitting}>
+        Back
       </button>
       <p className={styles.securityNote}>The master key leaves this form only for local, in-memory vault access.</p>
     </form>

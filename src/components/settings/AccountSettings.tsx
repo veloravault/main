@@ -1,27 +1,31 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
-import { CameraIcon, CheckIcon, Loader2Icon, UserIcon } from "lucide-react";
+import { CheckIcon, Loader2Icon } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { StateView } from "@/components/ui/state-view";
 import { useToast } from "@/components/Toast";
+import { PresetAvatar, isAvatarKind, type AvatarKind } from "@/components/PresetAvatar";
 
-const ACCEPTED_AVATARS = new Set(["image/jpeg", "image/png", "image/webp"]);
-const MAX_AVATAR_BYTES = 5 * 1024 * 1024;
+type AvatarChoice = AvatarKind | "initials";
+
+const AVATAR_OPTIONS: { key: AvatarChoice; label: string }[] = [
+  { key: "male", label: "Male" },
+  { key: "female", label: "Female" },
+  { key: "initials", label: "Initials" },
+];
 
 export function AccountSettings() {
   const [user, setUser] = useState<User | null>(null);
   const [fullName, setFullName] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarKind, setAvatarKind] = useState<AvatarKind | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [savingAvatar, setSavingAvatar] = useState<AvatarChoice | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
 
   useEffect(() => {
@@ -33,7 +37,7 @@ export function AccountSettings() {
       } else {
         setUser(data.user);
         setFullName((data.user.user_metadata?.full_name as string | undefined) ?? "");
-        setAvatarUrl((data.user.user_metadata?.avatar_url as string | undefined) ?? null);
+        setAvatarKind(isAvatarKind(data.user.user_metadata?.avatar_kind) ? data.user.user_metadata.avatar_kind : null);
       }
       setLoading(false);
     });
@@ -60,65 +64,71 @@ export function AccountSettings() {
     toast("Account details saved", "success");
   };
 
-  const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file || !user) return;
-    if (!ACCEPTED_AVATARS.has(file.type)) {
-      setError("Choose a JPEG, PNG or WebP image.");
-      return;
-    }
-    if (file.size > MAX_AVATAR_BYTES) {
-      setError("Profile photos must be smaller than 5 MB.");
-      return;
-    }
-
-    setUploading(true);
-    setError(null);
-    const extension = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
-    const storagePath = `${user.id}/avatar-${Date.now()}.${extension}`;
-    const { error: uploadError } = await supabase.storage.from("avatars").upload(storagePath, file, { upsert: true, contentType: file.type });
-    if (uploadError) {
-      setUploading(false);
-      setError(uploadError.message);
-      return;
-    }
-    const { data } = supabase.storage.from("avatars").getPublicUrl(storagePath);
-    const { error: updateError } = await supabase.auth.updateUser({ data: { avatar_url: data.publicUrl } });
-    setUploading(false);
+  const chooseAvatar = async (choice: AvatarChoice) => {
+    const next = choice === "initials" ? null : choice;
+    if (next === avatarKind) return;
+    setSavingAvatar(choice);
+    const { error: updateError } = await supabase.auth.updateUser({ data: { avatar_kind: next } });
+    setSavingAvatar(null);
     if (updateError) {
-      setError(updateError.message);
+      toast(updateError.message, "error");
       return;
     }
-    setAvatarUrl(data.publicUrl);
-    toast("Profile photo updated", "success");
+    setAvatarKind(next);
+    toast("Avatar updated", "success");
   };
 
   if (loading) return <div className="settings-account-skeleton" aria-label="Loading account settings" />;
   if (!user) return <StateView kind="error" title="Account unavailable" description={error ?? "Sign in again to load your account."} />;
+
+  const currentChoice: AvatarChoice = avatarKind ?? "initials";
 
   return (
     <section className="settings-detail-section" aria-labelledby="settings-account-title">
       <header><p className="type-group-label">Account</p><h2 id="settings-account-title">Your account</h2><p>Manage the identity shown across Velora Vault.</p></header>
       <div className="settings-group settings-account-card">
         <div className="settings-avatar-column">
-          <button type="button" className="settings-avatar system-interactive" onClick={() => fileInputRef.current?.click()} aria-label="Change profile photo" disabled={uploading}>
-            {avatarUrl ? <img src={avatarUrl} alt="Profile" /> : <UserIcon aria-hidden="true" />}
-            <span><CameraIcon aria-hidden="true" /></span>
-            {uploading && <i><Loader2Icon className="animate-spin" aria-hidden="true" /></i>}
-          </button>
-          <button type="button" className="settings-photo-link" onClick={() => fileInputRef.current?.click()} disabled={uploading}>Edit photo</button>
-          <input ref={fileInputRef} type="file" hidden accept="image/jpeg,image/png,image/webp" onChange={uploadAvatar} />
+          <div className="settings-avatar" aria-hidden="true">
+            <PresetAvatar kind={avatarKind} name={fullName} email={user.email} />
+          </div>
         </div>
         <div className="settings-account-fields">
           <div className="settings-value-row"><span>Email</span><strong title={user.email}>{user.email}</strong></div>
           <label className="settings-value-row"><span>Full name</span><input value={fullName} onChange={(event) => { setFullName(event.target.value); setSaved(false); }} placeholder="Your name" /></label>
           {error && <p className="settings-inline-error" role="alert">{error}</p>}
           <div className="settings-form-actions">
-            <Button onClick={saveName} disabled={saving || uploading} className="settings-primary-button">
+            <Button onClick={saveName} disabled={saving} className="settings-primary-button">
               {saving ? <Loader2Icon className="animate-spin" /> : saved ? <><CheckIcon />Saved</> : "Save changes"}
             </Button>
           </div>
+        </div>
+      </div>
+
+      <div className="settings-group settings-avatar-picker-group">
+        <div className="settings-value-row settings-avatar-picker-head"><span>Avatar</span><strong>Choose how you appear — no photo needed.</strong></div>
+        <div className="settings-avatar-picker" role="radiogroup" aria-label="Avatar style">
+          {AVATAR_OPTIONS.map((option) => {
+            const active = currentChoice === option.key;
+            return (
+              <button
+                key={option.key}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                className={`settings-avatar-option system-interactive ${active ? "is-active" : ""}`}
+                onClick={() => chooseAvatar(option.key)}
+                disabled={savingAvatar !== null}
+              >
+                <span className="settings-avatar-option-preview">
+                  <PresetAvatar kind={option.key === "initials" ? null : option.key} name={fullName} email={user.email} />
+                </span>
+                <span className="settings-avatar-option-label">
+                  {option.label}
+                  {savingAvatar === option.key ? <Loader2Icon className="animate-spin" aria-hidden="true" /> : active ? <CheckIcon aria-hidden="true" /> : null}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </section>

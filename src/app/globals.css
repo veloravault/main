@@ -503,7 +503,16 @@
 .settings-avatar-column { display: flex; flex-direction: column; align-items: center; }
 .settings-avatar { position: relative; display: grid; width: 88px; height: 88px; overflow: hidden; place-items: center; border: 1px solid var(--separator); border-radius: 999px; background: var(--fill-tertiary); color: var(--muted-foreground); }
 .settings-avatar > img { width: 100%; height: 100%; object-fit: cover; }
-.settings-avatar > svg { width: 34px; height: 34px; }
+.settings-avatar > svg { width: 100%; height: 100%; }
+.settings-avatar-picker-group { margin-top: 16px; }
+.settings-avatar-picker-head { border-bottom: 1px solid var(--separator); }
+.settings-avatar-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 16px 14px; }
+.settings-avatar-option { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 14px 8px; border: 1px solid var(--separator); border-radius: 16px; background: var(--elevated-bg); color: var(--foreground); font-size: 13px; font-weight: 560; }
+.settings-avatar-option.is-active { border-color: var(--system-blue); box-shadow: inset 0 0 0 1px var(--system-blue); }
+.settings-avatar-option-preview { width: 64px; height: 64px; overflow: hidden; border-radius: 999px; }
+.settings-avatar-option-preview svg { width: 100%; height: 100%; }
+.settings-avatar-option-label { display: inline-flex; align-items: center; gap: 5px; }
+.settings-avatar-option-label svg { width: 14px; height: 14px; color: var(--system-blue); }
 .settings-avatar > span, .settings-avatar > i { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.38); color: white; opacity: 0; transition: opacity var(--motion-fast) ease; }
 .settings-avatar:hover > span, .settings-avatar:focus-visible > span, .settings-avatar > i { opacity: 1; }
 .settings-avatar > span svg, .settings-avatar > i svg { width: 20px; height: 20px; }
