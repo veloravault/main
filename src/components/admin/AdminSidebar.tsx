@@ -3,6 +3,7 @@
 import {
   ActivityIcon,
   ExternalLinkIcon,
+  LifeBuoyIcon,
   LogOutIcon,
   UsersIcon,
 } from "lucide-react";
@@ -17,6 +18,7 @@ const NAVIGATION: Array<{
   icon: typeof UsersIcon;
 }> = [
   { id: "members", label: "Members", description: "Vault access", icon: UsersIcon },
+  { id: "support", label: "Support", description: "Member tickets", icon: LifeBuoyIcon },
   { id: "activity", label: "Activity", description: "Owner actions", icon: ActivityIcon },
 ];
 

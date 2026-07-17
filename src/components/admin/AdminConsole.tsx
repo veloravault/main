@@ -13,6 +13,7 @@ import { useToast } from "@/components/Toast";
 import { StateView } from "@/components/ui/state-view";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminActivity } from "./AdminActivity";
+import { AdminSupport } from "./AdminSupport";
 import { AdminConfirmDialog } from "./AdminConfirmDialog";
 import { AdminSkeleton } from "./AdminSkeleton";
 import { normalizeAdminSearch } from "./admin-client";
@@ -25,12 +26,13 @@ import styles from "@/app/admin/admin.module.css";
 import { VeloraMark } from "@/components/VeloraMark";
 import { supabase } from "@/lib/supabase";
 
-const ADMIN_VIEWS: readonly AdminView[] = ["members", "activity"];
+const ADMIN_VIEWS: readonly AdminView[] = ["members", "support", "activity"];
 const MEMBER_FILTERS: readonly MemberFilter[] = ["all", "invited", "active", "suspended", "revoked"];
-const VIEW_LABELS: Record<AdminView, string> = { members: "Members", activity: "Activity" };
+const VIEW_LABELS: Record<AdminView, string> = { members: "Members", support: "Support", activity: "Activity" };
 
 const TITLES: Record<AdminView, { eyebrow: string; title: string; description: string }> = {
   members: { eyebrow: "Vault membership", title: "Members", description: "Everyone with an account, and their current vault access." },
+  support: { eyebrow: "Member requests", title: "Support", description: "Tickets opened by members, and your replies." },
   activity: { eyebrow: "Owner record", title: "Activity", description: "A calm record of access decisions made from this console." },
 };
 
@@ -126,6 +128,8 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
   const searchRef = useRef<HTMLInputElement>(null);
   const queryGenerationRef = useRef(0);
   const requestControllersRef = useRef<Set<AbortController>>(new Set());
+  const retriedGenerationsRef = useRef<Set<number>>(new Set());
+  const loadPageRef = useRef<((cursor: string | null, append: boolean, generation?: number) => Promise<void>) | null>(null);
 
   const updateUrl = useCallback((updates: Record<string, string | null>, history: "push" | "replace" = "replace") => {
     const next = new URLSearchParams(searchParams.toString());
@@ -183,7 +187,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
   }, [view]);
 
   const loadPage = useCallback(async (cursor: string | null, append: boolean, generation = queryGenerationRef.current) => {
-    if (view === "activity") {
+    if (view === "activity" || view === "support") {
       if (generation !== queryGenerationRef.current) return;
       setItems([]);
       setNextCursor(null);
@@ -222,6 +226,19 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
       }
       if (response.status === 403) {
         if (generation !== queryGenerationRef.current || controller.signal.aborted) return;
+        // The server just rendered this page for an account it recognized as
+        // the owner, so a 403 moments later on the same session is more
+        // likely a transient auth-refresh race (Supabase refresh tokens are
+        // single-use; a page load immediately followed by this fetch can
+        // collide) than an actual permission change. Retry once before
+        // surfacing a terminal error.
+        if (!retriedGenerationsRef.current.has(generation)) {
+          retriedGenerationsRef.current.add(generation);
+          window.setTimeout(() => {
+            if (generation === queryGenerationRef.current) void loadPageRef.current?.(cursor, append, generation);
+          }, 800);
+          return;
+        }
         setItems([]);
         setNextCursor(null);
         setAppendError(null);
@@ -250,6 +267,10 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
       else setLoading(false);
     }
   }, [memberFilter, router, searchQuery, view]);
+
+  useEffect(() => {
+    loadPageRef.current = loadPage;
+  }, [loadPage]);
 
   useEffect(() => {
     const generation = ++queryGenerationRef.current;
@@ -342,7 +363,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
                 <input ref={searchRef} value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder="Search member email" maxLength={100} />
                 <kbd>⌘ K</kbd>
               </label>
-            ) : <p className={styles.readOnlyNote}>Read-only audit record</p>}
+            ) : view === "activity" ? <p className={styles.readOnlyNote}>Read-only audit record</p> : null}
             <div className={styles.adminIdentity}><span>{adminEmail.slice(0, 1).toUpperCase()}</span><div><small>Verified owner</small><strong>{adminEmail}</strong></div></div>
             <button className={styles.mobileSignOut} type="button" aria-label="Sign out" onClick={() => void signOut()}><LogOutIcon aria-hidden="true" /></button>
           </header>
@@ -368,7 +389,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
             )}
 
             <section className={styles.listSurface} aria-label={`${title.eyebrow} content`}>
-              {view === "activity" ? <AdminActivity /> : loading ? <AdminSkeleton /> : (
+              {view === "activity" ? <AdminActivity /> : view === "support" ? <AdminSupport /> : loading ? <AdminSkeleton /> : (
                 <MemberQueue
                   items={items}
                   searchActive={Boolean(searchQuery)}

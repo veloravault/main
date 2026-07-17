@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
-import { AlertTriangleIcon, ArchiveIcon, PaletteIcon, ShieldCheckIcon, SparklesIcon, UserCircleIcon, ScaleIcon } from "lucide-react";
+import { AlertTriangleIcon, ArchiveIcon, LifeBuoyIcon, PaletteIcon, ShieldCheckIcon, SparklesIcon, UserCircleIcon, ScaleIcon } from "lucide-react";
 
-export type SettingsSection = "account" | "plan" | "security" | "appearance" | "backup" | "danger" | "legal";
+export type SettingsSection = "account" | "plan" | "security" | "appearance" | "backup" | "support" | "danger" | "legal";
 
 export interface SettingsAutoUpgrade {
   plan: "plus";
@@ -35,6 +35,7 @@ export const SETTINGS_SECTIONS: SettingsSectionMeta[] = [
   { id: "security", label: "Security", description: "Unlock, sessions and clipboard", icon: ShieldCheckIcon },
   { id: "appearance", label: "Appearance", description: "System, Light or Dark", icon: PaletteIcon },
   { id: "backup", label: "Data & Backup", description: "Encrypted export and vault data", icon: ArchiveIcon },
+  { id: "support", label: "Support", description: "Get help from the vault owner", icon: LifeBuoyIcon },
   { id: "legal", label: "Legal & Privacy", description: "Terms, Privacy Policy, and Compliance", icon: ScaleIcon },
   { id: "danger", label: "Danger Zone", description: "Destructive account actions", icon: AlertTriangleIcon, destructive: true },
 ];

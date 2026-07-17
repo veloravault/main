@@ -22,5 +22,27 @@ export type AdminActivityItem = {
   createdAt: string;
 };
 
-export type AdminView = "members" | "activity";
+export type AdminView = "members" | "activity" | "support";
 export type MemberFilter = "all" | MemberStatus;
+
+export type TicketStatus = "open" | "resolved";
+export type MessageSender = "member" | "owner";
+export type TicketFilter = "all" | TicketStatus;
+
+export type AdminSupportTicket = {
+  id: string;
+  userId: string;
+  memberEmail: string | null;
+  subject: string;
+  status: TicketStatus;
+  lastMessageAt: string;
+  lastMessageBy: MessageSender;
+  createdAt: string;
+};
+
+export type AdminSupportMessage = {
+  id: string;
+  sender: MessageSender;
+  body: string;
+  createdAt: string;
+};

@@ -143,6 +143,45 @@
 .activityList + .loadMore,
 .activityList ~ .endNote { margin-bottom: 22px; }
 
+.ticketFilterRow { display: inline-flex; gap: 4px; margin-top: 34px; padding: 4px; border-radius: 999px; background: color-mix(in srgb, var(--admin-ink) 5%, transparent); }
+.ticketFilterRow button { min-height: 34px; padding: 0 14px; border-radius: 999px; color: var(--admin-muted); font-size: 12px; font-weight: 650; }
+.ticketFilterRow button[data-active] { background: var(--admin-solid); color: var(--admin-ink); box-shadow: 0 2px 8px rgba(0, 0, 0, .1); }
+
+.ticketList { display: grid; }
+.ticketRow { display: grid; width: 100%; min-height: 76px; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 13px; padding: 11px 18px; text-align: left; }
+.ticketRow + .ticketRow { border-top: 1px solid var(--admin-line); }
+.ticketRow:hover { background: color-mix(in srgb, var(--admin-ink) 3%, transparent); }
+.ticketGlyph { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 13px; background: color-mix(in srgb, var(--admin-muted) 9%, transparent); color: var(--admin-muted); }
+.ticketGlyph[data-needs-reply] { background: color-mix(in srgb, var(--admin-blue) 12%, transparent); color: var(--admin-blue); }
+.ticketGlyph svg { width: 17px; height: 17px; }
+.ticketCopy { display: grid; min-width: 0; gap: 3px; }
+.ticketCopy strong { overflow: hidden; font-size: 14px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.ticketCopy small { color: var(--admin-muted); font-size: 11px; }
+.ticketMeta { display: grid; justify-items: end; gap: 5px; }
+.ticketStatus { border-radius: 999px; padding: 5px 9px; background: color-mix(in srgb, var(--admin-muted) 10%, transparent); color: var(--admin-muted); font-size: 10px; font-weight: 700; text-transform: capitalize; }
+.ticketStatus[data-status="open"] { background: var(--admin-soft-blue); color: var(--admin-blue); }
+.ticketMeta time { color: var(--admin-muted); font-size: 10px; white-space: nowrap; }
+
+.ticketDialog { display: flex; width: min(100%, 560px); max-height: min(80vh, 640px); flex-direction: column; border: 1px solid var(--admin-line); border-radius: 24px; background: var(--admin-solid); box-shadow: 0 30px 90px rgba(0, 0, 0, .22); overflow: hidden; }
+.ticketDialogHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 22px 24px 16px; border-bottom: 1px solid var(--admin-line); }
+.ticketDialogHeader h2 { margin: 4px 0 0; font-size: 20px; font-weight: 640; letter-spacing: -.02em; }
+.ticketDialogHeader button { display: grid; width: 32px; height: 32px; flex: none; place-items: center; border-radius: 999px; color: var(--admin-muted); }
+.ticketDialogHeader button:hover { background: color-mix(in srgb, var(--admin-ink) 6%, transparent); color: var(--admin-ink); }
+.ticketThreadLoading { padding: 40px 24px; color: var(--admin-muted); font-size: 13px; text-align: center; }
+.ticketThread { display: grid; gap: 10px; padding: 18px 24px; overflow-y: auto; }
+.ticketMessage { display: grid; gap: 4px; max-width: 85%; border-radius: 16px; padding: 10px 14px; background: color-mix(in srgb, var(--admin-ink) 5%, transparent); }
+.ticketMessage p { margin: 0; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+.ticketMessage time { color: var(--admin-muted); font-size: 10px; }
+.ticketMessage[data-sender="owner"] { justify-self: end; background: var(--admin-soft-blue); }
+.ticketReplyRow { display: grid; gap: 10px; padding: 14px 24px 22px; border-top: 1px solid var(--admin-line); }
+.ticketReplyRow textarea { width: 100%; resize: vertical; border: 1px solid var(--admin-line); border-radius: 14px; padding: 11px 13px; background: var(--admin-bg); color: var(--admin-ink); font: inherit; font-size: 13px; outline: none; }
+.ticketReplyRow textarea:focus-visible { border-color: var(--admin-blue); box-shadow: 0 0 0 4px var(--admin-soft-blue); }
+.ticketReplyActions { display: flex; justify-content: space-between; gap: 8px; }
+.ticketReplyActions button { min-height: 40px; border-radius: 11px; padding: 0 15px; background: color-mix(in srgb, var(--admin-ink) 6%, transparent); color: var(--admin-ink); font-size: 12px; font-weight: 670; }
+.ticketReplyActions button[data-primary] { display: flex; align-items: center; gap: 6px; background: var(--admin-blue); color: white; }
+.ticketReplyActions button[data-primary] svg { width: 14px; height: 14px; }
+.ticketReplyActions button:disabled { opacity: .55; }
+
 .dialogBackdrop { position: fixed; z-index: 100; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(0, 0, 0, .32); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
 .confirmDialog { width: min(100%, 430px); border: 1px solid var(--admin-line); border-radius: 24px; padding: 28px; background: var(--admin-solid); box-shadow: 0 30px 90px rgba(0, 0, 0, .22); }
 .confirmDialog h2 { margin-top: 10px; font-size: 27px; font-weight: 620; letter-spacing: -.04em; }
