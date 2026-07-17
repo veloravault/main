@@ -49,3 +49,33 @@ test("presentational step components exist and stay logic-free", () => {
   assert.match(avatar, /"male"[\s\S]*"female"/);
   assert.match(avatar, /onSelect\(null\)/);
 });
+
+test("orchestrator preserves the onboarding security contract", () => {
+  const path = "src/components/auth/OnboardingFlow.tsx";
+  assert.equal(existsSync(file(path)), true, `${path} must exist`);
+  const source = read(path);
+
+  // No password sign-in logic, no storage APIs, no stray password input id.
+  assert.doesNotMatch(source, /getExpectedUserAuthorization|updateExpectedUserPassword/);
+  assert.doesNotMatch(source, /type="password"[^>]*id="onboarding-password"/);
+  assert.doesNotMatch(source, /localStorage|sessionStorage|indexedDB|document\.cookie/);
+
+  // Validation + contract payload + key handoff + field clearing.
+  assert.match(source, /if\s*\(masterKey\s*!==\s*masterKeyConfirmation\)/);
+  assert.match(source, /JSON\.stringify\(\{\s*completed:\s*true,\s*expectedUserId:\s*userId\s*\}\)/);
+  assert.doesNotMatch(source, /JSON\.stringify\([^)]*(?:masterKey|masterPassword)/s);
+  assert.match(source, /setMasterKey\(masterKey,\s*userId\)/);
+  assert.match(source, /setMasterKeyValue\(["']{2}\)/);
+  assert.match(source, /setMasterKeyConfirmation\(["']{2}\)/);
+
+  // Plan-intent redirect (ternary form) with a literal /vault fallback.
+  assert.match(source, /router\.replace\(\s*intent\s*\?/);
+  assert.match(source, /:\s*["']\/vault["']\)/);
+
+  // Ordering invariant: identity re-check -> activation -> key handoff.
+  const liveRecheckIndex = source.indexOf("supabase.auth.getUser()");
+  const activationIndex = source.indexOf('fetch("/api/onboarding/complete"');
+  const keyIndex = source.indexOf("setMasterKey(masterKey");
+  assert.ok(liveRecheckIndex >= 0 && liveRecheckIndex < activationIndex, "identity must be checked before activation");
+  assert.ok(activationIndex < keyIndex, "activation must precede the local key handoff");
+});
