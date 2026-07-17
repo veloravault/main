@@ -68,6 +68,7 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
   const [bankRouting, setBankRouting] = useState("");
   const [bankAccount, setBankAccount] = useState("");
   const [bankName, setBankName] = useState("");
+  const [addItemError, setAddItemError] = useState<string | null>(null);
 
   const [isScanning, setIsScanning] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -206,7 +207,11 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title) return;
+    if (!title.trim() || !bankRouting.trim() || !bankAccount.trim() || !bankName.trim()) {
+      setAddItemError("Fill in every field before saving.");
+      return;
+    }
+    setAddItemError(null);
 
     const payload: BankAccountPayload = {
       routing: bankRouting,
@@ -339,8 +344,8 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
                 Add Account
           </button>
-          <AdaptiveSheet open={isAddOpen} onOpenChange={setIsAddOpen} title="New Bank Account" description="Scan or enter account details. Everything is encrypted before saving." size="md" className="vault-create-sheet">
-            <form onSubmit={handleAddItem} className="vault-create-form">
+          <AdaptiveSheet open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if (!open) setAddItemError(null); }} title="New Bank Account" description="Scan or enter account details. Everything is encrypted before saving." size="md" className="vault-create-sheet">
+            <form onSubmit={handleAddItem} noValidate className="vault-create-form">
             <AdaptiveSheetBody className="space-y-4">
             <div className="flex flex-col gap-2">
               <input type="file" accept="image/*" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
@@ -407,6 +412,7 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
               </div>
 
             </div>
+            {addItemError && <p className="text-[13px] text-destructive px-1" role="alert">{addItemError}</p>}
             </AdaptiveSheetBody>
             <AdaptiveSheetFooter><Button type="button" variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button type="submit" className="import-primary-action">Encrypt & Save</Button></AdaptiveSheetFooter>
             </form>

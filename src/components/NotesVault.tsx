@@ -48,6 +48,7 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
   // New Item State
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
+  const [addItemError, setAddItemError] = useState<string | null>(null);
 
   // Bulk State
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -130,7 +131,11 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle || !newContent) return;
+    if (!newTitle.trim() || !newContent.trim()) {
+      setAddItemError("Add a title and some content before saving.");
+      return;
+    }
+    setAddItemError(null);
 
     try {
       const encrypted = await encryptText(newContent, masterPassword);
@@ -257,8 +262,8 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
               <PlusIcon className="w-4 h-4" />
               <span className="hidden min-[380px]:inline">New</span>
           </button>
-          <AdaptiveSheet open={isAddOpen} onOpenChange={setIsAddOpen} title="New Secure Note" description="Write a note that stays encrypted inside your vault." size="md" className="vault-create-sheet">
-              <form onSubmit={handleAddItem} className="vault-create-form">
+          <AdaptiveSheet open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if (!open) setAddItemError(null); }} title="New Secure Note" description="Write a note that stays encrypted inside your vault." size="md" className="vault-create-sheet">
+              <form onSubmit={handleAddItem} noValidate className="vault-create-form">
               <AdaptiveSheetBody className="space-y-4">
                 <div className="space-y-1">
                   <label className="text-[13px] text-muted-foreground ml-1 uppercase tracking-wider font-medium">Title</label>
@@ -281,6 +286,7 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
                     required
                   />
                 </div>
+                {addItemError && <p className="text-[13px] text-destructive px-1" role="alert">{addItemError}</p>}
               </AdaptiveSheetBody>
               <AdaptiveSheetFooter><Button type="button" variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button type="submit" className="import-primary-action">Save Note</Button></AdaptiveSheetFooter>
               </form>

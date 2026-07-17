@@ -100,6 +100,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
   const [newTitle, setNewTitle] = useState("");
   const [newSecret, setNewSecret] = useState("");
   const [showNewSecret, setShowNewSecret] = useState(false);
+  const [addItemError, setAddItemError] = useState<string | null>(null);
 
   // Bulk State
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -214,7 +215,11 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle || !newSecret) return;
+    if (!newTitle.trim() || !newSecret.trim()) {
+      setAddItemError("Add a title and a password before saving.");
+      return;
+    }
+    setAddItemError(null);
 
     try {
       const encrypted = await encryptText(newSecret, masterPassword);
@@ -571,8 +576,8 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
               <PlusIcon className="w-4 h-4" />
               <span className="hidden min-[380px]:inline">New</span>
           </button>
-          <AdaptiveSheet open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if (!open) setShowNewSecret(false); }} title="New Password" description="Add a credential encrypted with your existing master key." size="sm" className="vault-create-sheet">
-            <form onSubmit={handleAddItem} className="vault-create-form">
+          <AdaptiveSheet open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if (!open) { setShowNewSecret(false); setAddItemError(null); } }} title="New Password" description="Add a credential encrypted with your existing master key." size="sm" className="vault-create-sheet">
+            <form onSubmit={handleAddItem} noValidate className="vault-create-form">
             <AdaptiveSheetBody>
               <div className="rounded-2xl border border-border/60 bg-secondary/60 overflow-hidden">
                 <div className="px-4 py-3 border-b border-border/50">
@@ -603,6 +608,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
                   </div>
                 </div>
               </div>
+              {addItemError && <p className="text-[13px] text-destructive mt-3 px-1" role="alert">{addItemError}</p>}
             </AdaptiveSheetBody>
             <AdaptiveSheetFooter><Button type="button" variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button type="submit" className="import-primary-action">Save Password</Button></AdaptiveSheetFooter>
             </form>

@@ -97,6 +97,7 @@ export function WalletVault({ masterPassword, focusedItemId, refreshVersion = 0 
   const [ccPin, setCcPin] = useState("");
   const [ccUpiPin, setCcUpiPin] = useState("");
   const [cardSubtype, setCardSubtype] = useState<"credit" | "debit">("debit");
+  const [addItemError, setAddItemError] = useState<string | null>(null);
 
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
@@ -226,7 +227,11 @@ export function WalletVault({ masterPassword, focusedItemId, refreshVersion = 0 
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title) return;
+    if (!title.trim() || !ccNumber.trim() || !ccExpiry.trim() || !ccCvv.trim() || !ccName.trim()) {
+      setAddItemError("Fill in every field before saving (PIN and UPI PIN are optional).");
+      return;
+    }
+    setAddItemError(null);
 
     const payload: WalletPayload = {
       number: ccNumber, expiry: ccExpiry, cvv: ccCvv, name: ccName,
@@ -343,7 +348,7 @@ export function WalletVault({ masterPassword, focusedItemId, refreshVersion = 0 
 
   return (
     <div className="apple-surface w-full relative" style={{ perspective: "1500px" }}>
-      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+      <Dialog open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if (!open) setAddItemError(null); }}>
           <DialogContent className="responsive-form-sheet sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="text-center font-bold">New Card</DialogTitle>
@@ -367,7 +372,7 @@ export function WalletVault({ masterPassword, focusedItemId, refreshVersion = 0 
               </Button>
             </div>
 
-            <form onSubmit={handleAddItem} className="space-y-4 mt-2">
+            <form onSubmit={handleAddItem} noValidate className="space-y-4 mt-2">
               {/* Credit / Debit Toggle */}
               <div className="flex rounded-xl overflow-hidden border border-border p-1 bg-secondary gap-1">
                 {(["debit", "credit"] as const).map((t) => (
@@ -469,8 +474,10 @@ export function WalletVault({ masterPassword, focusedItemId, refreshVersion = 0 
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
+              {addItemError && <p className="text-[13px] text-destructive px-1" role="alert">{addItemError}</p>}
+
+              <Button
+                type="submit"
                 className="w-full h-12 rounded-xl font-semibold text-[17px] mt-4 bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 Encrypt & Save
