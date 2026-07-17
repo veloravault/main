@@ -196,13 +196,16 @@
   align-items: center;
   justify-content: center;
   padding: 12px 22px;
+  border: none;
   border-radius: 999px;
   background: var(--accent);
   color: #fff;
+  font-family: inherit;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
 }
 
 .primaryAction:focus-visible {

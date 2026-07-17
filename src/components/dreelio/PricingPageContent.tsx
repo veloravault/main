@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { CheckIcon } from "lucide-react";
 import shared from "@/app/dreelio/dreelio.module.css";
 import styles from "@/app/pricing/pricing.module.css";
 import { PRICING_FAQ, PRICING_TIERS } from "./pricing-data";
 import { HOVER_LIFT, LANDING_VIEWPORT, TAP_PRESS, revealVariants, staggerContainer, staggerItem } from "./motion";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
 type Billing = "monthly" | "annual";
 
@@ -20,6 +20,7 @@ const INR = new Intl.NumberFormat("en-IN", {
 export function PricingPageContent() {
   const reduceMotion = useReducedMotion();
   const [billing, setBilling] = useState<Billing>("monthly");
+  const { openAuth } = useAuthModal();
 
   return (
     <main className={styles.page}>
@@ -81,12 +82,13 @@ export function PricingPageContent() {
               </p>
 
               <motion.div whileTap={reduceMotion ? undefined : TAP_PRESS}>
-                <Link
-                  href="/signup"
+                <button
+                  type="button"
+                  onClick={() => openAuth("sign-up")}
                   className={`${styles.cta} ${tier.featured ? styles.ctaFeatured : styles.ctaPlain}`}
                 >
                   {tier.cta}
-                </Link>
+                </button>
               </motion.div>
 
               <ul className={styles.features}>
@@ -136,7 +138,7 @@ export function PricingPageContent() {
           <p>Create your account in under a minute. No credit card required.</p>
         </div>
         <motion.div whileHover={reduceMotion ? undefined : HOVER_LIFT} whileTap={reduceMotion ? undefined : TAP_PRESS}>
-          <Link href="/signup" className={styles.primaryAction}>Sign up free</Link>
+          <button type="button" onClick={() => openAuth("sign-up")} className={styles.primaryAction}>Sign up free</button>
         </motion.div>
       </motion.div>
     </main>

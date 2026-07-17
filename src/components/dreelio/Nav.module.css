@@ -132,12 +132,17 @@
 }
 
 .signIn {
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: inherit;
   font-size: 15px;
   font-weight: 500;
   color: var(--ink);
   text-decoration: none;
   opacity: 0.85;
   white-space: nowrap;
+  cursor: pointer;
   transition: opacity 0.2s ease;
 }
 
@@ -232,16 +237,21 @@
   }
 
   .mobileSignIn {
+    width: 100%;
+    border: none;
+    border-top: 1px solid var(--line);
+    background: none;
     padding: 12px 8px;
+    padding-top: 20px;
+    font-family: inherit;
     font-size: 17px;
     font-weight: 500;
     color: var(--ink);
     text-decoration: none;
     text-align: center;
+    cursor: pointer;
     border-radius: 10px;
     margin-top: 8px;
-    border-top: 1px solid var(--line);
-    padding-top: 20px;
   }
 
   .mobileSignIn:hover {
@@ -252,7 +262,8 @@
     background: rgba(255, 255, 255, 0.08);
   }
 
-  .mobileMenu > a[class] {
+  .mobileMenu > a[class],
+  .mobileMenu > button[class] {
     margin-top: 8px;
   }
 }

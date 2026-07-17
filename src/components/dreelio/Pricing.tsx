@@ -12,11 +12,13 @@ import {
   staggerContainer,
   staggerItem,
 } from "./motion";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
 const FREE_HIGHLIGHTS = PRICING_TIERS[0].features.slice(0, 4);
 
 export function Pricing() {
   const reduceMotion = useReducedMotion();
+  const { openAuth } = useAuthModal();
 
   return (
     <motion.section
@@ -54,14 +56,15 @@ export function Pricing() {
               Sign up with an email and password. Your vault master key is set
               separately and never touches our servers.
             </p>
-            <motion.a
-              href="/signup"
+            <motion.button
+              type="button"
+              onClick={() => openAuth("sign-up")}
               className={`${shared.btn} ${shared.btnDark} ${styles.cta}`}
               whileHover={reduceMotion ? undefined : HOVER_LIFT}
               whileTap={reduceMotion ? undefined : TAP_PRESS}
             >
               Sign up free
-            </motion.a>
+            </motion.button>
             <a href="/pricing" className={styles.compareLink}>Compare all plans</a>
           </motion.div>
         </motion.div>

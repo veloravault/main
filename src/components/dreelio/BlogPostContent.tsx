@@ -7,6 +7,7 @@ import shared from "@/app/dreelio/dreelio.module.css";
 import styles from "@/app/blog/[slug]/blog-post.module.css";
 import { CATEGORY_COLORS, type BlogPost } from "./blog-data";
 import { HOVER_LIFT, TAP_PRESS, revealVariants, staggerContainer, staggerItem } from "./motion";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -26,6 +27,7 @@ export function BlogPostContent({
   next: BlogPost | null;
 }) {
   const reduceMotion = useReducedMotion();
+  const { openAuth } = useAuthModal();
 
   return (
     <main className={styles.page}>
@@ -108,7 +110,7 @@ export function BlogPostContent({
           <p>Sign up free — no credit card required.</p>
         </div>
         <motion.div whileHover={reduceMotion ? undefined : HOVER_LIFT} whileTap={reduceMotion ? undefined : TAP_PRESS}>
-          <Link href="/signup" className={styles.primaryAction}>Sign up free</Link>
+          <button type="button" onClick={() => openAuth("sign-up")} className={styles.primaryAction}>Sign up free</button>
         </motion.div>
       </motion.div>
     </main>

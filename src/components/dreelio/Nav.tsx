@@ -14,6 +14,7 @@ import {
   revealVariants,
 } from "./motion";
 import { useTheme } from "@/components/ThemeProvider";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
 type ThemeToggleProps = {
   className?: string;
@@ -56,6 +57,7 @@ export function Nav() {
   const [open, setOpen] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
   const reduceMotion = useReducedMotion();
+  const { openAuth } = useAuthModal();
 
   const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
 
@@ -90,21 +92,23 @@ export function Nav() {
         </ul>
 
         <div className={styles.authActions}>
-          <motion.a
-            href="/login"
+          <motion.button
+            type="button"
+            onClick={() => openAuth("sign-in")}
             className={styles.signIn}
             whileHover={reduceMotion ? undefined : { y: -1 }}
           >
             Sign in
-          </motion.a>
-          <motion.a
-            href="/signup"
+          </motion.button>
+          <motion.button
+            type="button"
+            onClick={() => openAuth("sign-up")}
             className={`${shared.btn} ${shared.btnDark} ${styles.cta}`}
             whileHover={reduceMotion ? undefined : HOVER_LIFT}
             whileTap={reduceMotion ? undefined : TAP_PRESS}
           >
             Sign up
-          </motion.a>
+          </motion.button>
           <ThemeToggle
             className={styles.themeToggle}
             isDark={resolvedTheme === "dark"}
@@ -147,20 +151,20 @@ export function Nav() {
               {link.label}
             </a>
           ))}
-          <a
-            href="/login"
+          <button
+            type="button"
             className={styles.mobileSignIn}
-            onClick={() => setOpen(false)}
+            onClick={() => { setOpen(false); openAuth("sign-in"); }}
           >
             Sign in
-          </a>
-          <a
-            href="/signup"
+          </button>
+          <button
+            type="button"
             className={`${shared.btn} ${shared.btnDark}`}
-            onClick={() => setOpen(false)}
+            onClick={() => { setOpen(false); openAuth("sign-up"); }}
           >
             Sign up
-          </a>
+          </button>
         </motion.div>
         )}
       </AnimatePresence>

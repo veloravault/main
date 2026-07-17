@@ -12,9 +12,11 @@ import {
   staggerContainer,
   staggerItem,
 } from "./motion";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
 export function Hero() {
   const reduceMotion = useReducedMotion();
+  const { openAuth } = useAuthModal();
 
   return (
     <section className={styles.hero}>
@@ -34,14 +36,15 @@ export function Hero() {
           your device before they&rsquo;re stored.
         </motion.p>
         <motion.div className={styles.actions} variants={staggerItem}>
-          <motion.a
-            href="/signup"
+          <motion.button
+            type="button"
+            onClick={() => openAuth("sign-up")}
             className={`${shared.btn} ${shared.btnDark}`}
             whileHover={reduceMotion ? undefined : HOVER_LIFT}
             whileTap={reduceMotion ? undefined : TAP_PRESS}
           >
             Sign up free
-          </motion.a>
+          </motion.button>
           <motion.a
             href="#features"
             className={`${shared.btn} ${shared.btnGhost}`}

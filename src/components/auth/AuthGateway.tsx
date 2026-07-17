@@ -10,6 +10,7 @@ type AuthGatewayProps = {
   initialMode: AuthMode;
   nextPath?: string | null;
   notice?: string;
+  variant?: "page" | "modal";
 };
 
 const modeCopy: Record<AuthMode, { title: string; description: string }> = {
@@ -23,7 +24,7 @@ const modeCopy: Record<AuthMode, { title: string; description: string }> = {
   },
 };
 
-export function AuthGateway({ initialMode, nextPath, notice }: AuthGatewayProps) {
+export function AuthGateway({ initialMode, nextPath, notice, variant = "page" }: AuthGatewayProps) {
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const copy = modeCopy[mode];
 
@@ -33,6 +34,7 @@ export function AuthGateway({ initialMode, nextPath, notice }: AuthGatewayProps)
       description={copy.description}
       mode={mode}
       onModeChange={setMode}
+      variant={variant}
       footer={<span>Your master key never belongs in your sign-in credentials.</span>}
     >
       {notice && <p className={styles.alert} role="alert">{notice}</p>}

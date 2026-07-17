@@ -571,6 +571,12 @@
 .settings-plan-current-pill { display: inline-flex; align-items: center; gap: 5px; height: 40px; color: var(--primary); font-size: 13px; font-weight: 650; }
 .settings-plan-current-pill svg { width: 15px; height: 15px; }
 .settings-plan-note { margin-top: 16px; color: var(--muted-foreground); font-size: 12.5px; }
+.settings-plan-renewal { margin-top: 4px; color: var(--muted-foreground); font-size: 12.5px; }
+.settings-billing-toggle { display: inline-flex; gap: 4px; margin-top: 18px; padding: 4px; border-radius: 999px; background: var(--fill-tertiary); }
+.settings-billing-toggle > button { display: flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 14px; border-radius: 999px; color: var(--muted-foreground); font-size: 13px; font-weight: 640; }
+.settings-billing-toggle > button.is-active { background: var(--elevated-bg); color: var(--foreground); box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+.settings-billing-toggle > button span { color: var(--system-green); font-size: 11px; font-weight: 700; }
+.settings-plan-downgrade-note { flex: 1; margin: 0; color: var(--muted-foreground); font-size: 12.5px; line-height: 1.4; }
 
 @media (max-width: 767px) {
   .settings-plan-options { grid-template-columns: 1fr; }

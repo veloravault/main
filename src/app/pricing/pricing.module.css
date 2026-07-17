@@ -172,14 +172,18 @@
 
 .cta {
   display: inline-flex;
+  width: 100%;
   min-height: 48px;
   align-items: center;
   justify-content: center;
   margin-bottom: 28px;
+  border: none;
   border-radius: 999px;
+  font-family: inherit;
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .ctaFeatured {
@@ -293,7 +297,10 @@
   align-items: center;
   justify-content: center;
   padding: 14px 24px;
+  border: none;
   border-radius: 999px;
+  font-family: inherit;
+  cursor: pointer;
   background: var(--accent);
   color: #fff;
   font-size: 14px;
