@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import { createSupabaseAdminClient } from "@/lib/server/supabase-admin";
-import { verifyWebhookSignature } from "@/lib/server/razorpay";
+import { periodForPlanId, verifyWebhookSignature } from "@/lib/server/razorpay";
 
 // Razorpay webhook — the SOLE authority that ever grants or revokes a paid
 // plan. Verifies the signature over the raw (unparsed) body, then processes
@@ -13,6 +13,7 @@ interface RazorpaySubscriptionEntity {
   id: string;
   status: string;
   current_end?: number;
+  plan_id?: string;
 }
 
 function extractSubscription(payload: unknown): RazorpaySubscriptionEntity | null {
@@ -24,10 +25,21 @@ function extractSubscription(payload: unknown): RazorpaySubscriptionEntity | nul
     id: candidate.id,
     status: typeof candidate.status === "string" ? candidate.status : "",
     current_end: typeof candidate.current_end === "number" ? candidate.current_end : undefined,
+    plan_id: typeof candidate.plan_id === "string" ? candidate.plan_id : undefined,
   };
 }
 
-async function revertPlanForSubscription(admin: ReturnType<typeof createSupabaseAdminClient>, subscriptionId: string, status: string, currentPeriodEnd?: number) {
+/** Extracts the payment entity's linked subscription id, if this payment belongs to one. */
+function extractPaymentSubscriptionId(payload: unknown): string | null {
+  const paymentEntity = (payload as { payload?: { payment?: { entity?: unknown } } })?.payload?.payment?.entity;
+  const subEntity = (payload as { payload?: { subscription?: { entity?: unknown } } })?.payload?.subscription?.entity;
+  const fromSub = subEntity && typeof subEntity === "object" ? (subEntity as Record<string, unknown>).id : undefined;
+  if (typeof fromSub === "string") return fromSub;
+  const fromPayment = paymentEntity && typeof paymentEntity === "object" ? (paymentEntity as Record<string, unknown>).subscription_id : undefined;
+  return typeof fromPayment === "string" ? fromPayment : null;
+}
+
+async function revertPlanForSubscription(admin: ReturnType<typeof createSupabaseAdminClient>, subscriptionId: string, status: string, currentPeriodEnd?: number, planId?: string) {
   const { data: row, error } = await admin
     .from("subscriptions")
     .select("user_id,plan")
@@ -36,8 +48,15 @@ async function revertPlanForSubscription(admin: ReturnType<typeof createSupabase
   if (error) throw error;
   if (!row) return; // Unknown subscription (e.g. from a different environment's test data) — nothing to do.
 
-  const updates: Record<string, unknown> = { status, updated_at: new Date().toISOString() };
+  // Any authoritative status update supersedes a stale "payment failed"
+  // warning and a completed billing-period change, so clear both here.
+  const updates: Record<string, unknown> = { status, updated_at: new Date().toISOString(), last_payment_failed_at: null };
   if (currentPeriodEnd) updates.current_period_end = new Date(currentPeriodEnd * 1000).toISOString();
+  const resolvedPeriod = planId ? periodForPlanId(planId) : null;
+  if (resolvedPeriod) {
+    updates.period = resolvedPeriod;
+    updates.scheduled_period = null;
+  }
   const { error: updateError } = await admin.from("subscriptions").update(updates).eq("razorpay_subscription_id", subscriptionId);
   if (updateError) throw updateError;
 
@@ -84,7 +103,7 @@ export async function POST(req: NextRequest) {
       case "subscription.activated":
       case "subscription.charged": {
         const sub = extractSubscription(payload);
-        if (sub) await revertPlanForSubscription(admin, sub.id, "active", sub.current_end);
+        if (sub) await revertPlanForSubscription(admin, sub.id, "active", sub.current_end, sub.plan_id);
         break;
       }
       case "subscription.pending": {
@@ -110,9 +129,20 @@ export async function POST(req: NextRequest) {
         if (sub) await revertPlanForSubscription(admin, sub.id, "completed");
         break;
       }
-      case "payment.failed":
-        // Logged via payment_events above; Razorpay's own retry schedule applies.
+      case "payment.failed": {
+        // Recorded in payment_events above regardless; also surface it to the
+        // user if this payment belonged to a subscription, so they see a
+        // warning before access silently drops to Free on a later halt.
+        const subscriptionId = extractPaymentSubscriptionId(payload);
+        if (subscriptionId) {
+          const { error } = await admin
+            .from("subscriptions")
+            .update({ last_payment_failed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+            .eq("razorpay_subscription_id", subscriptionId);
+          if (error) throw error;
+        }
         break;
+      }
       default:
         break;
     }

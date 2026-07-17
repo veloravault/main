@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 import { getStrength } from "@/lib/passwordHealth";
 import { type AvatarKind } from "@/components/PresetAvatar";
 import { clearPlanIntentCookie, readPlanIntentCookie } from "@/lib/planIntent";
+import { useToast } from "@/components/Toast";
 import {
   ONBOARDING_STEPS,
   FIRST_INTERACTIVE_INDEX,
@@ -28,6 +29,7 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
   const router = useRouter();
   const reduceMotion = useReducedMotion();
   const { setMasterKey } = useVaultKey();
+  const toast = useToast();
 
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -79,7 +81,10 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
       // Persist the avatar choice (skippable → initials fallback). Non-fatal.
       if (avatarKind) {
         const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar_kind: avatarKind } });
-        if (metadataError) console.error("Could not save avatar choice:", metadataError.message);
+        if (metadataError) {
+          console.error("Could not save avatar choice:", metadataError.message);
+          toast("Your avatar choice couldn't be saved. You can pick one later in Settings.", "info");
+        }
       }
 
       const response = await fetch("/api/onboarding/complete", {

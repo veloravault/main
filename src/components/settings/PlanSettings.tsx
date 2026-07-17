@@ -31,6 +31,8 @@ interface SubscriptionRow {
   period: BillingPeriod;
   current_period_end: string | null;
   cancel_at_cycle_end: boolean;
+  scheduled_period: BillingPeriod | null;
+  last_payment_failed_at: string | null;
 }
 
 const ACTIVE_SUBSCRIPTION_STATUSES = new Set(["created", "authenticated", "active", "pending"]);
@@ -81,7 +83,7 @@ async function fetchUsage(): Promise<AccountUsage> {
 async function fetchLatestSubscription(): Promise<SubscriptionRow | null> {
   const { data, error } = await supabase
     .from("subscriptions")
-    .select("status,plan,period,current_period_end,cancel_at_cycle_end")
+    .select("status,plan,period,current_period_end,cancel_at_cycle_end,scheduled_period,last_payment_failed_at")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -101,8 +103,10 @@ export function PlanSettings({ autoUpgrade }: { autoUpgrade?: SettingsAutoUpgrad
   const [period, setPeriod] = useState<BillingPeriod>(autoUpgrade?.period ?? "monthly");
   const [processingPlan, setProcessingPlan] = useState<PaidPlanId | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [changingPeriod, setChangingPeriod] = useState(false);
   const toast = useToast();
   const autoUpgradeTriggered = useRef(false);
+  const periodSynced = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -111,6 +115,16 @@ export function PlanSettings({ autoUpgrade }: { autoUpgrade?: SettingsAutoUpgrad
       .catch((reason: unknown) => { if (active) { setError(reason instanceof Error ? reason.message : "Your plan could not be loaded."); setLoading(false); } });
     return () => { active = false; };
   }, []);
+
+  // Once an existing paid subscription loads, default the billing-period
+  // toggle to what the subscriber is actually billed, not always "monthly" —
+  // otherwise the period-change action below would appear to offer switching
+  // to the period they're already on.
+  useEffect(() => {
+    if (periodSynced.current || !subscription || autoUpgrade) return;
+    periodSynced.current = true;
+    setPeriod(subscription.period);
+  }, [subscription, autoUpgrade]);
 
   const refresh = async () => {
     try {
@@ -201,6 +215,25 @@ export function PlanSettings({ autoUpgrade }: { autoUpgrade?: SettingsAutoUpgrad
     }
   };
 
+  const changePeriod = async (targetPeriod: BillingPeriod) => {
+    setChangingPeriod(true);
+    try {
+      const response = await vaultFetch("/api/payments/change-period", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ period: targetPeriod }),
+      });
+      const payload = await response.json().catch(() => ({})) as { error?: string };
+      if (!response.ok) throw new Error(payload.error ?? "Could not change your billing period.");
+      toast(`Billing will switch to ${targetPeriod === "yearly" ? "yearly" : "monthly"} at your next renewal`, "success");
+      await refresh();
+    } catch (reason) {
+      toast(reason instanceof Error ? reason.message : "Could not change your billing period.", "error");
+    } finally {
+      setChangingPeriod(false);
+    }
+  };
+
   if (loading) return <div className="settings-account-skeleton" aria-label="Loading plan" />;
   if (error || !usage) return <StateView kind="error" title="Plan unavailable" description={error ?? "Sign in again to load your plan."} />;
 
@@ -214,6 +247,12 @@ export function PlanSettings({ autoUpgrade }: { autoUpgrade?: SettingsAutoUpgrad
         <h2 id="settings-plan-title">Your plan</h2>
         <p>Track how much of your plan you&apos;re using and change tiers anytime.</p>
       </header>
+
+      {subscription?.last_payment_failed_at && (
+        <p className="settings-plan-payment-warning" role="alert">
+          Your last payment failed. We&apos;ll retry automatically — update your payment method with Razorpay if this continues, or your plan will drop to Free once retries are exhausted.
+        </p>
+      )}
 
       <div className="settings-group settings-plan-current">
         <div className="settings-plan-badge-row">
@@ -271,6 +310,16 @@ export function PlanSettings({ autoUpgrade }: { autoUpgrade?: SettingsAutoUpgrad
               {isCurrent ? (
                 <>
                   <span className="settings-plan-current-pill"><CheckIcon aria-hidden="true" /> Current plan</span>
+                  {plan !== "free" && subscription?.scheduled_period && (
+                    <p className="settings-plan-renewal">
+                      Switching to {subscription.scheduled_period === "yearly" ? "yearly" : "monthly"} billing at your next renewal
+                    </p>
+                  )}
+                  {plan !== "free" && hasCancellableSubscription && !subscription?.scheduled_period && subscription && period !== subscription.period && (
+                    <Button onClick={() => changePeriod(period)} disabled={changingPeriod} variant="outline" className="settings-plan-action">
+                      {changingPeriod ? <Loader2Icon className="animate-spin" aria-hidden="true" /> : `Switch to ${period === "yearly" ? "yearly" : "monthly"} billing`}
+                    </Button>
+                  )}
                   {plan !== "free" && hasCancellableSubscription && (
                     <Button onClick={cancel} disabled={cancelling} variant="outline" className="settings-plan-action">
                       {cancelling ? <Loader2Icon className="animate-spin" aria-hidden="true" /> : "Cancel subscription"}

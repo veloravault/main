@@ -539,7 +539,7 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
             <DialogTitle className="font-medium text-[15px] text-foreground tracking-wide truncate pr-4">{previewModal.doc?.title}</DialogTitle>
             
             <div className="flex items-center gap-2">
-              {!previewModal.loading && previewModal.url && !previewModal.doc?.title.toLowerCase().endsWith('.pdf') && (
+              {!previewModal.loading && previewModal.url && previewModal.doc && getMimeType(previewModal.doc.title).startsWith("image/") && (
                 <div className="flex items-center gap-2 mr-2">
                   <button 
                     onClick={() => setZoom(z => Math.max(0.5, z - 0.25))}
@@ -581,7 +581,23 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
                  <span className="text-[16px] font-medium tracking-wide">Decrypting securely...</span>
                </div>
             ) : previewModal.url ? (
-               previewModal.doc?.title.toLowerCase().endsWith('.pdf') ? (
+               previewModal.doc && getMimeType(previewModal.doc.title) === "application/octet-stream" ? (
+                 <div className="flex flex-col items-center justify-center w-full h-full p-6 text-center space-y-4 bg-background">
+                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                     <FileIcon className="w-8 h-8 text-primary" />
+                   </div>
+                   <div>
+                     <h3 className="font-semibold text-lg line-clamp-2 px-4">{previewModal.doc.title}</h3>
+                     <p className="text-sm text-muted-foreground mt-2 max-w-[280px] mx-auto">This file type can&apos;t be previewed here. Download it to open it.</p>
+                   </div>
+                   <button
+                     onClick={() => previewModal.doc && handleDownload(previewModal.doc)}
+                     className="mt-4 px-8 py-3 bg-primary text-primary-foreground rounded-full font-medium active:scale-95 transition-transform shadow-sm flex items-center gap-2"
+                   >
+                     <DownloadIcon className="w-4 h-4" /> Download
+                   </button>
+                 </div>
+               ) : previewModal.doc?.title.toLowerCase().endsWith('.pdf') ? (
                  <>
                    {/* Desktop Preview */}
                    <iframe src={previewModal.url} className="hidden md:block w-full h-full border-0 bg-background" title={previewModal.doc?.title} />

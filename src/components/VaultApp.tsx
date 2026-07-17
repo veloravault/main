@@ -235,7 +235,7 @@ export default function VaultApp() {
     return <Auth key={authenticatedUserId} onLogin={handleLogin} />;
   }
 
-  const sharedProps = { masterPassword, focusedItemId };
+  const sharedProps = { masterPassword, focusedItemId, onNavigate: handleNavigate };
   const refreshableProps = { masterPassword, focusedItemId, refreshVersion };
 
 

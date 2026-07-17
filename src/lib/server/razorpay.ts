@@ -37,6 +37,13 @@ function planIdFor(plan: PaidPlanId, period: BillingPeriod): string {
   return planId;
 }
 
+/** Reverse lookup: which billing period does this Razorpay plan_id represent? */
+function periodForPlanId(planId: string): BillingPeriod | null {
+  if (planId === process.env.RAZORPAY_PLAN_PLUS_MONTHLY) return "monthly";
+  if (planId === process.env.RAZORPAY_PLAN_PLUS_YEARLY) return "yearly";
+  return null;
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const cfg = config();
   if (!cfg) throw new Error("RAZORPAY_NOT_CONFIGURED");
@@ -102,7 +109,24 @@ export async function cancelSubscription(subscriptionId: string): Promise<void> 
   });
 }
 
-export { planIdFor };
+/**
+ * Changes a subscription's plan (used here for billing-period changes only —
+ * monthly <-> yearly on the same Plus tier). schedule_change_at: "cycle_end"
+ * keeps the current, already-paid-for cycle untouched and applies the new
+ * plan starting the next renewal, so there is nothing to prorate.
+ */
+export async function updateSubscriptionPlan(subscriptionId: string, planId: string): Promise<void> {
+  await request(`/subscriptions/${subscriptionId}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      plan_id: planId,
+      schedule_change_at: "cycle_end",
+      customer_notify: 1,
+    }),
+  });
+}
+
+export { planIdFor, periodForPlanId };
 
 /** Verifies a Checkout success signature: HMAC_SHA256(payment_id|subscription_id, key_secret). */
 export function verifyCheckoutSignature(paymentId: string, subscriptionId: string, signature: string): boolean {

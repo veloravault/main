@@ -93,6 +93,12 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
   // Bulk State
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // Large vaults: render (and animate) a bounded number of rows per category
+  // rather than the whole list at once. Data is still fetched and decrypted
+  // in full up front — this only limits what actually hits the DOM.
+  const CATEGORY_PAGE_SIZE = 40;
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches);
@@ -644,6 +650,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
                   <AnimatePresence initial={false}>
                   {categoryItems
                     .sort((a, b) => a.title.localeCompare(b.title))
+                    .slice(0, expandedCategories.has(category) ? undefined : CATEGORY_PAGE_SIZE)
                     .map((item) => {
                       const isExpanded = expandedId === item.id;
                       const isSelected = selectedIds.has(item.id);
@@ -736,6 +743,15 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
                       );
                     })}
                   </AnimatePresence>
+                  {categoryItems.length > CATEGORY_PAGE_SIZE && !expandedCategories.has(category) && (
+                    <button
+                      type="button"
+                      onClick={() => setExpandedCategories((current) => new Set(current).add(category))}
+                      className="mt-1 py-2.5 text-[13px] font-semibold text-primary hover:opacity-80 transition-opacity text-center"
+                    >
+                      Show {categoryItems.length - CATEGORY_PAGE_SIZE} more
+                    </button>
+                  )}
                 </div>
               </motion.div>
             ))}

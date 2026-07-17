@@ -48,7 +48,7 @@ export function Settings({ masterPassword, onLock, initialSection, sectionReques
               {active === "plan" && <PlanSettings autoUpgrade={autoUpgrade} />}
               {active === "appearance" && <AppearanceSettings />}
               {active === "security" && <SecuritySettings masterPassword={masterPassword} onLock={onLock} />}
-              {active === "backup" && <BackupSettings />}
+              {active === "backup" && <BackupSettings masterPassword={masterPassword} />}
               {active === "legal" && <LegalSettings />}
               {active === "danger" && <DangerSettings masterPassword={masterPassword} />}
             </motion.div>

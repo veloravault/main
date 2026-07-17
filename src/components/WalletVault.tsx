@@ -12,7 +12,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { TrashIcon, CameraIcon, Loader2Icon } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { TrashIcon, CameraIcon, Loader2Icon, MoreHorizontalIcon } from "lucide-react";
 import { PaymentCard } from "@/components/PaymentCard";
 import { WalletCardDetails } from "@/components/WalletCardDetails";
 import { SelectionToolbar } from "@/components/SelectionToolbar";
@@ -483,15 +489,35 @@ export function WalletVault({ masterPassword, focusedItemId, refreshVersion = 0 
               <h2 className="wallet-page-title">Digital Wallet</h2>
             </div>
             <div className="wallet-page-actions vault-section-actions">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsSelectionMode((value) => !value);
-                  if (isSelectionMode) setSelectedIds(new Set());
-                }}
-              >
-                {isSelectionMode ? "Cancel" : "Select"}
-              </button>
+              {items.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger aria-label="More actions" className="vault-section-overflow rounded-full w-9 h-9 p-0 text-muted-foreground hover:bg-muted/80 flex items-center justify-center">
+                    <MoreHorizontalIcon className="w-5 h-5" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48 rounded-xl">
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setIsSelectionMode((value) => !value);
+                        if (isSelectionMode) setSelectedIds(new Set());
+                      }}
+                      className="font-medium cursor-pointer"
+                    >
+                      {isSelectionMode ? "Cancel Editing" : "Select Cards"}
+                    </DropdownMenuItem>
+                    {isSelectionMode && (
+                      <DropdownMenuItem
+                        onClick={() => {
+                          if (selectedIds.size === items.length) setSelectedIds(new Set());
+                          else setSelectedIds(new Set(items.map((item) => item.id)));
+                        }}
+                        className="font-medium cursor-pointer"
+                      >
+                        {selectedIds.size === items.length ? "Deselect All" : "Select All"}
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
               <button type="button" className="vault-section-primary-action" onClick={() => setIsAddOpen(true)}>Add card</button>
             </div>
           </header>

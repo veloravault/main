@@ -135,6 +135,15 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
       if (data.data.routing) void typeText(data.data.routing, setBankRouting);
       if (data.data.account) void typeText(data.data.account, setBankAccount);
       if (data.data.name) void typeText(data.data.name, setBankName);
+
+      const missing = [
+        !data.data.routing && "routing number",
+        !data.data.account && "account number",
+        !data.data.name && "account holder name",
+      ].filter((label): label is string => Boolean(label));
+      if (missing.length > 0) {
+        toast(`Couldn't read the ${missing.join(", ")} from this image — please fill in the rest manually.`, "info");
+      }
     } catch (err) {
       console.error(err);
       toast(err instanceof Error ? err.message : "Failed to scan image. Please try again.", "error");

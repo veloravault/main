@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { decryptText } from "@/lib/crypto";
-import { getCache, setCache } from "@/lib/vaultCache";
+import { getCache } from "@/lib/vaultCache";
 import { getVaultHealthScore } from "@/lib/passwordHealth";
 import { isBiometricsSupported, hasBiometricsEnabled, enableBiometrics } from "@/lib/biometrics";
 import { DashboardSkeleton } from "@/components/Skeleton";
@@ -17,7 +17,8 @@ import {
   PencilIcon,
   CheckIcon,
   XIcon,
-  Loader2Icon
+  Loader2Icon,
+  SparklesIcon,
 } from "lucide-react";
 import { FaceIdIcon } from "@/components/Icons";
 import { useVaultKey } from "@/components/auth/VaultKeyProvider";
@@ -25,6 +26,7 @@ import { useToast } from "@/components/Toast";
 
 interface DashboardProps {
   masterPassword: string;
+  onNavigate?: (tab: "passwords" | "documents" | "notes" | "wallet") => void;
 }
 
 interface DashboardPassword {
@@ -34,6 +36,17 @@ interface DashboardPassword {
   category?: string;
   is_favorite: boolean;
   plaintext?: string;
+}
+
+interface DashboardPasswordRow {
+  id: string;
+  title: string;
+  domain: string | null;
+  category?: string;
+  is_favorite: boolean;
+  encrypted_data: string;
+  iv: string;
+  salt: string;
 }
 
 interface DashboardDocument {
@@ -67,7 +80,7 @@ interface DashboardWalletItem {
   };
 }
 
-export function Dashboard({ masterPassword }: DashboardProps) {
+export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
   const toast = useToast();
   const { authenticatedUserId, isAuthenticatedUserCurrent } = useVaultKey();
   const [stats, setStats] = useState({
@@ -76,11 +89,12 @@ export function Dashboard({ masterPassword }: DashboardProps) {
     notes: 0,
     wallet: 0
   });
-  
+
   const [recentPasswords, setRecentPasswords] = useState<DashboardPassword[]>([]);
   const [favoritePasswords, setFavoritePasswords] = useState<DashboardPassword[]>([]);
   const [recentWallet, setRecentWallet] = useState<DashboardWalletItem[]>([]);
   const [recentNotes, setRecentNotes] = useState<DashboardNote[]>([]);
+  const [healthPasswords, setHealthPasswords] = useState<{ id: string; plaintext: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [fullName, setFullName] = useState("User");
   const [showBioBanner, setShowBioBanner] = useState(false);
@@ -111,7 +125,22 @@ export function Dashboard({ masterPassword }: DashboardProps) {
         supabase.from("secure_wallet").select("*").order("created_at", { ascending: false })
       ]);
 
-      const passList = cachedPasswords ?? ((passData.data || []) as DashboardPassword[]);
+      let passList: DashboardPassword[];
+      if (cachedPasswords) {
+        passList = cachedPasswords;
+      } else {
+        const rawPasswords = (passData.data || []) as DashboardPasswordRow[];
+        passList = [];
+        for (const row of rawPasswords) {
+          try {
+            const plaintext = await decryptText(row.encrypted_data, row.salt, row.iv, masterPassword);
+            passList.push({ id: row.id, title: row.title, domain: row.domain, category: row.category, is_favorite: row.is_favorite, plaintext });
+          } catch (err: unknown) {
+            console.warn(`Failed to decrypt password ${row.title}`, err);
+            passList.push({ id: row.id, title: row.title, domain: row.domain, category: row.category, is_favorite: row.is_favorite, plaintext: "Decryption Failed" });
+          }
+        }
+      }
       const docList = (docData.data || []) as DashboardDocument[];
       const notesList = (notesData.data || []) as DashboardNote[];
       const walletList = (walletData.data || []) as DashboardWalletRow[];
@@ -148,10 +177,11 @@ export function Dashboard({ masterPassword }: DashboardProps) {
       }
       setRecentWallet(decryptedWallet);
 
-      // Store plain password list for health calc if we fetched fresh
-      if (!cachedPasswords && passList.length > 0) {
-        setCache("vault_items_titles", passList);
-      }
+      setHealthPasswords(
+        passList
+          .filter((p): p is DashboardPassword & { plaintext: string } => Boolean(p.plaintext) && p.plaintext !== "Decryption Failed")
+          .map((p) => ({ id: p.id, plaintext: p.plaintext })),
+      );
 
     } catch (error) {
       console.error("Dashboard fetch error:", error);
@@ -162,10 +192,9 @@ export function Dashboard({ masterPassword }: DashboardProps) {
   }, [masterPassword, toast]);
 
   const health = useMemo(() => {
-    const cached = getCache<{id: string; plaintext: string}>("vault_items");
-    if (!cached || cached.length === 0) return null;
-    return getVaultHealthScore(cached);
-  }, []);
+    if (healthPasswords.length === 0) return null;
+    return getVaultHealthScore(healthPasswords);
+  }, [healthPasswords]);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -290,6 +319,25 @@ export function Dashboard({ masterPassword }: DashboardProps) {
                 Dismiss
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Get-started state for a brand-new, empty vault */}
+      {stats.passwords === 0 && stats.documents === 0 && stats.notes === 0 && stats.wallet === 0 && (
+        <div className="bg-card rounded-2xl border border-border p-6 text-center">
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+            <SparklesIcon className="w-6 h-6 text-primary" />
+          </div>
+          <h2 className="text-[17px] font-semibold text-foreground">Your vault is empty</h2>
+          <p className="text-[13px] text-muted-foreground mt-1 mb-4 max-w-[320px] mx-auto">
+            Add your first password, document, note, or card to get started.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <button onClick={() => onNavigate?.("passwords")} className="px-4 py-2 bg-primary text-primary-foreground text-[13px] font-semibold rounded-lg hover:opacity-90 transition-opacity">Add a password</button>
+            <button onClick={() => onNavigate?.("documents")} className="px-4 py-2 bg-secondary text-foreground text-[13px] font-semibold rounded-lg hover:bg-muted transition-colors">Upload a document</button>
+            <button onClick={() => onNavigate?.("notes")} className="px-4 py-2 bg-secondary text-foreground text-[13px] font-semibold rounded-lg hover:bg-muted transition-colors">Write a note</button>
+            <button onClick={() => onNavigate?.("wallet")} className="px-4 py-2 bg-secondary text-foreground text-[13px] font-semibold rounded-lg hover:bg-muted transition-colors">Add a card</button>
           </div>
         </div>
       )}
