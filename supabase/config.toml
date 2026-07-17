@@ -156,19 +156,18 @@ max_indexes = 5
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-site_url = "https://veloravault.vercel.app"
+site_url = "https://veloravault.in"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
 additional_redirect_urls = [
   "http://localhost:3000/confirm-signup",
-  "https://veloravault.vercel.app/confirm-signup",
-  "https://main-veloravault.vercel.app/confirm-signup",
-  # veloravault.in is the new custom domain (DNS not live yet as of 2026-07-17).
-  # Pre-registered here so cutover only requires flipping site_url once DNS
-  # resolves — see docs/superpowers/specs/2026-07-17-custom-domain-migration.md.
   "https://veloravault.in/confirm-signup",
   "https://www.veloravault.in/confirm-signup",
+  # Kept as fallbacks during the veloravault.in cutover (2026-07-17); safe to
+  # remove once the vercel.app URL is confirmed no longer needed anywhere.
+  "https://veloravault.vercel.app/confirm-signup",
+  "https://main-veloravault.vercel.app/confirm-signup",
 ]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600

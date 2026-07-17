@@ -6,7 +6,7 @@ Last updated: 2026-07-16
 
 - Product name: `Velora Vault`
 - GitHub repository: `https://github.com/veloravault/main`
-- Production URL: `https://veloravault.vercel.app`
+- Production URL: `https://veloravault.in` (custom domain live as of 2026-07-17; `https://veloravault.vercel.app` still resolves but is no longer canonical)
 - Vercel project: `veloravault/main`
 - Supabase project ref: `bzwkzklitrzwqksjmmby`
 - Product category: invite-only encrypted personal vault
@@ -211,7 +211,7 @@ Verified on 2026-07-16:
 
 - branch: `main`
 - GitHub remote: `https://github.com/veloravault/main.git`
-- production URL: `https://veloravault.vercel.app`
+- production URL: `https://veloravault.in` (migrated from `https://veloravault.vercel.app` on 2026-07-17)
 - Vercel project is linked to `veloravault/main` with production branch `main`
 - Supabase project ref: `bzwkzklitrzwqksjmmby`
 - Supabase schema and data migrations are tracked in `supabase/migrations/`
