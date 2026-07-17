@@ -12,6 +12,12 @@ export interface SettingsProps {
   masterPassword: string;
   onLock: () => void;
   initialSection?: SettingsSection;
+  /** Bumped each time initialSection is (re-)requested, so navigating to the
+   *  same section twice in a row (e.g. clicking "Upgrade plan" again after
+   *  manually browsing elsewhere) still re-triggers the jump — Settings is a
+   *  long-lived instance (always mounted, just hidden), so a prop value that
+   *  happens to repeat wouldn't otherwise re-fire the sync effect. */
+  sectionRequestId?: number;
   autoUpgrade?: SettingsAutoUpgrade | null;
 }
 

@@ -130,7 +130,16 @@ export default function VaultApp() {
   const [isGlobalImportOpen, setIsGlobalImportOpen] = useState(false);
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [settingsAutoUpgrade, setSettingsAutoUpgrade] = useState<SettingsAutoUpgrade | null>(null);
-  const [settingsInitialSection, setSettingsInitialSection] = useState<"account" | "plan">("account");
+  // Undefined by default (not "account") so Settings keeps its normal
+  // behavior — no forced section, mobile shows the section picker first —
+  // until something explicitly asks to jump to a section (sidebar "Upgrade
+  // plan", or a post-onboarding ?upgrade= param).
+  const [settingsInitialSection, setSettingsInitialSection] = useState<"account" | "plan" | undefined>(undefined);
+  const [settingsSectionRequestId, setSettingsSectionRequestId] = useState(0);
+  const requestSettingsSection = useCallback((section: "account" | "plan") => {
+    setSettingsInitialSection(section);
+    setSettingsSectionRequestId((id) => id + 1);
+  }, []);
   const connectivity = useConnectivity();
   const wasOnline = useRef(connectivity.isOnline);
   const headerSearchRef = useRef<HTMLInputElement>(null);
@@ -171,11 +180,11 @@ export default function VaultApp() {
       window.history.replaceState(null, "", "/vault");
       queueMicrotask(() => {
         setActiveTab("profile");
-        setSettingsInitialSection("plan");
+        requestSettingsSection("plan");
         setSettingsAutoUpgrade({ plan, period });
       });
     }
-  }, []);
+  }, [requestSettingsSection]);
 
   // Cmd+K -> open search overlay
   useEffect(() => {
@@ -425,7 +434,7 @@ export default function VaultApp() {
             </div>
           </div>
           <button
-            onClick={() => { setSettingsInitialSection("plan"); handleNavigate("profile"); }}
+            onClick={() => { requestSettingsSection("plan"); handleNavigate("profile"); }}
             className="w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-[8px] text-[14px] text-primary hover:bg-primary/8 transition-colors"
           >
             <SparklesIcon className="w-[16px] h-[16px] shrink-0" strokeWidth={1.75} />
@@ -669,7 +678,7 @@ export default function VaultApp() {
             <div style={{ display: activeTab === "notes"     ? undefined : "none" }}><NotesVault {...nonWalletProps} /></div>
             <div style={{ display: activeTab === "wallet"    ? undefined : "none" }}><WalletVault {...sharedProps} /></div>
             <div style={{ display: activeTab === "banks"     ? undefined : "none" }}><BankVault {...nonWalletProps} /></div>
-            <div style={{ display: activeTab === "profile"   ? undefined : "none" }}><Settings masterPassword={masterPassword} onLock={handleLockVault} initialSection={settingsInitialSection} autoUpgrade={settingsAutoUpgrade} /></div>
+            <div style={{ display: activeTab === "profile"   ? undefined : "none" }}><Settings masterPassword={masterPassword} onLock={handleLockVault} initialSection={settingsInitialSection} sectionRequestId={settingsSectionRequestId} autoUpgrade={settingsAutoUpgrade} /></div>
           </div>
         </div>
 

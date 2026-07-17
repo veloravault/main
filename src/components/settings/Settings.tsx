@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronLeftIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AccountSettings } from "@/components/settings/AccountSettings";
@@ -13,9 +13,19 @@ import { BackupSettings } from "@/components/settings/BackupSettings";
 import { LegalSettings } from "@/components/settings/LegalSettings";
 import { DangerSettings } from "@/components/settings/DangerSettings";
 
-export function Settings({ masterPassword, onLock, initialSection, autoUpgrade }: SettingsProps) {
+export function Settings({ masterPassword, onLock, initialSection, sectionRequestId, autoUpgrade }: SettingsProps) {
   const [selected, setSelected] = useState<SettingsSection | null>(initialSection ?? null);
   const active = selected ?? "account";
+
+  // Settings is a long-lived instance (VaultApp keeps every tab panel
+  // mounted, just hidden) — a later prop update won't re-run the useState
+  // initializer above, so an explicit sync is needed for requests to jump to
+  // a section (sidebar "Upgrade plan", or a post-onboarding ?upgrade= param)
+  // that arrive after Settings has already mounted.
+  useEffect(() => {
+    if (!initialSection) return;
+    queueMicrotask(() => setSelected(initialSection));
+  }, [initialSection, sectionRequestId]);
   const meta = SETTINGS_SECTIONS.find((section) => section.id === active)!;
 
   return (
