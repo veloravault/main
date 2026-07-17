@@ -1,9 +1,11 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import { ShieldCheckIcon } from "lucide-react";
 import shared from "@/app/dreelio/dreelio.module.css";
 import styles from "./Footer.module.css";
 import { VeloraBrandMark } from "./VeloraBrand";
+import { PaymentBadges } from "./PaymentBadges";
 import { FOOTER_COLUMNS } from "./data";
 import {
   LANDING_VIEWPORT,
@@ -65,6 +67,13 @@ export function Footer() {
           </div>
 
           <div className={styles.divider} />
+
+          <motion.div className={styles.paymentsRow} variants={staggerItem}>
+            <PaymentBadges className={styles.paymentBadges} />
+            <span className={styles.securedBy}>
+              <ShieldCheckIcon aria-hidden="true" /> Payments secured by Razorpay
+            </span>
+          </motion.div>
 
           <div className={styles.bottom}>
             <p>© 2026 Velora Vault. All rights reserved.</p>

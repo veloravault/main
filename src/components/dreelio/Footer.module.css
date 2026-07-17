@@ -93,6 +93,41 @@
   margin: 40px 0 24px;
 }
 
+.paymentsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.paymentBadges {
+  opacity: 0.9;
+}
+
+.securedBy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-muted);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.securedBy svg {
+  width: 14px;
+  height: 14px;
+  color: var(--pill-green);
+}
+
+@media (max-width: 480px) {
+  .paymentsRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
 .bottom {
   display: flex;
   justify-content: space-between;
