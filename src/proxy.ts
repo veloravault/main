@@ -14,11 +14,12 @@ function buildCsp(nonce: string) {
 
   return [
     "default-src 'self'",
-    `script-src ${scriptSrc}`,
+    `script-src ${scriptSrc} https://checkout.razorpay.com`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: https://*.supabase.co https://unavatar.io",
+    "img-src 'self' data: https://*.supabase.co https://unavatar.io https://*.razorpay.com",
     "font-src 'self' data:",
-    "connect-src 'self' https://*.supabase.co",
+    "connect-src 'self' https://*.supabase.co https://*.razorpay.com",
+    "frame-src 'self' https://checkout.razorpay.com https://api.razorpay.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
