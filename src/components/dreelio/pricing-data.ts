@@ -60,6 +60,29 @@ export const PRICING_TIERS: PricingTier[] = [
   },
 ];
 
+// A single cell value: a plain string, or `true`/`false` rendered as a
+// check/dash. Kept separate from PRICING_TIERS' marketing bullet lists so the
+// comparison table can show the exact figure per plan, side by side.
+type ComparisonValue = string | boolean;
+
+export interface ComparisonRow {
+  label: string;
+  values: [ComparisonValue, ComparisonValue, ComparisonValue]; // Free, Plus, Family
+}
+
+export const PRICING_COMPARISON: ComparisonRow[] = [
+  { label: "Passwords & secure notes", values: ["Unlimited", "Unlimited", "Unlimited"] },
+  { label: "Wallet & bank records", values: ["Up to 3", "Unlimited", "Unlimited"] },
+  { label: "Document storage", values: ["Not included", "5 GB", "5 GB per member"] },
+  { label: "AI-assisted imports", values: ["5 / month", "Unlimited", "Unlimited"] },
+  { label: "Password health monitoring", values: [true, true, true] },
+  { label: "Face ID / Touch ID / PIN unlock", values: [true, true, true] },
+  { label: "Priority email support", values: [false, true, true] },
+  { label: "Early access to new features", values: [false, true, true] },
+  { label: "Separate private vaults", values: ["1", "1", "Up to 5"] },
+  { label: "Centralized family billing", values: [false, false, true] },
+];
+
 export const PRICING_FAQ: { question: string; answer: string }[] = [
   {
     question: "Is the Free tier actually free?",

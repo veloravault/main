@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { CheckIcon } from "lucide-react";
 import shared from "@/app/dreelio/dreelio.module.css";
 import styles from "@/app/pricing/pricing.module.css";
-import { PRICING_FAQ, PRICING_TIERS } from "./pricing-data";
-import { HOVER_LIFT, LANDING_VIEWPORT, TAP_PRESS, revealVariants, staggerContainer, staggerItem } from "./motion";
+import { PRICING_COMPARISON, PRICING_FAQ, PRICING_TIERS } from "./pricing-data";
+import { APPLE_EASE, HOVER_LIFT, LANDING_VIEWPORT, TAP_PRESS, revealVariants, staggerContainer, staggerItem } from "./motion";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
 type Billing = "monthly" | "annual";
@@ -16,6 +16,18 @@ const INR = new Intl.NumberFormat("en-IN", {
   currency: "INR",
   maximumFractionDigits: 0,
 });
+
+/** Real annual discount vs. paying monthly all year, rounded to a whole percent. */
+function annualSavingsPercent(monthlyPrice: number, annualPrice: number): number {
+  if (monthlyPrice <= 0) return 0;
+  return Math.round((1 - annualPrice / (monthlyPrice * 12)) * 100);
+}
+
+const priceDigits = {
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.32, ease: APPLE_EASE } },
+  exit: { opacity: 0, y: -10, transition: { duration: 0.18, ease: APPLE_EASE } },
+};
 
 export function PricingPageContent() {
   const reduceMotion = useReducedMotion();
@@ -46,7 +58,7 @@ export function PricingPageContent() {
           Monthly
         </button>
         <button type="button" aria-pressed={billing === "annual"} onClick={() => setBilling("annual")}>
-          Annual <span className={styles.saveTag}>Save 35%</span>
+          Annual
         </button>
       </div>
 
@@ -61,6 +73,7 @@ export function PricingPageContent() {
           const isFree = tier.monthlyPrice === 0;
           const price = billing === "monthly" ? tier.monthlyPrice : Math.round(tier.annualPrice / 12);
           const displayPrice = INR.format(isFree ? 0 : price);
+          const savings = annualSavingsPercent(tier.monthlyPrice, tier.annualPrice);
 
           return (
             <motion.article
@@ -74,11 +87,23 @@ export function PricingPageContent() {
               <p className={styles.tagline}>{tier.tagline}</p>
 
               <div className={styles.priceRow}>
-                <span className={styles.price}>{displayPrice}</span>
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={`${tier.name}-${billing}`}
+                    className={styles.price}
+                    {...(reduceMotion ? {} : priceDigits)}
+                  >
+                    {displayPrice}
+                  </motion.span>
+                </AnimatePresence>
                 {!isFree && <span className={styles.period}>/month</span>}
               </div>
               <p className={styles.billingNote}>
-                {isFree ? "Forever" : billing === "annual" ? `Billed ${INR.format(tier.annualPrice)}/year` : "Billed monthly"}
+                {isFree
+                  ? "Forever"
+                  : billing === "annual"
+                    ? `${INR.format(tier.annualPrice)}/year · Save ${savings}%`
+                    : "Billed monthly"}
               </p>
 
               <motion.div whileTap={reduceMotion ? undefined : TAP_PRESS}>
@@ -103,6 +128,57 @@ export function PricingPageContent() {
           );
         })}
       </motion.div>
+
+      <div className={styles.compare}>
+        <motion.div
+          className={styles.compareHead}
+          initial={reduceMotion ? false : "hidden"}
+          whileInView={reduceMotion ? undefined : "show"}
+          viewport={LANDING_VIEWPORT}
+          variants={revealVariants(18)}
+        >
+          <p className={shared.eyebrow}>Every detail</p>
+          <h2 className={shared.h2}>Compare plans exactly</h2>
+        </motion.div>
+
+        <motion.div
+          className={styles.compareTableWrap}
+          initial={reduceMotion ? false : "hidden"}
+          whileInView={reduceMotion ? undefined : "show"}
+          viewport={LANDING_VIEWPORT}
+          variants={revealVariants(18, 0.05)}
+        >
+          <table className={styles.compareTable}>
+            <thead>
+              <tr>
+                <th scope="col" className={styles.compareRowLabel}><span className="sr-only">Feature</span></th>
+                {PRICING_TIERS.map((tier) => (
+                  <th key={tier.name} scope="col" className={tier.featured ? styles.compareFeaturedCol : undefined}>
+                    {tier.name}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {PRICING_COMPARISON.map((row) => (
+                <tr key={row.label}>
+                  <th scope="row" className={styles.compareRowLabel}>{row.label}</th>
+                  {row.values.map((value, index) => (
+                    <td key={index} className={PRICING_TIERS[index].featured ? styles.compareFeaturedCol : undefined}>
+                      {typeof value === "boolean" ? (
+                        value ? <CheckIcon aria-label="Included" className={styles.compareCheck} /> : <span aria-hidden="true" className={styles.compareDash}>—</span>
+                      ) : (
+                        value
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </motion.div>
+        <p className={styles.compareHint}>Swipe to see all plans →</p>
+      </div>
 
       <div className={styles.faq}>
         <motion.div
