@@ -50,6 +50,8 @@
 }
 
 .embeddedPage {
+  display: grid;
+  place-items: center;
   padding-inline: 20px;
 }
 

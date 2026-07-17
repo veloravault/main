@@ -67,7 +67,7 @@ export function Footer() {
                 </ul>
               </motion.nav>
             ))}
-          </div>
+          </motion.div>
         </div>
 
         <motion.div className={styles.trustRail} variants={staggerItem}>

@@ -103,5 +103,6 @@ test("public authentication uses dedicated single-purpose pages without a modal 
   assert.match(gateway, /href=\{mode === "sign-in" \? "\/signup" : "\/login"\}/);
   assert.doesNotMatch(authShell, /onModeChange|segmented|modalCard|variant/);
   assert.match(css, /embeddedPage/);
+  assert.match(css, /\.embeddedPage\s*\{[^}]*display:\s*grid[^}]*place-items:\s*center/s);
   assert.doesNotMatch(css, /--public-nav-clearance|--auth-top-space/);
 });
