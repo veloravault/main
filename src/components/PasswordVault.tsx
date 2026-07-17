@@ -228,7 +228,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
       fetchItems(true);
     } catch (err) {
       console.error("Failed to add item:", err);
-      alert("Failed to encrypt and save the secret.");
+      toast("Failed to encrypt and save the secret.", "error");
     }
   };
 
@@ -252,6 +252,8 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
     if (!error) {
       setItems(items.map(item => item.id === id ? { ...item, is_favorite: !currentState } : item));
       invalidateCache("vault_items");
+    } else {
+      toast("Failed to update favorite", "error");
     }
   };
 
@@ -357,13 +359,13 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
           if (newItems.length > 0 || updatedCount > 0) {
             invalidateCache("vault_items");
             fetchItems(true);
-            alert(`Successfully imported ${newItems.length} new passwords and updated ${updatedCount} existing!`);
+            toast(`Imported ${newItems.length} new passwords and updated ${updatedCount} existing`, "success");
           } else {
-            alert("No valid passwords found in the CSV. Make sure it has 'name' or 'url' and 'password' columns.");
+            toast("No valid passwords found in the CSV. Make sure it has 'name' or 'url' and 'password' columns.", "error");
           }
         } catch (error) {
           console.error("Import error:", error);
-          alert("Failed to import passwords");
+          toast("Failed to import passwords", "error");
         } finally {
           setIsImporting(false);
           if (fileInputRef.current) fileInputRef.current.value = "";

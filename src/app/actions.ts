@@ -205,52 +205,6 @@ export async function categorizeNote(accessToken: string, title: string): Promis
   }
 }
 
-export async function aiSearchVault(accessToken: string, query: string, items: { id: string; type: string; title: string; category?: string }[]): Promise<string | null> {
-  await requireActiveMemberForToken(accessToken);
-  query = requireShortText(query, "search query", 300);
-  if (!Array.isArray(items) || items.length > 300) throw new Error("Too many search items.");
-  items = items.map((item) => ({
-    id: requireShortText(item.id, "item id", 128),
-    type: requireShortText(item.type, "item type", 40),
-    title: requireShortText(item.title, "item title", 255),
-    category: item.category?.slice(0, 80),
-  }));
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) return null;
-
-  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "llama-3.1-8b-instant",
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content: "You are an intelligent search assistant for a secure vault. You will be provided with a user's search query and a JSON array of their vault items (each with an id, type, title, and category). Your task is to find the single most relevant item that matches the user's query semantically. You must return a JSON object with exactly one key: 'matchedId' (the string id of the best matching item, or null if no item is a good match). Ensure the response is valid JSON."
-        },
-        { 
-          role: "user", 
-          content: JSON.stringify({ query, items }) 
-        }
-      ],
-      temperature: 0.1,
-    })
-  });
-
-  if (!response.ok) return null;
-  try {
-    const data = await response.json();
-    const parsed = JSON.parse(data.choices[0].message.content);
-    return parsed.matchedId || null;
-  } catch {
-    return null;
-  }
-}
-
 export async function parseNotesToPasswords(accessToken: string, rawText: string): Promise<Array<Record<string, unknown>>> {
   await requireActiveMemberForToken(accessToken);
   rawText = requireShortText(rawText, "pasted text", MAX_TEXT_INPUT);

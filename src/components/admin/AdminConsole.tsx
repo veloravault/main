@@ -60,7 +60,7 @@ function MemberQueue(props: {
   error: string | null;
   mutatingId: string | null;
   onRetry: () => void;
-  onMutate: (member: AdminMember, status: "suspended" | "revoked") => void;
+  onMutate: (member: AdminMember, status: "active" | "suspended" | "revoked") => void;
 }) {
   if (props.error) return <StateView kind="error" title="Members unavailable" description={props.error} action={{ label: "Try again", onClick: props.onRetry }} />;
   if (props.items.length === 0) {
@@ -71,6 +71,7 @@ function MemberQueue(props: {
       {props.items.map((member) => {
         const mutating = props.mutatingId === member.id;
         const canSuspend = member.status === "invited" || member.status === "active";
+        const canRestore = member.status === "suspended";
         const canRevoke = member.status !== "revoked";
         return (
           <article className={styles.memberRow} key={member.id} role="listitem">
@@ -78,6 +79,11 @@ function MemberQueue(props: {
             <span className={styles.memberIdentity}><strong>{member.email}</strong><small>Joined {memberDate(member.approvedAt)} · {member.plan === "plus" ? "Plus" : "Free"} plan</small></span>
             <span className={styles.memberActions}>
               <span className={styles.memberStatus} data-status={member.status}>{member.status}</span>
+              {canRestore && (
+                <button type="button" disabled={mutating} onClick={() => props.onMutate(member, "active")}>
+                  Restore access
+                </button>
+              )}
               {canSuspend && (
                 <button type="button" disabled={mutating} onClick={() => props.onMutate(member, "suspended")}>
                   Block access
@@ -114,7 +120,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
   const [error, setError] = useState<string | null>(null);
   const [appendError, setAppendError] = useState<string | null>(null);
   const [mutatingId, setMutatingId] = useState<string | null>(null);
-  const [pendingMutation, setPendingMutation] = useState<{ member: AdminMember; status: "suspended" | "revoked" } | null>(null);
+  const [pendingMutation, setPendingMutation] = useState<{ member: AdminMember; status: "active" | "suspended" | "revoked" } | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const pendingUrlSearchRef = useRef<string | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -265,7 +271,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
     updateUrl({ view: nextView === "members" ? null : nextView, status: null, cursor: null }, "push");
   };
 
-  const mutateMember = async (member: AdminMember, status: "suspended" | "revoked") => {
+  const mutateMember = async (member: AdminMember, status: "active" | "suspended" | "revoked") => {
     if (mutatingId) return;
     setMutatingId(member.id);
     setAnnouncement(`Updating ${member.email}.`);
@@ -279,8 +285,9 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
       if (response.ok) {
         const body = await response.json().catch(() => null) as { member?: AdminMember } | null;
         setItems((current) => current.map((item) => item.id === member.id && body?.member ? body.member : item));
-        setAnnouncement(`${member.email} ${status}.`);
-        toast({ message: `${member.email} was ${status}.`, type: "success" });
+        const verb = status === "active" ? "restored" : status;
+        setAnnouncement(`${member.email} ${verb}.`);
+        toast({ message: `${member.email} was ${verb}.`, type: "success" });
       } else if (response.status === 404) {
         setAnnouncement(`${member.email} is no longer in this list.`);
         toast({ message: "This member is no longer available. The list was refreshed.", type: "info" });
@@ -393,12 +400,22 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
       <p className="sr-only" aria-live="polite" aria-atomic="true">{announcement}</p>
       <AdminConfirmDialog
         open={Boolean(pendingMutation)}
-        title={pendingMutation?.status === "revoked" ? "Permanently revoke access?" : "Block this member’s access?"}
-        description={pendingMutation?.status === "revoked"
-          ? `${pendingMutation.member.email} will permanently lose access to this vault. This cannot be reversed.`
-          : `${pendingMutation?.member.email ?? "This member"} will lose vault access. This console does not currently support restoring it.`}
-        confirmLabel={pendingMutation?.status === "revoked" ? "Revoke access" : "Block access"}
-        destructive
+        title={
+          pendingMutation?.status === "revoked" ? "Permanently revoke access?"
+          : pendingMutation?.status === "active" ? "Restore this member’s access?"
+          : "Block this member’s access?"
+        }
+        description={
+          pendingMutation?.status === "revoked" ? `${pendingMutation.member.email} will permanently lose access to this vault. This cannot be reversed.`
+          : pendingMutation?.status === "active" ? `${pendingMutation?.member.email ?? "This member"} will regain vault access immediately.`
+          : `${pendingMutation?.member.email ?? "This member"} will lose vault access. Use Restore access to reinstate them later.`
+        }
+        confirmLabel={
+          pendingMutation?.status === "revoked" ? "Revoke access"
+          : pendingMutation?.status === "active" ? "Restore access"
+          : "Block access"
+        }
+        destructive={pendingMutation?.status !== "active"}
         busy={Boolean(mutatingId)}
         onCancel={() => setPendingMutation(null)}
         onConfirm={() => {

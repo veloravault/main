@@ -74,7 +74,7 @@ export function GlobalMagicImport({ isOpen, onOpenChange, masterPassword, onSucc
         if (!response.ok) throw new Error(response.message);
         drafts = response.drafts;
       } else if (source.kind === "csv" || source.kind === "browser_csv") {
-        const parsed = await parseImportCsv(source.file, source.kind);
+        const parsed = await parseImportCsv(source.file);
         if (!parsed.drafts.length) throw new Error(parsed.errors[0] ?? "The CSV did not contain supported vault items.");
         drafts = parsed.drafts;
         if (parsed.errors.length) setError(parsed.errors[0]);

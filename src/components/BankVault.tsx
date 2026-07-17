@@ -137,7 +137,7 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
       if (data.data.name) void typeText(data.data.name, setBankName);
     } catch (err) {
       console.error(err);
-      alert(err instanceof Error ? err.message : "Failed to scan image. Please try again.");
+      toast(err instanceof Error ? err.message : "Failed to scan image. Please try again.", "error");
     } finally {
       setIsScanning(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -231,7 +231,7 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
       fetchItems();
     } catch (err) {
       console.error("Failed to add wallet item:", err);
-      alert("Failed to save the wallet item. Make sure you ran the SQL migration.");
+      toast("Failed to save the wallet item. Please try again.", "error");
     }
   };
 
@@ -266,7 +266,7 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
       invalidateCache("secure_wallet_banks");
       fetchItems();
     } else {
-      alert("Failed to delete items");
+      toast("Failed to delete items", "error");
     }
   };
 

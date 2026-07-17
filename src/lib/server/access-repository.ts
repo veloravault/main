@@ -208,7 +208,7 @@ export async function listAdminActivity(args: { cursor: AdminActivityCursor | nu
 export async function mutateMemberStatus(args: {
   adminId: string;
   memberId: string;
-  status: "suspended" | "revoked";
+  status: "active" | "suspended" | "revoked";
 }): Promise<
   | { kind: "updated"; member: MemberAdminDto }
   | { kind: "not_found" }

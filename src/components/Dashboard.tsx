@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { FaceIdIcon } from "@/components/Icons";
 import { useVaultKey } from "@/components/auth/VaultKeyProvider";
+import { useToast } from "@/components/Toast";
 
 interface DashboardProps {
   masterPassword: string;
@@ -67,6 +68,7 @@ interface DashboardWalletItem {
 }
 
 export function Dashboard({ masterPassword }: DashboardProps) {
+  const toast = useToast();
   const { authenticatedUserId, isAuthenticatedUserCurrent } = useVaultKey();
   const [stats, setStats] = useState({
     passwords: 0,
@@ -153,10 +155,11 @@ export function Dashboard({ masterPassword }: DashboardProps) {
 
     } catch (error) {
       console.error("Dashboard fetch error:", error);
+      toast("Some vault data couldn't be loaded. Try refreshing.", "error");
     } finally {
       setLoading(false);
     }
-  }, [masterPassword]);
+  }, [masterPassword, toast]);
 
   const health = useMemo(() => {
     const cached = getCache<{id: string; plaintext: string}>("vault_items");
@@ -191,7 +194,7 @@ export function Dashboard({ masterPassword }: DashboardProps) {
       setFullName(editNameValue.trim());
       setIsEditingName(false);
     } catch (error: unknown) {
-      alert(error instanceof Error ? error.message : "Failed to update name");
+      toast(error instanceof Error ? error.message : "Failed to update name", "error");
     } finally {
       setIsSavingName(false);
     }
@@ -273,7 +276,7 @@ export function Dashboard({ masterPassword }: DashboardProps) {
                     await enableBiometrics(masterPassword, authenticatedUserId, isAuthenticatedUserCurrent);
                     setShowBioBanner(false);
                   } catch (error: unknown) {
-                    alert(error instanceof Error ? error.message : "Biometric enrollment failed.");
+                    toast(error instanceof Error ? error.message : "Biometric enrollment failed.", "error");
                   }
                 }}
                 className="px-4 py-2 bg-primary text-primary-foreground text-[13px] font-semibold rounded-lg hover:opacity-90 transition-opacity"

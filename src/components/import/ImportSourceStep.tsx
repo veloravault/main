@@ -17,7 +17,13 @@ export function ImportSourceStep(props: {
   const browserCsv = useRef<HTMLInputElement>(null);
   const image = useRef<HTMLInputElement>(null);
   const choose = (ref: React.RefObject<HTMLInputElement | null>) => ref.current?.click();
-  const selectFile = (kind: "csv" | "browser_csv" | "image", file?: File) => { if (file) props.onAnalyze({ kind, file }); };
+  const selectFile = (kind: "csv" | "browser_csv" | "image", event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    // Reset so re-selecting the same file (e.g. retrying after an error)
+    // still fires a change event next time.
+    event.target.value = "";
+    if (file) props.onAnalyze({ kind, file });
+  };
   useEffect(() => {
     const timer = window.setTimeout(() => setNow(Date.now()), 0);
     return () => window.clearTimeout(timer);
@@ -31,9 +37,9 @@ export function ImportSourceStep(props: {
         <SourceButton icon={KeyRoundIcon} title="Browser export" detail="Chrome, Safari, Edge and Brave CSV" onClick={() => choose(browserCsv)} />
         <SourceButton icon={CameraIcon} title="Scan image" detail="Screenshot, statement or credential image" onClick={() => choose(image)} />
       </div>
-      <input ref={genericCsv} hidden type="file" accept=".csv,text/csv" onChange={(event) => selectFile("csv", event.target.files?.[0])} />
-      <input ref={browserCsv} hidden type="file" accept=".csv,text/csv" onChange={(event) => selectFile("browser_csv", event.target.files?.[0])} />
-      <input ref={image} hidden type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={(event) => selectFile("image", event.target.files?.[0])} />
+      <input ref={genericCsv} hidden type="file" accept=".csv,text/csv" onChange={(event) => selectFile("csv", event)} />
+      <input ref={browserCsv} hidden type="file" accept=".csv,text/csv" onChange={(event) => selectFile("browser_csv", event)} />
+      <input ref={image} hidden type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={(event) => selectFile("image", event)} />
 
       <div className="import-paste-panel">
         <label htmlFor="magic-import-paste">Paste anything</label>

@@ -32,7 +32,7 @@ export async function PATCH(
     if (
       keys.length !== 1
       || keys[0] !== "status"
-      || (status !== "suspended" && status !== "revoked")
+      || (status !== "active" && status !== "suspended" && status !== "revoked")
     ) {
       return Response.json({ error: "INVALID_MEMBER_UPDATE" }, { status: 400 });
     }

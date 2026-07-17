@@ -139,7 +139,6 @@ test("all protected AI operations require an active member", () => {
     "enrichPasswordMetadata",
     "categorizeDocument",
     "categorizeNote",
-    "aiSearchVault",
     "parseNotesToPasswords",
     "parseBulkNotes",
     "extractGlobalImportDrafts",

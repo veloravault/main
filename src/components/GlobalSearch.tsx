@@ -20,7 +20,7 @@ const VAULT_META = {
 };
 
 interface GlobalSearchProps {
-  onNavigate: (tab: string, id?: string) => void;
+  onNavigate: (tab: SearchResult["vault"], id?: string) => void;
   autoFocus?: boolean;
 }
 

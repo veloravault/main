@@ -158,7 +158,7 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
       fetchItems();
     } catch (err) {
       console.error("Failed to add note:", err);
-      alert("Failed to encrypt and save the note.");
+      toast("Failed to encrypt and save the note.", "error");
     }
   };
 
@@ -190,6 +190,7 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
 
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
+    if (!confirm(`Are you sure you want to delete ${selectedIds.size} notes?`)) return;
     const idsToDelete = Array.from(selectedIds);
     const { error } = await supabase.from("secure_notes").delete().in("id", idsToDelete);
     if (!error) {
@@ -198,7 +199,7 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
       invalidateCache("secure_notes");
       fetchItems();
     } else {
-      alert("Failed to delete items");
+      toast("Failed to delete items", "error");
     }
   };
 

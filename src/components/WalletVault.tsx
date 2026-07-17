@@ -75,7 +75,7 @@ const inferSubtype = (item: DecryptedWallet): "credit" | "debit" | "other" => {
   return "other";
 };
 
-export function WalletVault({ masterPassword, focusedItemId }: { masterPassword: string, focusedItemId?: string | null }) {
+export function WalletVault({ masterPassword, focusedItemId, refreshVersion = 0 }: { masterPassword: string, focusedItemId?: string | null, refreshVersion?: number }) {
   const toast = useToast();
   const [items, setItems] = useState<DecryptedWallet[]>([]);
   const [loading, setLoading] = useState(true);
@@ -160,7 +160,7 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
       }
     } catch (err) {
       console.error(err);
-      alert(err instanceof Error ? err.message : "Failed to scan image. Please try again.");
+      toast(err instanceof Error ? err.message : "Failed to scan image. Please try again.", "error");
     } finally {
       setIsScanning(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -212,6 +212,12 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
     });
   }, [fetchItems]);
 
+  useEffect(() => {
+    if (!refreshVersion) return;
+    invalidateCache("secure_wallet_cards");
+    queueMicrotask(() => void fetchItems());
+  }, [fetchItems, refreshVersion]);
+
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title) return;
@@ -247,7 +253,7 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
       fetchItems();
     } catch (err) {
       console.error("Failed to add wallet item:", err);
-      alert("Failed to save the wallet item. Make sure you ran the SQL migration.");
+      toast("Failed to save the wallet item. Please try again.", "error");
     }
   };
 
@@ -257,6 +263,8 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
     if (!error) {
       invalidateCache("secure_wallet_cards");
       fetchItems();
+    } else {
+      toast("Failed to delete item", "error");
     }
   };
 
@@ -283,7 +291,7 @@ export function WalletVault({ masterPassword, focusedItemId }: { masterPassword:
       invalidateCache("secure_wallet_cards");
       fetchItems();
     } else {
-      alert("Failed to delete items");
+      toast("Failed to delete items", "error");
     }
   };
 

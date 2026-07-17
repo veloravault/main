@@ -8,6 +8,7 @@ import { setCache, invalidateCache } from "@/lib/vaultCache";
 import { CardListSkeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { SelectionToolbar } from "@/components/SelectionToolbar";
+import { useToast } from "@/components/Toast";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +46,7 @@ interface VaultDocument {
 }
 
 export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 0 }: { masterPassword: string, focusedItemId?: string | null, refreshVersion?: number }) {
+  const toast = useToast();
   const [documents, setDocuments] = useState<VaultDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -62,10 +64,13 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { scheduleDelete } = useOptimisticDelete({ items: documents, setItems: setDocuments, toastLabel: (item) => item.title || "Document", commitDelete: async (item) => {
-    await deleteObjects([item.storage_path]);
+    // Delete the DB row before the R2 blob (same ordering as DangerSettings'
+    // vault wipe): if the R2 delete below fails, the leftover blob is an
+    // unreachable orphan rather than a document record with no file behind it.
     const { error } = await supabase.from("vault_documents").delete().eq("id", item.id);
     if (error) throw error;
     invalidateCache("vault_documents");
+    await deleteObjects([item.storage_path]);
   } });
 
   useEffect(() => {
@@ -134,7 +139,7 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
       console.error("Failed to load preview:", err);
       setPreviews(prev => ({ ...prev, [doc.id]: { url: '', loading: false } }));
       setPreviewModal(prev => ({ ...prev, loading: false }));
-      alert("Failed to decrypt the document. Is the vault master key correct?");
+      toast("Failed to decrypt the document. Is the vault master key correct?", "error");
     }
   };
 
@@ -212,8 +217,7 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
       fetchDocuments();
     } catch (err: unknown) {
       console.error("Failed to upload document:", err);
-      const message = err instanceof Error ? err.message : String(err);
-      alert(`Upload failed: ${message}`);
+      toast("Upload failed. Please try again.", "error");
     } finally {
       setUploading(false);
     }
@@ -241,7 +245,7 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Failed to download or decrypt:", err);
-      alert("Failed to decrypt the document. Is the vault master key correct?");
+      toast("Failed to decrypt the document. Is the vault master key correct?", "error");
     }
   };
 
@@ -264,19 +268,23 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
 
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
+    if (!confirm(`Are you sure you want to delete ${selectedIds.size} documents?`)) return;
     const docsToDelete = documents.filter(d => selectedIds.has(d.id));
     const pathsToRemove = docsToDelete.map(d => d.storage_path);
 
-    await deleteObjects(pathsToRemove);
-    const { error } = await supabase.from("vault_documents").delete().in("id", Array.from(selectedIds));
-    
-    if (!error) {
+    try {
+      // Same ordering as the single-item delete above: DB rows first, so a
+      // failed R2 cleanup only leaves orphaned blobs, not broken references.
+      const { error } = await supabase.from("vault_documents").delete().in("id", Array.from(selectedIds));
+      if (error) throw error;
       setSelectedIds(new Set());
       setIsSelectionMode(false);
       invalidateCache("vault_documents");
       fetchDocuments();
-    } else {
-      alert("Failed to delete items");
+      await deleteObjects(pathsToRemove);
+    } catch (err) {
+      console.error("Failed to delete documents:", err);
+      toast("Failed to delete items", "error");
     }
   };
 

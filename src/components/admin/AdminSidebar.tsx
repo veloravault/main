@@ -54,7 +54,7 @@ export function AdminSidebar(props: {
         <a href="/vault"><ExternalLinkIcon aria-hidden="true" />Open vault</a>
         <button type="button" onClick={props.onSignOut}><LogOutIcon aria-hidden="true" />Sign out</button>
       </div>
-      <p className={styles.sidebarFoot}>Blocking and revoking access cannot be reversed from this console.</p>
+      <p className={styles.sidebarFoot}>Blocked members can be restored. Revoking access cannot be reversed from this console.</p>
     </aside>
   );
 }

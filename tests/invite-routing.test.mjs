@@ -41,7 +41,6 @@ test("master key provider is memory-only and wraps vault clients", () => {
   assert.ok(layout.indexOf("<ThemeProvider") < layout.indexOf("<VaultKeyProvider"));
   assert.ok(layout.indexOf("<VaultKeyProvider") < layout.indexOf("<ToastProvider"));
   assert.match(vaultApp, /useVaultKey\(\)/);
-  assert.match(vaultApp, /@\/app\/actions/);
   assert.doesNotMatch(vaultApp, /const \[masterPassword,\s*setMasterPassword\]/);
 });
 
