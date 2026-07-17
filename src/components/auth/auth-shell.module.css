@@ -311,21 +311,6 @@
 .invitedEmail { margin: 0; color: var(--auth-muted); font-size: 13px; text-align: center; }
 .invitedEmail strong { color: var(--auth-ink); font-weight: 600; }
 
-.keyGuide {
-  display: grid;
-  gap: 1px;
-  margin: 0;
-  overflow: hidden;
-  border: 1px solid var(--auth-line);
-  border-radius: 13px;
-  background: var(--auth-line);
-  text-align: left;
-}
-
-.keyGuide div { display: grid; grid-template-columns: 1fr auto; gap: 16px; padding: 11px 13px; background: var(--auth-field); }
-.keyGuide dt { color: var(--auth-ink); font-size: 11px; font-weight: 620; }
-.keyGuide dd { margin: 0; color: var(--auth-muted); font-size: 10px; }
-
 .segmented button:focus-visible,
 .arrowButton:focus-visible,
 .primaryAction:focus-visible,
@@ -348,7 +333,6 @@
   .heading h1 { font-size: 24px; }
   .heading p { font-size: 13px; }
   .secondaryActions { gap: 0 8px; }
-  .keyGuide div { grid-template-columns: 1fr; gap: 2px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

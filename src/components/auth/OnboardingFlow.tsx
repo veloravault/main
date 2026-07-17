@@ -133,20 +133,22 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
           </div>
         )}
 
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.header
-            key={`heading-${step}`}
-            className={shell.heading}
-            initial={reduceMotion ? false : { opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={reduceMotion ? undefined : { opacity: 0, y: 8 }}
-            transition={{ duration: 0.18 }}
-          >
-            <p className={shell.eyebrow}>{heading.eyebrow}</p>
-            <h1>{heading.title}</h1>
-            <p>{heading.description}</p>
-          </motion.header>
-        </AnimatePresence>
+        {step !== "done" && (
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.header
+              key={`heading-${step}`}
+              className={shell.heading}
+              initial={reduceMotion ? false : { opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={reduceMotion ? undefined : { opacity: 0, y: 8 }}
+              transition={{ duration: 0.18 }}
+            >
+              <p className={shell.eyebrow}>{heading.eyebrow}</p>
+              <h1>{heading.title}</h1>
+              <p>{heading.description}</p>
+            </motion.header>
+          </AnimatePresence>
+        )}
 
         <AnimatePresence mode="wait" custom={direction} initial={false}>
           <motion.div
@@ -159,8 +161,32 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
             exit="exit"
             transition={reduceMotion ? { duration: 0.15 } : { type: "spring", stiffness: 420, damping: 34 }}
           >
-            {step === "vault" && <IntroScreen icon={INTRO_CONTENT.vault.icon} bullets={INTRO_CONTENT.vault.bullets} />}
-            {step === "security" && <IntroScreen icon={INTRO_CONTENT.security.icon} bullets={INTRO_CONTENT.security.bullets} />}
+            {step === "vault" && (
+              <div className={shell.formStack}>
+                <IntroScreen icon={INTRO_CONTENT.vault.icon} bullets={INTRO_CONTENT.vault.bullets} />
+                <button className={shell.primaryAction} type="button" onClick={goNext}>
+                  <span>Continue</span>
+                  <ArrowRightIcon width={17} height={17} aria-hidden="true" />
+                </button>
+                <div className={styles.stepFooter}>
+                  <span />
+                  <button type="button" className={shell.textLink} onClick={skipIntro}>Skip setup intro</button>
+                </div>
+              </div>
+            )}
+            {step === "security" && (
+              <div className={shell.formStack}>
+                <IntroScreen icon={INTRO_CONTENT.security.icon} bullets={INTRO_CONTENT.security.bullets} />
+                <button className={shell.primaryAction} type="button" onClick={goNext}>
+                  <span>Continue</span>
+                  <ArrowRightIcon width={17} height={17} aria-hidden="true" />
+                </button>
+                <div className={styles.stepFooter}>
+                  <button type="button" className={shell.secondaryAction} onClick={goBack}>Back</button>
+                  <button type="button" className={shell.textLink} onClick={skipIntro}>Skip setup intro</button>
+                </div>
+              </div>
+            )}
 
             {step === "avatar" && (
               <div className={shell.formStack}>
@@ -194,7 +220,7 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
                   <span>{submitting ? "Setting up your vault…" : "Set master key"}</span>
                   <ArrowRightIcon width={17} height={17} aria-hidden="true" />
                 </button>
-                <div className={styles.stepFooter}>
+                <div className={styles.stepFooter} style={{ justifyContent: "center" }}>
                   <button type="button" className={shell.secondaryAction} onClick={goBack} disabled={submitting}>Back</button>
                 </div>
                 <p className={shell.securityNote}>The master key leaves this form only for local, in-memory vault access.</p>
@@ -204,21 +230,6 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
             {step === "done" && <CompletionStep />}
           </motion.div>
         </AnimatePresence>
-
-        {(step === "vault" || step === "security") && (
-          <div className={shell.formStack}>
-            <button className={shell.primaryAction} type="button" onClick={goNext}>
-              <span>Continue</span>
-              <ArrowRightIcon width={17} height={17} aria-hidden="true" />
-            </button>
-            <div className={styles.stepFooter}>
-              {step === "security"
-                ? <button type="button" className={shell.secondaryAction} onClick={goBack}>Back</button>
-                : <span />}
-              <button type="button" className={shell.textLink} onClick={skipIntro}>Skip setup intro</button>
-            </div>
-          </div>
-        )}
       </motion.section>
     </main>
   );
