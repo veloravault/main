@@ -31,6 +31,7 @@ export function AuthGateway({ initialMode: mode, nextPath, notice }: AuthGateway
       title={copy.title}
       description={copy.description}
       mode={mode}
+      embedded
       footer={
         <>
           <span>{mode === "sign-in" ? "New to Velora Vault?" : "Already have an account?"}</span>{" "}

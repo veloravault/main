@@ -1,5 +1,5 @@
 import { AuthGateway } from "@/components/auth/AuthGateway";
-import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
+import { AccountFrame } from "@/components/auth/AccountFrame";
 import { parseSafeNextPath } from "@/lib/access/validation";
 
 const STATE_NOTICES: Record<string, string> = {
@@ -17,8 +17,8 @@ export default async function LoginPage({
   const notice = typeof state === "string" ? STATE_NOTICES[state] : undefined;
 
   return (
-    <PublicPageShell>
+    <AccountFrame>
       <AuthGateway initialMode="sign-in" nextPath={nextPath} notice={notice} />
-    </PublicPageShell>
+    </AccountFrame>
   );
 }

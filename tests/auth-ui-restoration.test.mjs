@@ -55,9 +55,13 @@ test("the complete account journey shares presentation and preserves secure hand
 
 test("public authentication uses dedicated single-purpose pages without a modal provider", () => {
   const shell = read("src/components/dreelio/PublicPageShell.tsx");
+  const login = read("src/app/login/page.tsx");
+  const signup = read("src/app/signup/page.tsx");
   const gateway = read("src/components/auth/AuthGateway.tsx");
   const authShell = read("src/components/auth/AuthShell.tsx");
   const css = read("src/components/auth/auth-shell.module.css");
+  const accountFramePath = "src/components/auth/AccountFrame.tsx";
+  const accountCssPath = "src/components/auth/account-frame.module.css";
   const publicComponents = [
     "Nav.tsx",
     "Hero.tsx",
@@ -70,6 +74,25 @@ test("public authentication uses dedicated single-purpose pages without a modal 
   ].map((name) => read(`src/components/dreelio/${name}`)).join("\n");
 
   assert.equal(existsSync(new URL("../src/components/auth/AuthModalProvider.tsx", import.meta.url)), false);
+  assert.equal(existsSync(new URL(`../${accountFramePath}`, import.meta.url)), true);
+  assert.equal(existsSync(new URL(`../${accountCssPath}`, import.meta.url)), true);
+
+  const accountFrame = read(accountFramePath);
+  const accountCss = read(accountCssPath);
+
+  for (const route of [login, signup]) {
+    assert.match(route, /import \{ AccountFrame \}/);
+    assert.match(route, /<AccountFrame>/);
+    assert.doesNotMatch(route, /PublicPageShell/);
+  }
+
+  assert.doesNotMatch(accountFrame, /Footer|NAV_LINKS|PublicPageShell|burger/i);
+  assert.match(accountFrame, /Velora Vault home/);
+  assert.match(accountFrame, /Toggle appearance/);
+  assert.doesNotMatch(accountCss, /position:\s*fixed/);
+  assert.match(accountCss, /safe-area-inset-top/);
+  assert.match(accountCss, /safe-area-inset-bottom/);
+  assert.match(accountCss, /min-(?:width|height):\s*44px/);
   assert.doesNotMatch(shell, /AuthModalProvider/);
   assert.doesNotMatch(publicComponents, /useAuthModal|openAuth/);
   assert.match(publicComponents, /href=["'{/]?[^\n]*\/signup/);
@@ -79,7 +102,6 @@ test("public authentication uses dedicated single-purpose pages without a modal 
   assert.match(gateway, /mode === "sign-in"/);
   assert.match(gateway, /href=\{mode === "sign-in" \? "\/signup" : "\/login"\}/);
   assert.doesNotMatch(authShell, /onModeChange|segmented|modalCard|variant/);
-  assert.match(css, /min-height:\s*calc\(100dvh\s*-\s*var\(--public-nav-clearance\)\)/);
-  assert.match(css, /padding-top:\s*var\(--auth-top-space\)/);
-  assert.match(css, /--auth-top-space:\s*max\(90px,\s*calc\(env\(safe-area-inset-top\)\s*\+\s*74px\)\)/);
+  assert.match(css, /embeddedPage/);
+  assert.doesNotMatch(css, /--public-nav-clearance|--auth-top-space/);
 });
