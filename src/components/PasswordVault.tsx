@@ -46,6 +46,17 @@ interface DecryptedItem {
 
 type CsvPasswordRow = Record<string, string | undefined>;
 
+// Best-effort hostname extraction from a CSV "url" column, for favicon lookup.
+function extractDomain(url: string | undefined): string | null {
+  if (!url) return null;
+  try {
+    const withProtocol = /^[a-z][a-z0-9+.-]*:\/\//i.test(url) ? url : `https://${url}`;
+    return new URL(withProtocol).hostname.replace(/^www\./, "") || null;
+  } catch {
+    return null;
+  }
+}
+
 // Parses plaintext stored in vault_items — supports JSON (Magic Import) and legacy text format
 function parsePlaintext(plaintext: string): { isJson: boolean; username: string | null; password: string | null; notes: string | null; domain: string | null } {
   try {
@@ -315,6 +326,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
           for (const row of results.data as CsvPasswordRow[]) {
             // Find password and title in common CSV headers (1Password, Chrome, etc)
             const title = row.title || row.name || row.url || row.URL || "Imported Password";
+            const domain = extractDomain(row.url || row.URL);
             const password = row.password || row.Password;
             const rawUsername = row.username || row.Username || row.login || row.Login || row.email || row.Email;
             const parsedUsername = rawUsername ? rawUsername.trim() : null;
@@ -352,7 +364,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
                 iv: encrypted.iv,
                 salt: encrypted.salt,
                 category: "Uncategorized",
-                domain: null,
+                domain,
               });
             }
           }
@@ -443,6 +455,15 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
           <div className="flex flex-col items-center pt-8 md:pt-10 pb-6 px-6">
             <div className="w-20 h-20 rounded-[24px] bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10 flex items-center justify-center text-[36px] font-bold text-primary shadow-sm mb-4 relative overflow-hidden shrink-0">
               {item.title.charAt(0).toUpperCase()}
+              {item.domain && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={`https://unavatar.io/${item.domain}?fallback=false`}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-contain bg-white dark:bg-transparent"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                />
+              )}
             </div>
             <h3 id="password-detail-title" className="text-[24px] font-bold tracking-tight text-foreground text-center leading-tight mb-1">{item.title}</h3>
           </div>
@@ -702,6 +723,15 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
                               <span className="text-[17px] font-bold text-foreground/50">
                                 {item.title.charAt(0).toUpperCase()}
                               </span>
+                              {item.domain && (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={`https://unavatar.io/${item.domain}?fallback=false`}
+                                  alt=""
+                                  className="absolute inset-0 w-full h-full object-contain bg-white dark:bg-transparent"
+                                  onError={(e) => { e.currentTarget.style.display = "none"; }}
+                                />
+                              )}
                               {(dupeIds.has(item.id) || s.level === "weak" || s.level === "fair") && (
                                 <span
                                   className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-background ${dupeIds.has(item.id) || s.level === "weak" ? "bg-red-500" : "bg-amber-500"}`}
