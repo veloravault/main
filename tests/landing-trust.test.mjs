@@ -37,6 +37,27 @@ test("landing removes unfinished editorial content and unsupported availability 
   assert.doesNotMatch(combined, /nothing's ever out of date/i);
 });
 
+test("public footer closes the page with identity, navigation, and payment trust", () => {
+  const footer = read("src/components/dreelio/Footer.tsx");
+  const css = read("src/components/dreelio/Footer.module.css");
+
+  assert.match(footer, /Encrypted before storage\. Yours to unlock\./);
+  assert.match(footer, /aria-label=\{col\.heading\}/);
+  assert.match(footer, /<PaymentBadges/);
+  assert.match(footer, /Payments secured by Razorpay/);
+  assert.match(footer, /href="\/privacy"/);
+  assert.match(footer, /href="\/terms"/);
+  assert.doesNotMatch(footer, /styles\.card|styles\.divider/);
+  assert.match(css, /#0b0b0d/i);
+  assert.match(css, /#f5f5f7/i);
+  assert.match(css, /#a1a1a6/i);
+  assert.match(css, /#2997ff/i);
+  assert.match(css, /#30d158/i);
+  assert.match(css, /@media \(max-width: 720px\)/);
+  assert.match(css, /@media \(max-width: 360px\)/);
+  assert.match(css, /prefers-reduced-motion:\s*reduce/);
+});
+
 test("security architecture and public explainer match the implemented boundaries", () => {
   const architecturePath = "src/components/dreelio/SecurityArchitecture.tsx";
   const securityPath = "src/app/security/page.tsx";

@@ -26,4 +26,6 @@ test("footer payment marks are downloaded image assets, never hand-drawn markup"
   assert.doesNotMatch(badges, /<svg|<circle|VISA<|>RuPay<|>UPI</);
   assert.doesNotMatch(css, /Georgia|Times New Roman|\.visa\s*\{/);
   assert.match(badges, /Net banking via Razorpay/);
+  assert.match(css, /\.marks\s*\{[^}]*flex-wrap:\s*wrap/s);
+  assert.match(css, /\.mark\s*\{[^}]*background:\s*#fff(?:fff)?/is);
 });
