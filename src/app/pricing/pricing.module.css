@@ -286,6 +286,7 @@
 }
 
 .compareCheck {
+  display: inline-block;
   width: 17px;
   height: 17px;
   color: var(--pill-green);
