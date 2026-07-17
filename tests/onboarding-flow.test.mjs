@@ -23,3 +23,29 @@ test("step model lists the five steps in flow order with avatar as the skip targ
   // Motion respects reduced motion (opacity-only path).
   assert.match(source, /reduceMotion/);
 });
+
+test("presentational step components exist and stay logic-free", () => {
+  const steps = {
+    intro: "src/components/auth/onboarding-steps/IntroScreen.tsx",
+    avatar: "src/components/auth/onboarding-steps/AvatarStep.tsx",
+    masterKey: "src/components/auth/onboarding-steps/MasterKeyStep.tsx",
+    completion: "src/components/auth/onboarding-steps/CompletionStep.tsx",
+  };
+  for (const path of Object.values(steps)) {
+    assert.equal(existsSync(file(path)), true, `${path} must exist`);
+  }
+  // No security-critical logic may live in the presentational layer.
+  for (const path of Object.values(steps)) {
+    const source = read(path);
+    assert.doesNotMatch(source, /supabase|fetch\(|setMasterKey|onboarding\/complete|PlanIntent/i, `${path} must stay presentational`);
+  }
+  // MasterKeyStep exposes the two known input ids and defers submit to the parent.
+  const masterKey = read(steps.masterKey);
+  assert.match(masterKey, /id="onboarding-master-key"/);
+  assert.match(masterKey, /id="onboarding-master-key-confirmation"/);
+  assert.doesNotMatch(masterKey, /onSubmit|masterKeyConfirmation\s*!==|preventDefault/);
+  // AvatarStep offers both preset kinds and a clear (skip) affordance.
+  const avatar = read(steps.avatar);
+  assert.match(avatar, /"male"[\s\S]*"female"/);
+  assert.match(avatar, /onSelect\(null\)/);
+});
