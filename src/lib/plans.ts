@@ -1,13 +1,13 @@
-// Plan definitions and limits for the Free / Plus / Family tiers.
+// Plan definitions and limits for the Free / Plus tiers.
 //
 // This is the single source of truth on the client. The same numbers are
 // mirrored in the Postgres migration (20260717120000_pricing_plans.sql), which
 // is where the limits are actually *enforced* — keep the two in sync when
 // changing a limit. Marketing copy lives in components/dreelio/pricing-data.ts.
 
-export type PlanId = "free" | "plus" | "family";
+export type PlanId = "free" | "plus";
 
-export const PLAN_IDS: readonly PlanId[] = ["free", "plus", "family"] as const;
+export const PLAN_IDS: readonly PlanId[] = ["free", "plus"] as const;
 
 export function isPlanId(value: unknown): value is PlanId {
   return typeof value === "string" && (PLAN_IDS as readonly string[]).includes(value);
@@ -37,13 +37,6 @@ export const PLANS: Record<PlanId, PlanLimits> = {
   plus: {
     id: "plus",
     label: "Plus",
-    documentBytes: 5 * GIGABYTE,
-    walletRecords: null,
-    aiPerMonth: null,
-  },
-  family: {
-    id: "family",
-    label: "Family",
     documentBytes: 5 * GIGABYTE,
     walletRecords: null,
     aiPerMonth: null,

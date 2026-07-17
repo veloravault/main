@@ -68,9 +68,14 @@ test("orchestrator preserves the onboarding security contract", () => {
   assert.match(source, /setMasterKeyValue\(["']{2}\)/);
   assert.match(source, /setMasterKeyConfirmation\(["']{2}\)/);
 
-  // Plan-intent redirect (ternary form) with a literal /vault fallback.
-  assert.match(source, /router\.replace\(\s*intent\s*\?/);
-  assert.match(source, /:\s*["']\/vault["']\)/);
+  // Plan-intent destination is preserved, but navigation waits for the user's
+  // explicit action on the completion screen.
+  assert.match(source, /setDestination\(\s*intent\s*\?/);
+  assert.match(source, /:\s*["']\/vault["']\s*\)/);
+  assert.match(source, /function continueToVault/);
+  assert.match(source, /<CompletionStep[^>]*onContinue=\{continueToVault\}/s);
+  const activationBlock = source.slice(source.indexOf('fetch("/api/onboarding/complete"'), source.indexOf("} catch (cause)"));
+  assert.doesNotMatch(activationBlock, /router\.replace/);
 
   // Ordering invariant: identity re-check -> activation -> key handoff.
   const liveRecheckIndex = source.indexOf("supabase.auth.getUser()");
@@ -78,4 +83,12 @@ test("orchestrator preserves the onboarding security contract", () => {
   const keyIndex = source.indexOf("setMasterKey(masterKey");
   assert.ok(liveRecheckIndex >= 0 && liveRecheckIndex < activationIndex, "identity must be checked before activation");
   assert.ok(activationIndex < keyIndex, "activation must precede the local key handoff");
+});
+
+test("completion screen is an actionable final state", () => {
+  const completion = read("src/components/auth/onboarding-steps/CompletionStep.tsx");
+  assert.match(completion, /onContinue:\s*\(\) => void/);
+  assert.match(completion, /<button[^>]*onClick=\{onContinue\}/s);
+  assert.match(completion, /Open (?:my )?vault/i);
+  assert.doesNotMatch(completion, /Taking you in/i);
 });

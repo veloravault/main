@@ -1,5 +1,5 @@
 // Carries a chosen paid plan across the signup -> email confirmation ->
-// onboarding boundary, so a new user who picked Plus/Family on the pricing
+// onboarding boundary, so a new user who picked Plus on the pricing
 // page lands straight in checkout instead of hunting through Settings
 // afterward. A cookie (not sessionStorage) because confirming an email
 // commonly opens a new tab/window — sessionStorage wouldn't survive that,
@@ -8,7 +8,7 @@
 import type { PlanId } from "@/lib/plans";
 
 export type PlanIntentPeriod = "monthly" | "yearly";
-export type PlanIntentPlan = Extract<PlanId, "plus" | "family">;
+export type PlanIntentPlan = Extract<PlanId, "plus">;
 
 export interface PlanIntent {
   plan: PlanIntentPlan;
@@ -19,7 +19,7 @@ const COOKIE_NAME = "velora_plan_intent";
 const MAX_AGE_SECONDS = 60 * 60; // 1 hour — plenty for a signup + email-confirm round trip.
 
 function isPlanIntentPlan(value: string): value is PlanIntentPlan {
-  return value === "plus" || value === "family";
+  return value === "plus";
 }
 
 function isPlanIntentPeriod(value: string): value is PlanIntentPeriod {

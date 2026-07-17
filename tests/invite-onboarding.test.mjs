@@ -22,12 +22,14 @@ test("onboarding only sets the master key — the sign-in password is set at sig
   assert.match(source, /setMasterKey\(masterKey,\s*userId\)/);
   assert.match(source, /setMasterKeyValue\(["']{2}\)/);
   assert.match(source, /setMasterKeyConfirmation\(["']{2}\)/);
-  // After onboarding, a paid-plan intent captured before signup routes straight
-  // to checkout; otherwise land on the plain vault.
+  // After onboarding, preserve any paid-plan intent but wait for the explicit
+  // completion action before leaving the final success screen.
   assert.match(source, /readPlanIntentCookie\(\)/);
   assert.match(source, /clearPlanIntentCookie\(\)/);
-  assert.match(source, /router\.replace\(\s*intent\s*\?/);
-  assert.match(source, /:\s*["']\/vault["']\)/);
+  assert.match(source, /setDestination\(intent\s*\?/);
+  assert.match(source, /setIndex\(ONBOARDING_STEPS\.indexOf\("done"\)\)/);
+  assert.match(source, /router\.replace\(destination\)/);
+  assert.match(source, /<CompletionStep onContinue=\{continueToVault\}/);
 
   const liveRecheckIndex = source.indexOf("supabase.auth.getUser()");
   const activationIndex = source.indexOf('fetch("/api/onboarding/complete"');

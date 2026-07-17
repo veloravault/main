@@ -26,11 +26,16 @@ export async function POST(req: NextRequest) {
 
     await cancelSubscription(row.razorpay_subscription_id);
 
-    // Best-effort local update; the webhook (subscription.cancelled) is the
-    // authoritative path that reverts app_members.plan.
-    await admin.from("subscriptions").update({ status: "cancelled", updated_at: new Date().toISOString() }).eq("razorpay_subscription_id", row.razorpay_subscription_id);
+    // The subscription remains active until Razorpay emits
+    // subscription.cancelled at the billing-period end. Track the scheduled
+    // state locally without revoking paid access early.
+    const { error: updateError } = await admin
+      .from("subscriptions")
+      .update({ cancel_at_cycle_end: true, updated_at: new Date().toISOString() })
+      .eq("razorpay_subscription_id", row.razorpay_subscription_id);
+    if (updateError) throw updateError;
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, cancel_at_cycle_end: true });
   } catch (error: unknown) {
     console.error("cancel subscription failed:", error);
     return NextResponse.json({ error: "Could not cancel your subscription. Try again." }, { status: 500 });

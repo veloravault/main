@@ -176,7 +176,7 @@ export default function VaultApp() {
     const params = new URLSearchParams(window.location.search);
     const plan = params.get("upgrade");
     const period = params.get("period");
-    if ((plan === "plus" || plan === "family") && (period === "monthly" || period === "yearly")) {
+    if (plan === "plus" && (period === "monthly" || period === "yearly")) {
       window.history.replaceState(null, "", "/vault");
       queueMicrotask(() => {
         setActiveTab("profile");

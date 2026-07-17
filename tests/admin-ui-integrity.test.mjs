@@ -25,6 +25,7 @@ test("admin console exposes only the Members and Activity sections", () => {
   assert.match(consoleSource, /useRouter/);
   assert.match(consoleSource, /250/);
   assert.match(consoleSource, /nextCursor/);
+  assert.match(consoleSource, /member\.plan === "plus"/);
   assert.match(consoleSource, /setItems\(\(current\).*\.\.\.current.*\.\.\.page\.items/s);
 });
 
@@ -49,15 +50,37 @@ test("query generations fence and abort stale initial and append requests", () =
   assert.match(consoleSource, /Retry loading more/);
 });
 
-test("only server-confirmed member status changes are applied, with a confirm step before revoke", () => {
+test("only server-confirmed member status changes are applied through an accessible confirm step", () => {
   const consoleSource = read("src/components/admin/AdminConsole.tsx");
   assert.match(consoleSource, /response\.status === 401/);
   assert.match(consoleSource, /response\.status === 403/);
   assert.match(consoleSource, /response\.status === 404/);
   assert.match(consoleSource, /response\.status === 409/);
-  assert.match(consoleSource, /window\.confirm/);
+  assert.match(consoleSource, /AdminConfirmDialog/);
+  assert.match(consoleSource, /pendingMutation/);
+  assert.doesNotMatch(consoleSource, /window\.confirm/);
+  const dialog = read("src/components/admin/AdminConfirmDialog.tsx");
+  assert.match(dialog, /role="alertdialog"/);
+  assert.match(dialog, /event\.key === "Tab"/);
   const catchBlock = consoleSource.match(/catch \{([\s\S]*?)\n\s*\} finally/)?.[1] ?? "";
   assert.doesNotMatch(catchBlock, /setItems\(\(current\)/);
+});
+
+test("activity view loads the real audit API and owner controls are usable", () => {
+  const consoleSource = read("src/components/admin/AdminConsole.tsx");
+  const activity = read("src/components/admin/AdminActivity.tsx");
+  const sidebar = read("src/components/admin/AdminSidebar.tsx");
+  const css = read("src/app/admin/admin.module.css");
+
+  assert.match(consoleSource, /<AdminActivity/);
+  assert.match(activity, /fetch\(`\/api\/admin\/activity/);
+  assert.match(activity, /nextCursor/);
+  assert.match(sidebar, /href="\/vault"/);
+  assert.match(sidebar, /onSignOut/);
+  assert.match(consoleSource, /supabase\.auth\.signOut/);
+  assert.match(consoleSource, /view === "members"[\s\S]*className=\{styles\.search\}/);
+  assert.match(css, /\.activityList/);
+  assert.doesNotMatch(css, /5\.8rem/);
 });
 
 test("client search normalization preserves human names and removes filter grammar", async () => {

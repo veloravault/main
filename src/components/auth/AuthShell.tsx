@@ -11,28 +11,19 @@ type AuthShellProps = {
   description: ReactNode;
   eyebrow?: string;
   mode?: AuthMode;
-  onModeChange?: (mode: AuthMode) => void;
   children: ReactNode;
   footer?: ReactNode;
   compact?: boolean;
-  variant?: "page" | "modal";
 };
-
-const modes: Array<{ value: AuthMode; label: string }> = [
-  { value: "sign-in", label: "Sign In" },
-  { value: "sign-up", label: "Sign Up" },
-];
 
 export function AuthShell({
   title,
   description,
   eyebrow,
   mode,
-  onModeChange,
   children,
   footer,
   compact = false,
-  variant = "page",
 }: AuthShellProps) {
   const reduceMotion = useReducedMotion();
   const contentKey = mode ?? title;
@@ -60,21 +51,6 @@ export function AuthShell({
         </motion.header>
       </AnimatePresence>
 
-      {mode && onModeChange && (
-        <div className={styles.segmented} role="group" aria-label="Access method">
-          {modes.map((item) => (
-            <button
-              key={item.value}
-              type="button"
-              aria-pressed={mode === item.value}
-              onClick={() => onModeChange(item.value)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      )}
-
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={`content-${contentKey}`}
@@ -91,10 +67,6 @@ export function AuthShell({
       {footer && <footer className={styles.footer}>{footer}</footer>}
     </motion.section>
   );
-
-  if (variant === "modal") {
-    return <div className={styles.modalCard}>{stage}</div>;
-  }
 
   return <main className={styles.page}>{stage}</main>;
 }

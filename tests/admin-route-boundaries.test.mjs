@@ -5,6 +5,7 @@ import { test } from "node:test";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
 const adminRoutes = [
+  "src/app/api/admin/activity/route.ts",
   "src/app/api/admin/members/route.ts",
   "src/app/api/admin/members/[id]/route.ts",
 ];
@@ -18,6 +19,27 @@ test("every admin handler authorizes before any privileged repository operation"
     assert.ok(repositoryIndex < 0 || adminIndex < repositoryIndex, `${file} must authorize first`);
     assert.doesNotMatch(source, /user_metadata|\.email\s*===|ADMIN_USER_IDS/);
   }
+});
+
+test("activity is a real paginated audit feed without sensitive payloads", () => {
+  const route = read("src/app/api/admin/activity/route.ts");
+  const repository = read("src/lib/server/access-repository.ts");
+
+  assert.match(route, /await requireAdmin\(\)/);
+  assert.match(route, /parseAdminActivityCursor/);
+  assert.match(route, /listAdminActivity/);
+  assert.match(repository, /ADMIN_ACTIVITY_PAGE_SIZE\s*=\s*30/);
+  assert.match(repository, /\.from\("admin_audit_log"\)/);
+  assert.match(repository, /\.select\("id,action,result_code,actor_user_id,member_user_id,created_at"\)/);
+  assert.doesNotMatch(repository, /admin_audit_log[\s\S]{0,240}(payload|details|metadata)/i);
+  assert.match(repository, /ADMIN_ACTIVITY_TIMESTAMP/);
+  assert.match(repository, /ADMIN_ACTIVITY_CURSOR/);
+});
+
+test("updated member DTOs re-read the authoritative plan after the mutation RPC", () => {
+  const repository = read("src/lib/server/access-repository.ts");
+  assert.match(repository, /rpc\("mutate_member_status"[\s\S]*\.from\("app_members"\)[\s\S]*\.select\("user_id,email,status,plan,access_request_id,approved_at,activated_at,created_at"\)/);
+  assert.match(repository, /return \{ kind: "updated", member: memberDto\(updatedMember as MemberRow\) \}/);
 });
 
 test("admin mutations enforce same origin before parsing a body", () => {
@@ -41,7 +63,7 @@ test("member mutation accepts only suspended or revoked and member lists are DTO
   assert.match(route, /Object\.keys/);
   assert.match(repository, /MEMBER_PAGE_SIZE\s*=\s*25/);
   assert.match(listRoute, /UNSAFE_SEARCH/);
-  assert.match(repository, /\.select\("user_id,email,status,access_request_id,approved_at,activated_at,created_at"\)/);
+  assert.match(repository, /\.select\("user_id,email,status,plan,access_request_id,approved_at,activated_at,created_at"\)/);
   assert.doesNotMatch(repository, /\.select\(\s*"\*"|\.range\(|offset/i);
 });
 

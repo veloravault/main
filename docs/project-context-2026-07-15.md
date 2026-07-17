@@ -1,237 +1,131 @@
 # Velora Vault Project Context
 
-Last updated: 2026-07-16
+Last updated: 2026-07-17
 
 ## Project identity
 
-- Product name: `Velora Vault`
-- GitHub repository: `https://github.com/veloravault/main`
-- Production URL: `https://veloravault.in` (custom domain live as of 2026-07-17; `https://veloravault.vercel.app` still resolves but is no longer canonical)
+- Product: Velora Vault
+- Repository: `https://github.com/veloravault/main`
+- Canonical production URL: `https://veloravault.in`
+- Legacy deployment URL: `https://veloravault.vercel.app`
 - Vercel project: `veloravault/main`
 - Supabase project ref: `bzwkzklitrzwqksjmmby`
-- Product category: invite-only encrypted personal vault
-- Core promise: a calm, Apple-like, premium vault for passwords, documents, notes, wallet items, and bank-account details
+- Product category: encrypted personal vault with open signup
+- Visual direction: calm, premium, Apple-ecosystem inspired
 
-## Product summary
+`www.veloravault.in` must redirect to the apex domain. Do not introduce a second canonical host.
 
-This project is a Next.js 16 + React 19 + Supabase application that combines:
+## Current product model
 
-- a public marketing and access-request experience
-- an invite-only member onboarding flow
-- a private vault application behind active membership checks
-- an owner-only admin console for approval of access requests
+Velora Vault stores passwords, encrypted documents, secure notes, wallet cards, and bank-account details. The public site links to dedicated `/login` and `/signup` pages; the older sign-in/signup popup has been removed.
 
-The app is intentionally split between two trust layers:
+Account authentication and vault decryption are separate trust layers:
 
-- account access through Supabase Auth
-- local vault decryption through a separate master key
+- Supabase Auth verifies the account sign-in password.
+- A separate vault master key decrypts vault contents locally.
+- The master key stays in client memory and is never sent to Supabase, Route Handlers, analytics, logs, email, or persistent browser storage.
 
-The sign-in password and vault master key are different secrets.
+The product has two plans only:
+
+- Free
+- Plus
+
+There is no Family plan or seat-management functionality. Legacy `family` rows are migrated to Plus by the latest pricing migration.
 
 ## Current user journey
 
-### Public flow
+1. A visitor opens `/signup` and creates an account.
+2. Supabase sends the confirmation email.
+3. `/confirm-signup` presents the confirmation action without consuming the token on GET.
+4. `/auth/confirm-signup` verifies the token on explicit POST and provisions the membership.
+5. `/onboarding` configures the vault master key, recovery acknowledgement, optional PIN/biometric conveniences, and activates the membership.
+6. The completion screen waits for the user to choose **Open my vault**.
+7. `/vault` requires the active Supabase account and the separate local master key.
 
-1. Visitor lands on `/`
-2. Visitor requests access at `/request-access` using only name and email
-3. Request is stored as a pending access request
-4. Owner reviews requests in `/admin`
-5. Approved user receives a Supabase invitation email
-
-### Invite and onboarding flow
-
-1. User opens `/accept-invite`
-2. Explicit POST to `/auth/confirm` verifies the invite
-3. User completes `/onboarding`
-4. User creates the account sign-in password
-5. User reaches `/vault`
-6. User enters the separate vault master key to decrypt vault data locally
-
-### Private app flow
-
-Once unlocked, members use a native-app-style vault shell with these main modules:
-
-- Dashboard
-- Passwords
-- Documents
-- Notes
-- Wallet
-- Bank Accounts
-- Settings
+`/request-access` and the old invite design documents are historical compatibility context, not the current acquisition flow.
 
 ## Main routes
 
-- `/`: public landing page
-- `/request-access`: invite request form
-- `/login`: member sign-in
-- `/accept-invite`: non-consuming invitation review
-- `/auth/confirm`: same-origin invite confirmation step
-- `/onboarding`: invited-member activation flow
-- `/vault`: authenticated vault experience
-- `/admin`: owner-only approval console
+| Route | Purpose |
+| --- | --- |
+| `/` | Public product landing page |
+| `/pricing` | Free and Plus pricing |
+| `/login` | Account sign in |
+| `/signup` | Open account signup |
+| `/confirm-signup` | Non-consuming confirmation review |
+| `/auth/confirm-signup` | Same-origin token verification POST |
+| `/onboarding` | Vault setup and membership activation |
+| `/vault` | Private encrypted vault application |
+| `/admin` | Owner-only member and audit console |
+| `/privacy`, `/terms`, `/security` | Public trust and legal pages |
 
-## Core architecture
+## Runtime architecture
 
-### Frontend
+- Next.js `16.2.10`, React `19.2.7`, TypeScript, Tailwind CSS 4, Framer Motion.
+- Supabase Auth for accounts and sessions.
+- Supabase Postgres with RLS for membership, billing state, and encrypted structured vault records.
+- Supabase Storage for avatars.
+- Cloudflare R2 for client-encrypted document blobs.
+- Razorpay for recurring Plus subscriptions; webhooks are authoritative for paid-plan changes.
+- Supabase Auth with configured SMTP for transactional account email.
+- Google Gemini and configured AI services only for user-requested AI import/categorization operations.
 
-- Framework: `Next.js 16.2.10`
-- React: `19.2.7`
-- Motion: `framer-motion`
-- Theming: `next-themes`
-- UI direction: Apple-inspired desktop master-detail plus mobile sheet/tab patterns
+R2 credentials, Razorpay secrets, Supabase secret keys, and SMTP credentials are server-only. Never add them to `NEXT_PUBLIC_*`, committed files, shell allowlists, logs, screenshots, or test fixtures.
 
-Important top-level UI files:
+## Security and authorization
 
+- RLS checks row ownership and active membership for protected vault data.
+- `src/proxy.ts` refreshes cookies but is not an authorization boundary.
+- Protected server operations repeat authentication and membership authorization at the point of use.
+- Owner access is based on immutable configured Supabase user UUIDs, not email or editable metadata.
+- Admin member transitions are monotonic: active/invited can be blocked, and non-revoked accounts can be permanently revoked. The current console does not restore either state.
+- The admin Activity view reads the real `admin_audit_log`; it is not placeholder content.
+- PIN and platform-authenticator unlock are local convenience wrappers and do not replace the master key.
+
+## Storage and deletion
+
+- Structured records are encrypted before being written to Supabase.
+- Document bytes are encrypted in the browser and uploaded to Cloudflare R2 through presigned requests.
+- Account deletion removes R2 objects under the user prefix and cleans applicable Supabase records/storage.
+- AI-assisted import is an explicit exception to local-only source processing: only material selected for the requested operation is sent to the configured processor before the reviewed result is encrypted.
+
+## Billing
+
+- Free and Plus are the only supported plan IDs.
+- Checkout creates Razorpay subscriptions server-side.
+- The verification endpoint validates the returned subscription proof but does not independently grant paid access.
+- Razorpay webhooks are the source of truth for activation, renewal, cancellation, and reversion to Free.
+- Cancellation is scheduled for the end of the paid cycle; access must not be removed immediately when the user clicks cancel.
+
+## UI direction
+
+- Preserve the established Apple-like shell, compact hierarchy, native-feeling sheets, grouped lists, frosted materials, and safe-area behavior.
+- Prefer dedicated pages for major account journeys. Authentication uses `/login` and `/signup`, not a marketing-page popup.
+- Use authentic brand assets for external payment marks. Do not redraw payment logos in CSS or SVG code.
+- Landing-page product previews should depict Velora Vault itself, not unrelated template screenshots.
+- Keep mobile and desktop both first-class; admin is an operational product surface, not a placeholder dashboard.
+
+## Development and release
+
+```bash
+npm install
+npm test
+npm run lint
+npx tsc --noEmit
+npm run build
+npm audit --audit-level=high
+```
+
+All database changes must be new files in `supabase/migrations/`. Before production release, verify migrations against the linked Supabase project, hosted Auth redirect URLs and SMTP, R2 CORS/credentials, Razorpay plans/webhook secret, and both the apex and `www` domain behavior.
+
+## Start here next time
+
+- [README.md](../README.md)
 - [src/app/page.tsx](../src/app/page.tsx)
 - [src/components/VaultApp.tsx](../src/components/VaultApp.tsx)
-- [src/components/settings/Settings.tsx](../src/components/settings/Settings.tsx)
-- [src/app/globals.css](../src/app/globals.css)
-
-### Backend and data
-
-- Backend platform: Supabase
-- Auth: Supabase Auth
-- Data layer: Postgres with RLS
-- Storage: Supabase Storage
-- Server-side access control helpers live under `src/lib/server/*`
-
-Important server and security files:
-
-- [src/lib/server/access.ts](../src/lib/server/access.ts)
+- [src/components/auth/OnboardingFlow.tsx](../src/components/auth/OnboardingFlow.tsx)
+- [src/components/admin/AdminConsole.tsx](../src/components/admin/AdminConsole.tsx)
 - [src/lib/server/access-repository.ts](../src/lib/server/access-repository.ts)
-- [src/lib/server/invitations.ts](../src/lib/server/invitations.ts)
-- [src/lib/vaultSession.ts](../src/lib/vaultSession.ts)
-- [src/lib/crypto.ts](../src/lib/crypto.ts)
-- [src/proxy.ts](../src/proxy.ts)
-
-## Security model
-
-### Hard boundaries
-
-- The vault master key remains client-side only
-- The master key must never be sent to Supabase Auth, Route Handlers, logs, analytics, email, or persistent browser storage
-- Account authorization depends on both authentication and active membership status
-- Owner-only actions depend on immutable configured admin UUIDs, not email similarity or user metadata
-
-### Active membership model
-
-The invite-only system uses an `app_members` layer in addition to normal authentication.
-
-- unauthenticated users cannot access vault or admin data
-- invited but inactive users cannot access vault data
-- active members can access only their own vault rows and private storage objects
-- admins can review and approve access requests
-
-### Local unlock conveniences
-
-- PIN and local biometrics are device-local wrappers
-- they do not replace the master key
-- they do not weaken server-side authorization rules
-
-## UI and product direction
-
-The established visual direction for this repo is:
-
-- Apple-like
-- calm, premium, restrained
-- mobile-first in behavior, but polished on desktop too
-- reduced visual noise
-- native-feeling sheets, tab bars, grouped lists, and frosted surfaces
-
-Important design themes already implemented:
-
-- shared desktop master-detail patterns
-- shared mobile bottom-sheet patterns
-- invite-only landing page with a more polished product-marketing layer
-- settings redesigned in an iOS-settings-like structure
-
-Wallet was treated as a specially polished area and should not be casually redesigned unless explicitly requested again.
-
-## Feature areas present in the repo
-
-- Password vault
-- Document vault
-- Secure notes
-- Wallet and payment cards
-- Bank accounts
-- Global magic import
-- AI-assisted vault search
-- Connectivity banner and offline-aware states
-- Auto-lock and local unlock helpers
-- Settings for account, security, appearance, backup, legal, and danger zone
-- Admin queue for access requests and approvals
-
-## Invite-only operational notes
-
-The hosted rollout is active on the new Velora Vault GitHub, Vercel, and Supabase accounts. Future schema changes must be created as migrations under `supabase/migrations/` and applied through the linked Supabase project.
-
-Key rollout docs:
-
-- [README.md](../README.md)
-- [docs/invite-only-rollout.md](invite-only-rollout.md)
-- [docs/supabase/invite-email.html](supabase/invite-email.html)
-- [supabase/config.toml](../supabase/config.toml)
+- [src/lib/server/r2.ts](../src/lib/server/r2.ts)
+- [src/app/api/payments](../src/app/api/payments)
 - [supabase/migrations](../supabase/migrations)
-
-The rollout doc covers:
-
-- backup-first migration procedure
-- invite-access schema deployment
-- owner UUID setup
-- SMTP and invite email configuration
-- disabling public signup
-- denial-path verification
-- retirement of legacy keys
-
-## Local development
-
-### Stack
-
-- Node.js 20+
-- npm
-- Next.js 16
-- TypeScript
-- Tailwind CSS 4
-- Supabase SSR and Supabase JS
-
-### Main scripts
-
-- `npm run dev`
-- `npm test`
-- `npm run lint`
-- `npm run build`
-
-Tests currently run through:
-
-- `node --test tests/*.test.mjs`
-
-## Current infrastructure state
-
-Verified on 2026-07-16:
-
-- branch: `main`
-- GitHub remote: `https://github.com/veloravault/main.git`
-- production URL: `https://veloravault.in` (migrated from `https://veloravault.vercel.app` on 2026-07-17)
-- Vercel project is linked to `veloravault/main` with production branch `main`
-- Supabase project ref: `bzwkzklitrzwqksjmmby`
-- Supabase schema and data migrations are tracked in `supabase/migrations/`
-- local browser artifacts and provider probe scripts are intentionally ignored
-
-## Important current decisions
-
-- The project is invite-only, not open-signup
-- Name + email is the public intake, nothing more
-- Admin approval is the gate to access
-- The sign-in password is separate from the vault master key
-- The vault master key model must remain intact
-- The UI language should stay premium and Apple-like
-- The admin console is part of the product, not an afterthought
-
-## Good files to read first next time
-
-- [README.md](../README.md)
-- [docs/invite-only-rollout.md](invite-only-rollout.md)
-- [src/components/VaultApp.tsx](../src/components/VaultApp.tsx)
-- [src/app/page.tsx](../src/app/page.tsx)
-- [src/app/admin/page.tsx](../src/app/admin/page.tsx)
-- [src/components/settings/Settings.tsx](../src/components/settings/Settings.tsx)

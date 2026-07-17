@@ -4,11 +4,11 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import type { PlanId } from "@/lib/plans";
 
 // Thin wrapper over the Razorpay REST API (no SDK). Auth is HTTP Basic with
-// key_id:key_secret. Only PLUS_MONTHLY/FAMILY_YEARLY etc. plan_ids are ever
+// key_id:key_secret. Only the configured Plus plan ids are ever
 // sent to Razorpay — the client only ever chooses among a fixed enum, never a
 // raw Razorpay plan_id or amount, which closes off price tampering.
 
-export type PaidPlanId = Extract<PlanId, "plus" | "family">;
+export type PaidPlanId = Extract<PlanId, "plus">;
 export type BillingPeriod = "monthly" | "yearly";
 
 const API_BASE = "https://api.razorpay.com/v1";
@@ -96,7 +96,10 @@ export async function createSubscription(params: {
 }
 
 export async function cancelSubscription(subscriptionId: string): Promise<void> {
-  await request(`/subscriptions/${subscriptionId}/cancel`, { method: "POST", body: JSON.stringify({}) });
+  await request(`/subscriptions/${subscriptionId}/cancel`, {
+    method: "POST",
+    body: JSON.stringify({ cancel_at_cycle_end: true }),
+  });
 }
 
 export { planIdFor };

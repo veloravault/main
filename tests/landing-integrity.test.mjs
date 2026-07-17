@@ -29,6 +29,19 @@ test("landing uses the current Velora public composition", () => {
   assert.doesNotMatch(page, /zero knowledge/i);
 });
 
+test("landing product media depicts Velora rather than imported Dreelio screenshots", () => {
+  const files = [
+    "src/app/page.tsx",
+    "src/components/dreelio/Hero.tsx",
+    "src/components/dreelio/Devices.tsx",
+    "src/components/dreelio/FeatureSplit.tsx",
+  ].map(read).join("\n");
+
+  assert.doesNotMatch(files, /\/dreelio\/img\//);
+  assert.doesNotMatch(files, /hero-dashboard|project-ui|budget-ui|mobile-app\.png|devices\.png/);
+  assert.match(files, /VeloraProductPreview/);
+});
+
 test("landing palette keeps body text and actions accessible", () => {
   const css = read("src/app/dreelio/dreelio.module.css");
 

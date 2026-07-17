@@ -12,17 +12,17 @@ const CONTACT_CHANNELS = [
   {
     title: "General & account support",
     body: "Questions about your account, signing up, or how the vault works.",
-    email: "hello@velora.vault",
+    email: "hello@veloravault.in",
   },
   {
     title: "Security disclosures",
     body: "Found a vulnerability? Tell us before anyone else finds it — we credit responsible disclosures.",
-    email: "security@velora.vault",
+    email: "security@veloravault.in",
   },
   {
     title: "Privacy & data requests",
     body: "Access, correction, or deletion requests for the account information we hold.",
-    email: "privacy@velora.vault",
+    email: "privacy@veloravault.in",
   },
 ];
 

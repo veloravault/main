@@ -13,7 +13,6 @@ import {
   staggerItem,
 } from "./motion";
 import { RecoveryVisual, SecurityFlowVisual, SecurityHeroVisual } from "./SecurityVisuals";
-import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
 const CRYPTO_FACTS = [
   ["Cipher", "AES-256-GCM"],
@@ -32,7 +31,6 @@ const THREAT_BOUNDARIES = [
 
 export function SecurityPageContent() {
   const reduceMotion = useReducedMotion();
-  const { openAuth } = useAuthModal();
   const reveal = reduceMotion ? undefined : revealVariants(22);
 
   return (
@@ -254,7 +252,7 @@ export function SecurityPageContent() {
         </div>
         <div className={styles.actions}>
           <motion.div whileHover={reduceMotion ? undefined : HOVER_LIFT} whileTap={reduceMotion ? undefined : TAP_PRESS}>
-            <button type="button" onClick={() => openAuth("sign-up")} className={styles.primaryAction}>Sign up free</button>
+            <Link href="/signup" className={styles.primaryAction}>Sign up free</Link>
           </motion.div>
           <Link href="/privacy" className={styles.secondaryAction}>Read the privacy policy</Link>
         </div>

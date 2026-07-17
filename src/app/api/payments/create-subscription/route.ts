@@ -13,7 +13,7 @@ import {
 import { InvalidJsonBodyError, PayloadTooLargeError, readBoundedJson } from "@/lib/server/requestBody";
 
 const MAX_BODY_BYTES = 512;
-const PAID_PLANS = new Set<PaidPlanId>(["plus", "family"]);
+const PAID_PLANS = new Set<PaidPlanId>(["plus"]);
 const PERIODS = new Set<BillingPeriod>(["monthly", "yearly"]);
 
 export async function POST(req: NextRequest) {

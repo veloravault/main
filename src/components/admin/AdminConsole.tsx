@@ -3,15 +3,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
-  ActivityIcon,
   CheckCircle2Icon,
   ChevronDownIcon,
   LockKeyholeIcon,
+  LogOutIcon,
   SearchIcon,
 } from "lucide-react";
 import { useToast } from "@/components/Toast";
 import { StateView } from "@/components/ui/state-view";
 import { AdminSidebar } from "./AdminSidebar";
+import { AdminActivity } from "./AdminActivity";
+import { AdminConfirmDialog } from "./AdminConfirmDialog";
 import { AdminSkeleton } from "./AdminSkeleton";
 import { normalizeAdminSearch } from "./admin-client";
 import {
@@ -21,6 +23,7 @@ import {
 } from "./types";
 import styles from "@/app/admin/admin.module.css";
 import { VeloraMark } from "@/components/VeloraMark";
+import { supabase } from "@/lib/supabase";
 
 const ADMIN_VIEWS: readonly AdminView[] = ["members", "activity"];
 const MEMBER_FILTERS: readonly MemberFilter[] = ["all", "invited", "active", "suspended", "revoked"];
@@ -72,20 +75,16 @@ function MemberQueue(props: {
         return (
           <article className={styles.memberRow} key={member.id} role="listitem">
             <span className={styles.memberGlyph}><LockKeyholeIcon aria-hidden="true" /></span>
-            <span className={styles.memberIdentity}><strong>{member.email}</strong><small>Joined {memberDate(member.approvedAt)}</small></span>
+            <span className={styles.memberIdentity}><strong>{member.email}</strong><small>Joined {memberDate(member.approvedAt)} · {member.plan === "plus" ? "Plus" : "Free"} plan</small></span>
             <span className={styles.memberActions}>
               <span className={styles.memberStatus} data-status={member.status}>{member.status}</span>
               {canSuspend && (
                 <button type="button" disabled={mutating} onClick={() => props.onMutate(member, "suspended")}>
-                  Suspend
+                  Block access
                 </button>
               )}
               {canRevoke && (
-                <button type="button" disabled={mutating} data-destructive onClick={() => {
-                  if (window.confirm(`Revoke vault access for ${member.email}? This can't be undone.`)) {
-                    props.onMutate(member, "revoked");
-                  }
-                }}>
+                <button type="button" disabled={mutating} data-destructive onClick={() => props.onMutate(member, "revoked")}>
                   Revoke
                 </button>
               )}
@@ -115,8 +114,10 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
   const [error, setError] = useState<string | null>(null);
   const [appendError, setAppendError] = useState<string | null>(null);
   const [mutatingId, setMutatingId] = useState<string | null>(null);
+  const [pendingMutation, setPendingMutation] = useState<{ member: AdminMember; status: "suspended" | "revoked" } | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const pendingUrlSearchRef = useRef<string | null>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
   const queryGenerationRef = useRef(0);
   const requestControllersRef = useRef<Set<AbortController>>(new Set());
 
@@ -162,6 +163,18 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
     }, 250);
     return () => window.clearTimeout(timer);
   }, [searchInput, searchQuery, updateUrl]);
+
+  useEffect(() => {
+    if (view !== "members") return;
+    const focusSearch = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", focusSearch);
+    return () => window.removeEventListener("keydown", focusSearch);
+  }, [view]);
 
   const loadPage = useCallback(async (cursor: string | null, append: boolean, generation = queryGenerationRef.current) => {
     if (view === "activity") {
@@ -296,7 +309,14 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
       toast({ message: "The connection dropped before confirmation. Try again.", type: "error" });
     } finally {
       setMutatingId(null);
+      setPendingMutation(null);
     }
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    router.replace("/login");
+    router.refresh();
   };
 
   const title = TITLES[view];
@@ -304,17 +324,20 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
   return (
     <main className={styles.page}>
       <div className={styles.shell}>
-        <AdminSidebar activeView={view} onSelect={selectView} />
+        <AdminSidebar activeView={view} onSelect={selectView} onSignOut={() => void signOut()} />
         <section className={styles.workspace}>
           <header className={styles.topbar}>
             <div className={styles.mobileBrand}><VeloraMark aria-hidden="true" /><strong>Owner console</strong></div>
-            <label className={styles.search}>
-              <SearchIcon aria-hidden="true" />
-              <span className="sr-only">Search this view</span>
-              <input value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder="Search email" maxLength={100} />
-              <kbd>⌘ K</kbd>
-            </label>
+            {view === "members" ? (
+              <label className={styles.search}>
+                <SearchIcon aria-hidden="true" />
+                <span className="sr-only">Search members</span>
+                <input ref={searchRef} value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder="Search member email" maxLength={100} />
+                <kbd>⌘ K</kbd>
+              </label>
+            ) : <p className={styles.readOnlyNote}>Read-only audit record</p>}
             <div className={styles.adminIdentity}><span>{adminEmail.slice(0, 1).toUpperCase()}</span><div><small>Verified owner</small><strong>{adminEmail}</strong></div></div>
+            <button className={styles.mobileSignOut} type="button" aria-label="Sign out" onClick={() => void signOut()}><LogOutIcon aria-hidden="true" /></button>
           </header>
 
           <nav className={styles.mobileNav} aria-label="Access console sections">
@@ -324,7 +347,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
           <div className={styles.content}>
             <div className={styles.heading}>
               <div><p className={styles.eyebrow}>{title.eyebrow}</p><h1 tabIndex={-1}>{title.title}</h1><p>{title.description}</p></div>
-              <span className={styles.recordCount}><strong>{items.length}</strong><small>loaded</small></span>
+              {view === "members" && <span className={styles.recordCount}><strong>{items.length}</strong><small>loaded</small></span>}
             </div>
 
             {view === "members" && (
@@ -338,41 +361,50 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
             )}
 
             <section className={styles.listSurface} aria-label={`${title.eyebrow} content`}>
-              {loading ? <AdminSkeleton /> : view === "activity" ? (
-                <div className={styles.activityEmpty}>
-                  <span><ActivityIcon aria-hidden="true" /></span>
-                  <StateView kind="empty" title="No recent activity" description="Owner access decisions will be recorded here as the log becomes available." />
-                </div>
-              ) : (
+              {view === "activity" ? <AdminActivity /> : loading ? <AdminSkeleton /> : (
                 <MemberQueue
                   items={items}
                   searchActive={Boolean(searchQuery)}
                   error={error}
                   mutatingId={mutatingId}
                   onRetry={() => void loadPage(null, false)}
-                  onMutate={(member, status) => void mutateMember(member, status)}
+                  onMutate={(member, status) => setPendingMutation({ member, status })}
                 />
               )}
             </section>
 
-            {!loading && !error && !appendError && nextCursor && (
+            {view === "members" && !loading && !error && !appendError && nextCursor && (
               <button className={styles.loadMore} type="button" disabled={loadingMore} onClick={() => void loadPage(nextCursor, true)}>
                 {loadingMore ? "Loading more…" : "Load more"}
                 {!loadingMore && <ChevronDownIcon aria-hidden="true" />}
               </button>
             )}
-            {!loading && !error && appendError && nextCursor && (
+            {view === "members" && !loading && !error && appendError && nextCursor && (
               <div className={styles.appendError} role="alert">
                 <span>{appendError}</span>
                 <button type="button" onClick={() => void loadPage(nextCursor, true)}>Retry loading more</button>
               </div>
             )}
-            {!loading && !error && !nextCursor && items.length > 0 && <p className={styles.endNote}><CheckCircle2Icon aria-hidden="true" />You’re up to date.</p>}
+            {view === "members" && !loading && !error && !nextCursor && items.length > 0 && <p className={styles.endNote}><CheckCircle2Icon aria-hidden="true" />You’re up to date.</p>}
           </div>
         </section>
       </div>
 
       <p className="sr-only" aria-live="polite" aria-atomic="true">{announcement}</p>
+      <AdminConfirmDialog
+        open={Boolean(pendingMutation)}
+        title={pendingMutation?.status === "revoked" ? "Permanently revoke access?" : "Block this member’s access?"}
+        description={pendingMutation?.status === "revoked"
+          ? `${pendingMutation.member.email} will permanently lose access to this vault. This cannot be reversed.`
+          : `${pendingMutation?.member.email ?? "This member"} will lose vault access. This console does not currently support restoring it.`}
+        confirmLabel={pendingMutation?.status === "revoked" ? "Revoke access" : "Block access"}
+        destructive
+        busy={Boolean(mutatingId)}
+        onCancel={() => setPendingMutation(null)}
+        onConfirm={() => {
+          if (pendingMutation) void mutateMember(pendingMutation.member, pendingMutation.status);
+        }}
+      />
     </main>
   );
 }

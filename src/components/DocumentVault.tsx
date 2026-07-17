@@ -134,7 +134,7 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
       console.error("Failed to load preview:", err);
       setPreviews(prev => ({ ...prev, [doc.id]: { url: '', loading: false } }));
       setPreviewModal(prev => ({ ...prev, loading: false }));
-      alert("Failed to decrypt the document. Wrong master password?");
+      alert("Failed to decrypt the document. Is the vault master key correct?");
     }
   };
 
@@ -241,7 +241,7 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Failed to download or decrypt:", err);
-      alert("Failed to decrypt the document. Wrong master password?");
+      alert("Failed to decrypt the document. Is the vault master key correct?");
     }
   };
 

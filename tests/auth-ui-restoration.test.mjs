@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
@@ -9,8 +9,6 @@ test("shared auth shell owns presentation without authentication", () => {
   const css = read("src/components/auth/auth-shell.module.css");
 
   assert.match(shell, /export type AuthMode = "sign-in" \| "sign-up"/);
-  assert.match(shell, /Sign In/);
-  assert.match(shell, /Sign Up/);
   assert.match(shell, /AnimatePresence/);
   assert.doesNotMatch(shell, /useTheme|themeToggle/);
   assert.doesNotMatch(shell, /supabase|signInWithPassword|signUp\(|masterKey|masterPassword/);
@@ -53,4 +51,35 @@ test("the complete account journey shares presentation and preserves secure hand
   assert.match(onboardingFlow, /setMasterKey\(masterKey, userId\)/);
   assert.match(reset, /exchangeCodeForSession/);
   assert.match(reset, /auth\.updateUser\(\{ password \}\)/);
+});
+
+test("public authentication uses dedicated single-purpose pages without a modal provider", () => {
+  const shell = read("src/components/dreelio/PublicPageShell.tsx");
+  const gateway = read("src/components/auth/AuthGateway.tsx");
+  const authShell = read("src/components/auth/AuthShell.tsx");
+  const css = read("src/components/auth/auth-shell.module.css");
+  const publicComponents = [
+    "Nav.tsx",
+    "Hero.tsx",
+    "Pricing.tsx",
+    "PricingPageContent.tsx",
+    "FinalCTA.tsx",
+    "BlogListContent.tsx",
+    "BlogPostContent.tsx",
+    "SecurityPageContent.tsx",
+  ].map((name) => read(`src/components/dreelio/${name}`)).join("\n");
+
+  assert.equal(existsSync(new URL("../src/components/auth/AuthModalProvider.tsx", import.meta.url)), false);
+  assert.doesNotMatch(shell, /AuthModalProvider/);
+  assert.doesNotMatch(publicComponents, /useAuthModal|openAuth/);
+  assert.match(publicComponents, /href=["'{/]?[^\n]*\/signup/);
+  assert.match(publicComponents, /href=["'{/]?[^\n]*\/login/);
+
+  assert.doesNotMatch(gateway, /useState|setMode|variant/);
+  assert.match(gateway, /mode === "sign-in"/);
+  assert.match(gateway, /href=\{mode === "sign-in" \? "\/signup" : "\/login"\}/);
+  assert.doesNotMatch(authShell, /onModeChange|segmented|modalCard|variant/);
+  assert.match(css, /min-height:\s*calc\(100dvh\s*-\s*var\(--public-nav-clearance\)\)/);
+  assert.match(css, /padding-top:\s*var\(--auth-top-space\)/);
+  assert.match(css, /--auth-top-space:\s*max\(90px,\s*calc\(env\(safe-area-inset-top\)\s*\+\s*74px\)\)/);
 });

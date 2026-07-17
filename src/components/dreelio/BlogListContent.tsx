@@ -14,7 +14,6 @@ import {
   staggerContainer,
   staggerItem,
 } from "./motion";
-import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", {
@@ -26,7 +25,6 @@ function formatDate(iso: string) {
 
 export function BlogListContent() {
   const reduceMotion = useReducedMotion();
-  const { openAuth } = useAuthModal();
   const [featured, ...rest] = BLOG_POSTS;
 
   return (
@@ -126,7 +124,7 @@ export function BlogListContent() {
         </div>
         <div className={styles.actions}>
           <motion.div whileHover={reduceMotion ? undefined : HOVER_LIFT} whileTap={reduceMotion ? undefined : TAP_PRESS}>
-            <button type="button" onClick={() => openAuth("sign-up")} className={styles.primaryAction}>Sign up free</button>
+            <Link href="/signup" className={styles.primaryAction}>Sign up free</Link>
           </motion.div>
           <Link href="/security" className={styles.secondaryAction}>How security works</Link>
         </div>

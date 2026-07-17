@@ -35,19 +35,19 @@ export function LegalSettings() {
 
             <div className="bg-elevated border border-separator/50 rounded-[20px] p-6 md:p-8 shadow-sm">
               <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
-                <p className="text-foreground font-medium mb-6">Effective Date: January 1, 2026</p>
+                <p className="text-foreground font-medium mb-6">Updated: July 17, 2026</p>
                 
-                <p>At Velora Vault, your privacy is our highest priority. We are committed to complying with global and regional data protection laws, including the <strong>India Digital Personal Data Protection (DPDP) Act, 2023</strong>, the <strong>General Data Protection Regulation (GDPR)</strong>, and the <strong>California Consumer Privacy Act (CCPA)</strong>.</p>
+                <p>Velora Vault minimizes the personal information needed to operate your encrypted account and explains the current processing boundaries in the public privacy policy.</p>
                 
                 <h3 className="text-foreground text-[16px] font-semibold mt-8 mb-3">Zero-Knowledge Architecture</h3>
-                <p>Velora Vault operates on a strict zero-knowledge architecture. This means your vault data (passwords, secure notes, bank details) is encrypted and decrypted locally on your device using your Master Password. We never receive, store, or have the ability to view your Master Password or the unencrypted contents of your vault.</p>
+                <p>Velora Vault operates on a zero-knowledge vault model. Your vault data is encrypted and decrypted locally on your device using your vault master key. We never receive, store, or have the ability to view that key or the unencrypted contents of your vault.</p>
 
                 <h3 className="text-foreground text-[16px] font-semibold mt-8 mb-3">Data We Collect</h3>
                 <p>Due to our zero-knowledge architecture, the personal data we process is strictly limited to what is necessary to provide the service:</p>
                 <ul className="list-disc pl-5 space-y-2 mt-2">
                   <li>Your email address (for account identification and communication).</li>
                   <li>Encrypted vault blobs (which we cannot decrypt or read).</li>
-                  <li>Basic analytics and diagnostic data (anonymized, to improve service reliability).</li>
+                  <li>Account, billing, and security metadata needed to operate the service.</li>
                 </ul>
 
                 <h3 className="text-foreground text-[16px] font-semibold mt-8 mb-3">Your Rights (DPDP, GDPR, CCPA)</h3>
@@ -61,7 +61,7 @@ export function LegalSettings() {
 
                 <div className="mt-10 pt-6 border-t border-separator/50">
                   <p className="text-sm">
-                    If you have questions about our privacy practices, please contact our Data Protection Officer at <strong>privacy@veloravault.com</strong>.
+                    The current provider disclosures and contact details are available at <a href="/privacy" className="text-primary underline">veloravault.in/privacy</a>. Questions can be sent to <strong>privacy@veloravault.in</strong>.
                   </p>
                 </div>
               </div>
@@ -98,13 +98,13 @@ export function LegalSettings() {
                 <p>Welcome to Velora Vault. By using our application, you agree to these Terms of Service. Please read them carefully.</p>
                 
                 <h3 className="text-foreground text-[16px] font-semibold mt-8 mb-3">1. Use of Service</h3>
-                <p>You agree to use Velora Vault only for lawful purposes. You are responsible for maintaining the confidentiality of your Master Password. Because we use a zero-knowledge architecture, <strong>we cannot recover your data if you lose your Master Password.</strong></p>
+                <p>You agree to use Velora Vault only for lawful purposes. You are responsible for maintaining the confidentiality of your vault master key. Because we do not receive that key, <strong>we cannot recover your encrypted data if you lose it.</strong></p>
 
                 <h3 className="text-foreground text-[16px] font-semibold mt-8 mb-3">2. Acceptable Use</h3>
                 <p>You must not use our service to store illegal content, distribute malware, or engage in activities that compromise the security and availability of the service.</p>
 
                 <h3 className="text-foreground text-[16px] font-semibold mt-8 mb-3">3. Limitation of Liability</h3>
-                <p>Velora Vault is provided &ldquo;as is&rdquo; without warranties of any kind. We are not liable for data loss resulting from forgotten Master Passwords, compromised devices, or user error.</p>
+                <p>Velora Vault is provided &ldquo;as is&rdquo; without warranties of any kind. We are not liable for data loss resulting from a forgotten vault master key, compromised devices, or user error.</p>
 
                 <h3 className="text-foreground text-[16px] font-semibold mt-8 mb-3">4. Termination</h3>
                 <p>We reserve the right to suspend or terminate your account if you violate these Terms. You may terminate your account at any time by using the &ldquo;Delete Account&rdquo; feature.</p>
@@ -151,7 +151,7 @@ export function LegalSettings() {
                   </li>
                   <li>
                     <strong className="text-foreground">Key Derivation:</strong><br/>
-                    Your encryption key is derived from your Master Password using PBKDF2 (or Argon2) with a high iteration count and a unique cryptographic salt to protect against dictionary and brute-force attacks.
+                    Encryption keys are derived from your vault master key using PBKDF2-SHA-256 with 600,000 iterations and a fresh cryptographic salt for each encryption operation.
                   </li>
                   <li>
                     <strong className="text-foreground">Secure Communication:</strong><br/>

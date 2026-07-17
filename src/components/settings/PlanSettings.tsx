@@ -13,7 +13,7 @@ import { PRICING_TIERS } from "@/components/dreelio/pricing-data";
 import type { SettingsAutoUpgrade } from "@/components/settings/settings-types";
 
 type BillingPeriod = "monthly" | "yearly";
-type PaidPlanId = Extract<PlanId, "plus" | "family">;
+type PaidPlanId = Extract<PlanId, "plus">;
 
 interface AccountUsage {
   plan: PlanId;
@@ -30,6 +30,7 @@ interface SubscriptionRow {
   plan: PaidPlanId;
   period: BillingPeriod;
   current_period_end: string | null;
+  cancel_at_cycle_end: boolean;
 }
 
 const ACTIVE_SUBSCRIPTION_STATUSES = new Set(["created", "authenticated", "active", "pending"]);
@@ -37,12 +38,11 @@ const ACTIVE_SUBSCRIPTION_STATUSES = new Set(["created", "authenticated", "activ
 const TAGLINE: Record<PlanId, string> = {
   free: PRICING_TIERS[0].tagline,
   plus: PRICING_TIERS[1].tagline,
-  family: PRICING_TIERS[2].tagline,
 };
 
 function priceFor(plan: PlanId, period: BillingPeriod): string {
   if (plan === "free") return "₹0";
-  const tier = plan === "plus" ? PRICING_TIERS[1] : PRICING_TIERS[2];
+  const tier = PRICING_TIERS[1];
   return period === "monthly" ? `₹${tier.monthlyPrice}/mo` : `₹${tier.annualPrice}/yr`;
 }
 
@@ -81,7 +81,7 @@ async function fetchUsage(): Promise<AccountUsage> {
 async function fetchLatestSubscription(): Promise<SubscriptionRow | null> {
   const { data, error } = await supabase
     .from("subscriptions")
-    .select("status,plan,period,current_period_end")
+    .select("status,plan,period,current_period_end,cancel_at_cycle_end")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -166,7 +166,7 @@ export function PlanSettings({ autoUpgrade }: { autoUpgrade?: SettingsAutoUpgrad
             const activated = await pollForActivation(plan);
             await refresh();
             setProcessingPlan(null);
-            if (activated) toast(`Upgraded to ${plan === "plus" ? "Plus" : "Family"}`, "success");
+            if (activated) toast("Upgraded to Plus", "success");
             else toast("Still confirming your payment — refresh in a moment if your plan doesn't update.", "info");
           })();
         },
@@ -192,7 +192,7 @@ export function PlanSettings({ autoUpgrade }: { autoUpgrade?: SettingsAutoUpgrad
       const response = await vaultFetch("/api/payments/cancel", { method: "POST" });
       const payload = await response.json().catch(() => ({})) as { error?: string };
       if (!response.ok) throw new Error(payload.error ?? "Could not cancel your subscription.");
-      toast("Subscription cancelled", "success");
+      toast("Cancellation scheduled for the end of your billing period", "success");
       await refresh();
     } catch (reason) {
       toast(reason instanceof Error ? reason.message : "Could not cancel your subscription.", "error");
@@ -205,7 +205,7 @@ export function PlanSettings({ autoUpgrade }: { autoUpgrade?: SettingsAutoUpgrad
   if (error || !usage) return <StateView kind="error" title="Plan unavailable" description={error ?? "Sign in again to load your plan."} />;
 
   const current = usage.plan;
-  const hasCancellableSubscription = current !== "free" && subscription != null && ACTIVE_SUBSCRIPTION_STATUSES.has(subscription.status);
+  const hasCancellableSubscription = current !== "free" && subscription != null && ACTIVE_SUBSCRIPTION_STATUSES.has(subscription.status) && !subscription.cancel_at_cycle_end;
 
   return (
     <section className="settings-detail-section" aria-labelledby="settings-plan-title">
@@ -217,12 +217,18 @@ export function PlanSettings({ autoUpgrade }: { autoUpgrade?: SettingsAutoUpgrad
 
       <div className="settings-group settings-plan-current">
         <div className="settings-plan-badge-row">
-          <span className={`settings-plan-badge is-${current}`}>{current === "free" ? "Free" : current === "plus" ? "Plus" : "Family"}</span>
+          <span className={`settings-plan-badge is-${current}`}>{current === "free" ? "Free" : "Plus"}</span>
           <span className="settings-plan-price">{priceFor(current, subscription?.period ?? period)}</span>
         </div>
         <p className="settings-plan-tagline">{TAGLINE[current]}</p>
-        {subscription?.current_period_end && current !== "free" && (
-          <p className="settings-plan-renewal">Renews {new Date(subscription.current_period_end).toLocaleDateString()}</p>
+        {subscription && current !== "free" && (
+          <p className="settings-plan-renewal">
+            {subscription.cancel_at_cycle_end
+              ? `Cancellation scheduled${subscription.current_period_end ? ` for ${new Date(subscription.current_period_end).toLocaleDateString()}` : " for the billing-period end"}`
+              : subscription.current_period_end
+                ? `Renews ${new Date(subscription.current_period_end).toLocaleDateString()}`
+                : "Renews automatically"}
+          </p>
         )}
 
         <Meter
@@ -254,7 +260,7 @@ export function PlanSettings({ autoUpgrade }: { autoUpgrade?: SettingsAutoUpgrad
       <div className="settings-plan-options">
         {PLAN_IDS.map((plan) => {
           const isCurrent = plan === current;
-          const label = plan === "free" ? "Free" : plan === "plus" ? "Plus" : "Family";
+          const label = plan === "free" ? "Free" : "Plus";
           return (
             <div key={plan} className={`settings-plan-option ${isCurrent ? "is-current" : ""}`}>
               <div className="settings-plan-option-head">

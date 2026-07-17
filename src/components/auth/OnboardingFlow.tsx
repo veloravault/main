@@ -36,6 +36,7 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
   const [masterKeyConfirmation, setMasterKeyConfirmation] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [destination, setDestination] = useState("/vault");
 
   const step: OnboardingStepId = ONBOARDING_STEPS[index];
   const heading = STEP_HEADINGS[step];
@@ -96,20 +97,24 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
       setMasterKeyValue("");
       setMasterKeyConfirmation("");
 
-      // Advance to the success state before navigating.
-      setDirection(1);
-      setIndex(ONBOARDING_STEPS.indexOf("done"));
-
       // If they picked a paid plan on the pricing page before signing up,
-      // land straight in checkout instead of the plain dashboard.
+      // preserve that destination for the explicit completion action.
       const intent = readPlanIntentCookie();
       clearPlanIntentCookie();
-      router.replace(intent ? `/vault?upgrade=${intent.plan}&period=${intent.period}` : "/vault");
-      router.refresh();
+      setDestination(intent ? `/vault?upgrade=${intent.plan}&period=${intent.period}` : "/vault");
+
+      setDirection(1);
+      setIndex(ONBOARDING_STEPS.indexOf("done"));
+      setSubmitting(false);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Setup could not be completed. Try again.");
       setSubmitting(false);
     }
+  }
+
+  function continueToVault() {
+    router.replace(destination);
+    router.refresh();
   }
 
   const totalDots = ONBOARDING_STEPS.length - 1; // exclude the terminal "done" state
@@ -227,7 +232,7 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
               </form>
             )}
 
-            {step === "done" && <CompletionStep />}
+            {step === "done" && <CompletionStep onContinue={continueToVault} />}
           </motion.div>
         </AnimatePresence>
       </motion.section>

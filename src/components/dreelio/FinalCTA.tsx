@@ -10,11 +10,9 @@ import {
   staggerContainer,
   staggerItem,
 } from "./motion";
-import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
 export function FinalCTA() {
   const reduceMotion = useReducedMotion();
-  const { openAuth } = useAuthModal();
 
   return (
     <motion.section
@@ -32,16 +30,15 @@ export function FinalCTA() {
         <motion.p className={styles.subtitle} variants={staggerItem}>
           Sign up in a minute. Confirm your email, set a master key, and your vault is ready.
         </motion.p>
-        <motion.button
-          type="button"
-          onClick={() => openAuth("sign-up")}
+        <motion.a
+          href="/signup"
           className={`${shared.btn} ${shared.btnDark}`}
           variants={staggerItem}
           whileHover={reduceMotion ? undefined : HOVER_LIFT}
           whileTap={reduceMotion ? undefined : TAP_PRESS}
         >
           Sign up free
-        </motion.button>
+        </motion.a>
       </motion.div>
     </motion.section>
   );

@@ -36,12 +36,7 @@ export default function HomePage() {
             </>
           }
           pills={PROJECT_PILLS}
-          image={{
-            src: "/dreelio/img/project-ui.png",
-            alt: "A preview of Velora Vault's password vault",
-            width: 508,
-            height: 615,
-          }}
+          preview="passwords"
         />
 
         <FeatureSplit
@@ -56,12 +51,7 @@ export default function HomePage() {
             </>
           }
           pills={FINANCE_PILLS}
-          image={{
-            src: "/dreelio/img/budget-ui.png",
-            alt: "A preview of Velora Vault's wallet and bank vault",
-            width: 508,
-            height: 614,
-          }}
+          preview="wallet"
         />
 
         <Features />

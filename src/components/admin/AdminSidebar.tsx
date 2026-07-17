@@ -2,6 +2,8 @@
 
 import {
   ActivityIcon,
+  ExternalLinkIcon,
+  LogOutIcon,
   UsersIcon,
 } from "lucide-react";
 import type { AdminView } from "./types";
@@ -21,6 +23,7 @@ const NAVIGATION: Array<{
 export function AdminSidebar(props: {
   activeView: AdminView;
   onSelect: (view: AdminView) => void;
+  onSignOut: () => void;
 }) {
   return (
     <aside className={styles.sidebar} aria-label="Access console sections">
@@ -47,7 +50,11 @@ export function AdminSidebar(props: {
           );
         })}
       </nav>
-      <p className={styles.sidebarFoot}>Revoking a member&rsquo;s access is permanent.</p>
+      <div className={styles.sidebarActions}>
+        <a href="/vault"><ExternalLinkIcon aria-hidden="true" />Open vault</a>
+        <button type="button" onClick={props.onSignOut}><LogOutIcon aria-hidden="true" />Sign out</button>
+      </div>
+      <p className={styles.sidebarFoot}>Blocking and revoking access cannot be reversed from this console.</p>
     </aside>
   );
 }

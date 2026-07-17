@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 import shared from "@/app/dreelio/dreelio.module.css";
 import styles from "./FeatureSplit.module.css";
@@ -14,6 +13,7 @@ import {
   staggerContainer,
   staggerItem,
 } from "./motion";
+import { VeloraProductPreview, type VeloraPreviewVariant } from "./VeloraProductPreview";
 
 type Props = {
   id?: string;
@@ -21,23 +21,16 @@ type Props = {
   title: React.ReactNode;
   body: React.ReactNode;
   pills: readonly string[];
-  image: { src: string; alt: string; width: number; height: number };
+  preview: Extract<VeloraPreviewVariant, "passwords" | "wallet">;
   reverse?: boolean;
 };
 
-export function FeatureSplit({ id, eyebrow, title, body, pills, image, reverse }: Props) {
+export function FeatureSplit({ id, eyebrow, title, body, pills, preview, reverse }: Props) {
   const reduceMotion = useReducedMotion();
   const media = (
     <ParallaxMedia className={styles.frame} distance={12}>
       <div className={styles.card}>
-        <Image
-          src={image.src}
-          alt={image.alt}
-          width={image.width}
-          height={image.height}
-          sizes="(max-width: 900px) 100vw, 520px"
-          className={styles.img}
-        />
+        <VeloraProductPreview variant={preview} />
       </div>
     </ParallaxMedia>
   );

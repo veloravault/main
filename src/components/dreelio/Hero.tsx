@@ -1,22 +1,20 @@
 "use client";
 
-import Image from "next/image";
 import { motion, useReducedMotion } from "framer-motion";
 import shared from "@/app/dreelio/dreelio.module.css";
 import styles from "./Hero.module.css";
 import { ParallaxMedia } from "./ParallaxMedia";
 import { VaultSeal } from "./VaultSeal";
+import { VeloraProductPreview } from "./VeloraProductPreview";
 import {
   HOVER_LIFT,
   TAP_PRESS,
   staggerContainer,
   staggerItem,
 } from "./motion";
-import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
 export function Hero() {
   const reduceMotion = useReducedMotion();
-  const { openAuth } = useAuthModal();
 
   return (
     <section className={styles.hero}>
@@ -36,15 +34,14 @@ export function Hero() {
           your device before they&rsquo;re stored.
         </motion.p>
         <motion.div className={styles.actions} variants={staggerItem}>
-          <motion.button
-            type="button"
-            onClick={() => openAuth("sign-up")}
+          <motion.a
+            href="/signup"
             className={`${shared.btn} ${shared.btnDark}`}
             whileHover={reduceMotion ? undefined : HOVER_LIFT}
             whileTap={reduceMotion ? undefined : TAP_PRESS}
           >
             Sign up free
-          </motion.button>
+          </motion.a>
           <motion.a
             href="#features"
             className={`${shared.btn} ${shared.btnGhost}`}
@@ -60,14 +57,7 @@ export function Hero() {
             <VaultSeal />
           </motion.span>
           <div className={styles.dashboard}>
-            <Image
-              src="/dreelio/img/hero-dashboard.png"
-              alt="An image of Velora Vault's dashboard"
-              width={1072}
-              height={744}
-              priority
-              sizes="(max-width: 1000px) 100vw, 1000px"
-            />
+            <VeloraProductPreview variant="overview" />
           </div>
           <motion.span
             className={styles.badge}

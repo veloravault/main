@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import shared from "@/app/dreelio/dreelio.module.css";
@@ -11,6 +10,7 @@ import {
   fadeScaleVariants,
   revealVariants,
 } from "./motion";
+import { VeloraProductPreview } from "./VeloraProductPreview";
 
 export function Devices() {
   const [tab, setTab] = useState<"mobile" | "web">("mobile");
@@ -43,14 +43,7 @@ export function Devices() {
               exit={reduceMotion ? undefined : "exit"}
               variants={fadeScaleVariants}
             >
-              <Image
-                src={tab === "mobile" ? "/dreelio/img/mobile-app.png" : "/dreelio/img/devices.png"}
-                alt={tab === "mobile" ? "A mockup of Velora Vault's mobile app" : "Velora Vault across devices"}
-                width={1072}
-                height={tab === "mobile" ? 870 : 806}
-                sizes="(max-width: 1200px) 100vw, 1040px"
-                className={styles.photo}
-              />
+              <VeloraProductPreview variant={tab === "mobile" ? "mobile" : "overview"} />
             </motion.div>
           </AnimatePresence>
 

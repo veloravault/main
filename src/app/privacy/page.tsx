@@ -28,7 +28,8 @@ export default function PrivacyPage() {
             <ul>
               <li>
                 <strong>Account information</strong> — your email address and
-                sign-in password, provided when you sign up.
+                account status. Supabase Auth handles your sign-in password;
+                Velora Vault does not store the raw password in its application database.
               </li>
               <li>
                 <strong>Encrypted vault contents</strong> — your passwords,
@@ -102,11 +103,18 @@ export default function PrivacyPage() {
 
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Third-party services</h2>
+            <p>We use a limited set of providers to operate Velora Vault:</p>
+            <ul>
+              <li><strong>Supabase</strong> for authentication, account data, encrypted vault records, and avatar storage.</li>
+              <li><strong>Cloudflare R2</strong> for encrypted document blobs. Documents are encrypted on your device before upload.</li>
+              <li><strong>Razorpay</strong> to process Plus subscriptions. Payment details are collected and handled by Razorpay, not stored in your vault database.</li>
+              <li><strong>Transactional email providers</strong> configured through Supabase Auth for account confirmation and security messages.</li>
+              <li><strong>Configured AI processing services</strong> only when you explicitly use AI-assisted import or categorization. The selected source material is sent for that requested operation.</li>
+            </ul>
             <p>
-              We rely on Supabase for authentication, database hosting, and
-              storage infrastructure. Supabase stores the encrypted data
-              described above; it does not have access to your master key or
-              the ability to decrypt your vault contents.
+              These providers do not receive your master key. Supabase and
+              Cloudflare R2 store only encrypted vault content and cannot
+              decrypt it without that key.
             </p>
           </section>
 
@@ -114,10 +122,10 @@ export default function PrivacyPage() {
             <h2 className={styles.sectionTitle}>Data retention and deletion</h2>
             <p>
               We retain your account information and encrypted vault data for
-              as long as your account is active. You can request deletion of
-              your account and all associated data at any time by contacting
-              us; we will remove it within a reasonable timeframe, except
-              where retention is required by law.
+              as long as your account is active. You can permanently delete
+              your account and associated vault data from the Danger Zone in
+              Settings. You may also contact us for help with a deletion request.
+              Limited records may be retained where required by law.
             </p>
           </section>
 
@@ -154,7 +162,7 @@ export default function PrivacyPage() {
             <h2 className={styles.sectionTitle}>Contact us</h2>
             <p>
               Questions about this policy or your data can be sent to{" "}
-              <a href="mailto:privacy@velora.vault">privacy@velora.vault</a>.
+              <a href="mailto:privacy@veloravault.in">privacy@veloravault.in</a>.
             </p>
           </section>
 

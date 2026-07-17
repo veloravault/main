@@ -39,7 +39,7 @@ export async function deriveAndCacheKey(
 }
 
 /**
- * Initialises the key cache from the raw master password.
+ * Initialises the key cache from the raw vault master key.
  * Derives a key with a fixed well-known salt that is used ONLY for
  * verifying / caching; per-item encryption still uses per-item salts.
  */

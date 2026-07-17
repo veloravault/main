@@ -1,6 +1,25 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: process.cwd(),
+  },
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.veloravault.in" }],
+        destination: "https://veloravault.in/:path*",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "veloravault.vercel.app" }],
+        destination: "https://veloravault.in/:path*",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       new URL("https://assets.nflxext.com/us/ffe/siteui/common/icons/**"),

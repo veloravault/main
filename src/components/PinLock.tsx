@@ -382,7 +382,7 @@ export function PinLock({ authenticatedUserId, onUnlock, onFallback }: PinLockPr
             onClick={onFallback}
             className="text-[13px] text-muted-foreground hover:text-foreground transition-colors font-medium"
           >
-            Use master password instead
+            Use vault master key instead
           </button>
         </div>
       </motion.div>

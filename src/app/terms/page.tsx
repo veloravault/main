@@ -122,7 +122,7 @@ export default function TermsPage() {
             <h2 className={styles.sectionTitle}>Contact us</h2>
             <p>
               Questions about these terms can be sent to{" "}
-              <a href="mailto:hello@velora.vault">hello@velora.vault</a>.
+              <a href="mailto:hello@veloravault.in">hello@veloravault.in</a>.
             </p>
           </section>
 

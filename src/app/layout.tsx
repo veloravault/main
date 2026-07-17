@@ -44,6 +44,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://veloravault.in"),
   title: "Velora Vault",
   description:
     "A private, encrypted home for passwords, documents, notes and financial essentials.",

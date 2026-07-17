@@ -1,6 +1,6 @@
 # Velora Vault
 
-Velora Vault is an encrypted password/document vault built with Next.js 16 and Supabase. Anyone can sign up; members sign in to the vault application at `/vault`.
+Velora Vault is an encrypted password and document vault built with Next.js 16, Supabase, Cloudflare R2, and Razorpay. Anyone can sign up; members sign in to the vault application at `/vault`.
 
 ## Local setup
 
@@ -13,6 +13,8 @@ npm run dev
 ```
 
 Fill every required value in `.env.local` before testing authenticated or admin routes. Prefer the current `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_SECRET_KEY`; the anon and service-role variables are explicitly temporary legacy fallbacks. Never give a server key a `NEXT_PUBLIC_` prefix.
+
+Cloudflare R2 stores client-encrypted document blobs. Supabase stores account data, encrypted structured vault records, and avatars. Razorpay is the payment authority for recurring Plus subscriptions. The product has two plans only: Free and Plus.
 
 Open [http://localhost:3000](http://localhost:3000). Useful checks:
 
@@ -36,7 +38,7 @@ The account lifecycle:
 
 The server-side authorization layer checks the authenticated user, admin UUID, and active `app_members` status at the operation that needs it. `src/proxy.ts` refreshes Supabase cookies only; it is not an authorization boundary. Postgres RLS separately requires ownership and an active membership for vault rows and private storage objects.
 
-Admins can suspend or revoke a member's access from `/admin` (Members view) at any time — this is the primary moderation lever now that signup is open, independent of how the account was created.
+Admins can block or permanently revoke a member's access from `/admin` (Members view) at any time. The Activity view is a read-only audit record of owner access changes and completed onboarding events.
 
 ## Master-key boundary
 
@@ -56,6 +58,14 @@ Local PIN or biometric wrappers remain device-local conveniences bound to the au
 | `/onboarding` | Master key setup and membership activation |
 | `/vault` | Active-member vault application |
 | `/admin` | Owner-only member console |
+
+## Production services
+
+- Canonical domain: `https://veloravault.in`; `www.veloravault.in` redirects to the apex domain.
+- Supabase: authentication, Postgres/RLS, encrypted structured vault records, and avatars.
+- Cloudflare R2: encrypted document blob storage using server-generated signed requests.
+- Razorpay: recurring Plus billing and webhook-authoritative plan changes.
+- Transactional email: Supabase Auth through the configured SMTP provider.
 
 ## Production rollout
 

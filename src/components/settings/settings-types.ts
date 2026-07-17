@@ -4,7 +4,7 @@ import { AlertTriangleIcon, ArchiveIcon, PaletteIcon, ShieldCheckIcon, SparklesI
 export type SettingsSection = "account" | "plan" | "security" | "appearance" | "backup" | "danger" | "legal";
 
 export interface SettingsAutoUpgrade {
-  plan: "plus" | "family";
+  plan: "plus";
   period: "monthly" | "yearly";
 }
 

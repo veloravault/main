@@ -10,7 +10,6 @@ import { supabase } from "@/lib/supabase";
 import { setPlanIntentCookie } from "@/lib/planIntent";
 import { PRICING_COMPARISON, PRICING_FAQ, PRICING_TIERS, type PricingTier } from "./pricing-data";
 import { APPLE_EASE, HOVER_LIFT, LANDING_VIEWPORT, TAP_PRESS, revealVariants, staggerContainer, staggerItem } from "./motion";
-import { useAuthModal } from "@/components/auth/AuthModalProvider";
 
 type Billing = "monthly" | "annual";
 
@@ -36,7 +35,6 @@ export function PricingPageContent() {
   const reduceMotion = useReducedMotion();
   const [billing, setBilling] = useState<Billing>("monthly");
   const [signedIn, setSignedIn] = useState(false);
-  const { openAuth } = useAuthModal();
   const router = useRouter();
 
   useEffect(() => {
@@ -61,7 +59,7 @@ export function PricingPageContent() {
       // checkout opens automatically the moment onboarding finishes.
       setPlanIntentCookie({ plan: tier.id, period: billing === "annual" ? "yearly" : "monthly" });
     }
-    openAuth("sign-up");
+    router.push("/signup");
   };
 
   return (
@@ -75,7 +73,7 @@ export function PricingPageContent() {
         <p className={shared.eyebrow}>Pricing</p>
         <h1>Simple, upfront pricing</h1>
         <p>
-          Start free, no credit card required. Upgrade to Plus or Family
+          Start free, no credit card required. Upgrade to Plus
           whenever you need more storage or AI-assisted imports.
         </p>
         <div className={styles.betaNote}>
@@ -250,7 +248,7 @@ export function PricingPageContent() {
         <motion.div whileHover={reduceMotion ? undefined : HOVER_LIFT} whileTap={reduceMotion ? undefined : TAP_PRESS}>
           <button
             type="button"
-            onClick={() => signedIn ? router.push("/vault") : openAuth("sign-up")}
+            onClick={() => router.push(signedIn ? "/vault" : "/signup")}
             className={styles.primaryAction}
           >
             {signedIn ? "Open vault" : "Sign up free"}
