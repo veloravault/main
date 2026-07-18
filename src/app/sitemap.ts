@@ -10,7 +10,7 @@ const LAST_MODIFIED = {
   home: "2026-07-17",
   pricing: "2026-07-17",
   security: "2026-07-17",
-  contact: "2026-07-17",
+  contact: "2026-07-18",
   blogIndex: "2026-07-17",
   privacy: "2026-07-17", // matches "Last updated: July 17, 2026" on the page
   terms: "2026-07-17", // matches "Last updated: July 17, 2026" on the page

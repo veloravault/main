@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastProvider } from "@/components/Toast";
@@ -29,6 +30,12 @@ const themeBootstrap = `
     root.style.colorScheme = resolved;
   } catch {}
 })();`;
+
+const googleTagBootstrap = `
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-GKGJ4QD0E5');`;
 
 import type { Metadata, Viewport } from "next";
 
@@ -60,6 +67,9 @@ const ORGANIZATION_JSON_LD = {
   },
   description:
     "A private, encrypted home for passwords, documents, notes and financial essentials.",
+  verification: {
+    google: "Ujcj8cwdFNvamMuqMoR_Bhhs2mUTxHctWA4Xhf6sr8k",
+  },
 };
 
 const WEBSITE_JSON_LD = {
@@ -146,6 +156,18 @@ export default async function RootLayout({
             </ToastProvider>
           </VaultKeyProvider>
         </ThemeProvider>
+        <Script
+          id="velora-google-tag"
+          src="https://www.googletagmanager.com/gtag/js?id=G-GKGJ4QD0E5"
+          strategy="afterInteractive"
+          nonce={nonce}
+        />
+        <Script
+          id="velora-google-tag-bootstrap"
+          strategy="afterInteractive"
+          nonce={nonce}
+          dangerouslySetInnerHTML={{ __html: googleTagBootstrap }}
+        />
       </body>
     </html>
   );
