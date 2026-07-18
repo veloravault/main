@@ -10,9 +10,9 @@ export const NAV_LINKS = [
   { label: "Contact", href: "/contact" },
 ];
 
-export const PROJECT_PILLS = ["Saved logins", "Auto-lock timer", "Secure notes", "Activity log"] as const;
+export const PROJECT_PILLS = ["Saved logins", "Auto-lock timer", "Secure notes", "Password health"] as const;
 export const DOCUMENT_PILLS = ["Identity files", "Protected uploads", "Expiry details", "Fast search"] as const;
-export const FINANCE_PILLS = ["Cards", "Balances", "Spending insights", "Magic import"] as const;
+export const FINANCE_PILLS = ["Cards", "Bank details", "Encrypted CVV", "Magic import"] as const;
 
 export const SMALL_FEATURES = [
   {
@@ -77,6 +77,15 @@ export const FOOTER_COLUMNS = [
       { label: "Privacy", href: "/privacy" },
       { label: "Terms of use", href: "/terms" },
       { label: "Sign in", href: "/login" },
+    ],
+  },
+  {
+    heading: "Utilities",
+    links: [
+      { label: "Password Generator", href: "/utilities/password-generator" },
+      { label: "Passphrase Generator", href: "/utilities/passphrase-generator" },
+      { label: "Username Generator", href: "/utilities/username-generator" },
+      { label: "Password Strength", href: "/utilities/password-strength" },
     ],
   },
 ];

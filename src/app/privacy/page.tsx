@@ -16,7 +16,7 @@ export default function PrivacyPage() {
       <article className={styles.article}>
         <div className={rootStyles.container}>
           <h1 className={styles.title}>Privacy Policy</h1>
-          <p className={styles.updated}>Last updated: July 17, 2026</p>
+          <p className={styles.updated}>Last updated: July 19, 2026</p>
           <p className={styles.intro}>
             Velora Vault is a private, encrypted home for your passwords,
             documents, notes, and financial essentials. This policy explains
@@ -42,6 +42,17 @@ export default function PrivacyPage() {
                 <strong>Session and device metadata</strong> — sign-in
                 timestamps and basic device information, used to keep your
                 account secure and to detect suspicious activity.
+              </li>
+              <li>
+                <strong>Contact form submissions</strong> — if you use the
+                contact form, we collect the name, email address, topic,
+                subject, and message you enter so we can respond to you.
+              </li>
+              <li>
+                <strong>Analytics data</strong> — only if you accept the
+                analytics cookie prompt, we collect basic usage data such as
+                pages viewed, referring pages, and device/browser type through
+                Google Analytics. See <strong>Analytics</strong> below.
               </li>
             </ul>
           </section>
@@ -93,6 +104,23 @@ export default function PrivacyPage() {
           </section>
 
           <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Analytics</h2>
+            <p>
+              We use Google Analytics to understand how the marketing site is
+              used — pages viewed, referring pages, approximate location, and
+              device/browser type. This never includes your vault contents,
+              master key, or anything you store inside the app, and it never
+              runs on your unlocked vault pages.
+            </p>
+            <p>
+              Analytics is opt-in: it does not load until you accept the
+              cookie prompt shown on your first visit. You can decline, and
+              you can change your choice at any time by clearing your browser&rsquo;s
+              site data for veloravault.in, which resets the prompt.
+            </p>
+          </section>
+
+          <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Access control</h2>
             <p>
               Every request to your data is checked at the database level
@@ -112,6 +140,7 @@ export default function PrivacyPage() {
               <li><strong>Razorpay</strong> to process Plus subscriptions. Payment details are collected and handled by Razorpay, not stored in your vault database.</li>
               <li><strong>Transactional email providers</strong> configured through Supabase Auth for account confirmation and security messages.</li>
               <li><strong>Configured AI processing services</strong> only when you explicitly use AI-assisted import or categorization. The selected source material is sent for that requested operation.</li>
+              <li><strong>Google Analytics</strong>, only if you accept the analytics cookie prompt. See <strong>Analytics</strong> above for what this covers.</li>
             </ul>
             <p>
               These providers do not receive your master key. Supabase and
@@ -128,6 +157,12 @@ export default function PrivacyPage() {
               your account and associated vault data from the Danger Zone in
               Settings. You may also contact us for help with a deletion request.
               Limited records may be retained where required by law.
+            </p>
+            <p>
+              Contact form submissions are retained so we can respond to your
+              message and for a limited period afterward for support
+              recordkeeping. Contact us using the details below if you&rsquo;d
+              like an earlier submission deleted.
             </p>
           </section>
 

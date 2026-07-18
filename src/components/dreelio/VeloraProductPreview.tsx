@@ -85,7 +85,7 @@ function Passwords() {
         <Topbar title="Passwords" />
         <div className={styles.masterDetail}>
           <div className={styles.itemList}>
-            <header><strong>24 logins</strong><button type="button">+ Add</button></header>
+            <header><strong>24 logins</strong><button type="button" tabIndex={-1}>+ Add</button></header>
             {[["EM", "Email account", "Strong"], ["BK", "Online banking", "Strong"], ["ST", "Streaming", "Review"]].map(([mark, name, health], index) => (
               <span data-selected={index === 0} key={name}><i>{mark}</i><b>{name}</b><small data-review={health === "Review"}>{health}</small></span>
             ))}
@@ -110,7 +110,7 @@ function Documents() {
         <Topbar title="Documents" />
         <div className={styles.masterDetail}>
           <div className={styles.itemList}>
-            <header><strong>8 documents</strong><button type="button">+ Add</button></header>
+            <header><strong>8 documents</strong><button type="button" tabIndex={-1}>+ Add</button></header>
             {[["ID", "Passport", "Identity"], ["IN", "Insurance policy", "Finance"], ["TX", "Tax statement", "Records"]].map(([mark, name, group], index) => (
               <span data-selected={index === 0} key={name}><i>{mark}</i><b>{name}</b><small>{group}</small></span>
             ))}

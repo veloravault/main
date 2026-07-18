@@ -23,7 +23,7 @@ export type AdminActivityItem = {
   createdAt: string;
 };
 
-export type AdminView = "overview" | "members" | "activity" | "support" | "contact";
+export type AdminView = "overview" | "members" | "activity" | "support" | "contact" | "billing";
 export type MemberFilter = "all" | MemberStatus;
 
 export type AdminOverviewDto = {
@@ -88,3 +88,20 @@ export type AdminContactSubmission = {
 };
 
 export type AdminContactSubmissionDetail = AdminContactSubmission & { message: string };
+
+export type BillingReconciliationAction = "cancel" | "change_period";
+export type BillingReconciliationStatus = "pending" | "resolved";
+export type BillingReconciliationFilter = BillingReconciliationStatus | "all";
+
+export type AdminBillingReconciliationIssue = {
+  id: string;
+  userId: string | null;
+  memberEmail: string | null;
+  razorpaySubscriptionId: string;
+  action: BillingReconciliationAction;
+  intendedUpdate: Record<string, unknown>;
+  errorMessage: string | null;
+  status: BillingReconciliationStatus;
+  createdAt: string;
+  resolvedAt: string | null;
+};

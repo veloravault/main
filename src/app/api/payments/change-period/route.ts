@@ -3,6 +3,7 @@ import { authenticateActiveMemberRequest } from "@/lib/server/auth";
 import { createSupabaseAdminClient } from "@/lib/server/supabase-admin";
 import { planIdFor, razorpayConfigured, updateSubscriptionPlan, type BillingPeriod, type PaidPlanId } from "@/lib/server/razorpay";
 import { InvalidJsonBodyError, PayloadTooLargeError, readBoundedJson } from "@/lib/server/requestBody";
+import { recordBillingReconciliationIssue } from "@/lib/server/billing-reconciliation-repository";
 
 const MAX_BODY_BYTES = 256;
 const PERIODS = new Set<BillingPeriod>(["monthly", "yearly"]);
@@ -63,8 +64,15 @@ export async function POST(req: NextRequest) {
     } catch (dbError) {
       // Razorpay has already applied the plan change regardless of whether
       // this local write lands — don't tell the user to retry (that would
-      // call Razorpay's update API again); surface the desync for follow-up.
+      // call Razorpay's update API again); queue the desync for admin retry.
       console.error("change-period: Razorpay updated but local DB update failed:", dbError);
+      await recordBillingReconciliationIssue({
+        userId: user.id,
+        razorpaySubscriptionId: row.razorpay_subscription_id,
+        action: "change_period",
+        intendedUpdate: { scheduled_period: nextScheduledPeriod },
+        errorMessage: dbError instanceof Error ? dbError.message : String(dbError),
+      });
     }
 
     return NextResponse.json({ ok: true, scheduled_period: nextScheduledPeriod });

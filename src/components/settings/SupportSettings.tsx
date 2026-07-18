@@ -31,6 +31,20 @@ function formatTime(value: string) {
   return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
+const SUPPORT_ERROR_MESSAGES: Record<string, string> = {
+  SUPPORT_NOT_ACTIVE_MEMBER: "Your account isn't active on this vault, so support tickets aren't available right now.",
+  SUPPORT_INVALID_SUBJECT: "Subject must be between 3 and 160 characters.",
+  SUPPORT_INVALID_MESSAGE: "Message must be between 1 and 4000 characters.",
+  SUPPORT_TICKET_RATE_LIMITED: "You've opened too many tickets in the last hour. Try again later.",
+  SUPPORT_MESSAGE_RATE_LIMITED: "You've sent too many messages in the last hour. Try again later.",
+  SUPPORT_TICKET_NOT_FOUND: "This ticket could not be found.",
+};
+
+function supportErrorMessage(error: { message?: string } | null | undefined, fallback: string) {
+  const code = error?.message ? Object.keys(SUPPORT_ERROR_MESSAGES).find((key) => error.message?.includes(key)) : null;
+  return code ? SUPPORT_ERROR_MESSAGES[code] : fallback;
+}
+
 export function SupportSettings() {
   const toast = useToast();
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
@@ -74,27 +88,20 @@ export function SupportSettings() {
     setNewTicketError(null);
     setCreating(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Sign in again to open a ticket.");
-
-      const { data: ticket, error: ticketError } = await supabase
-        .from("support_tickets")
-        .insert({ user_id: user.id, subject: newSubject.trim() })
-        .select("id")
-        .single();
-      if (ticketError || !ticket) throw new Error(ticketError?.message ?? "Your ticket could not be created.");
-
-      const { error: messageError } = await supabase
-        .from("support_ticket_messages")
-        .insert({ ticket_id: ticket.id, sender: "member", body: newMessage.trim() });
-      if (messageError) throw new Error(messageError.message);
+      const { data: ticketId, error: rpcError } = await supabase.rpc("create_support_ticket", {
+        p_subject: newSubject.trim(),
+        p_message: newMessage.trim(),
+      });
+      if (rpcError || !ticketId) {
+        throw new Error(supportErrorMessage(rpcError, "Your ticket could not be created."));
+      }
 
       setNewSubject("");
       setNewMessage("");
       setIsNewOpen(false);
       toast("Support ticket opened", "success");
       await fetchTickets();
-      setSelectedTicketId(ticket.id);
+      setSelectedTicketId(ticketId as string);
     } catch (reason) {
       setNewTicketError(reason instanceof Error ? reason.message : "Your ticket could not be created.");
     } finally {
@@ -164,6 +171,7 @@ export function SupportSettings() {
                 value={newSubject}
                 onChange={(event) => setNewSubject(event.target.value)}
                 className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[17px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                maxLength={160}
                 required
               />
             </div>
@@ -225,10 +233,8 @@ function TicketThread({ ticketId, onBack }: { ticketId: string; onBack: () => vo
     if (!body) return;
     setSending(true);
     try {
-      const { error: replyError } = await supabase
-        .from("support_ticket_messages")
-        .insert({ ticket_id: ticketId, sender: "member", body });
-      if (replyError) throw new Error(replyError.message);
+      const { error: rpcError } = await supabase.rpc("reply_support_ticket", { p_ticket_id: ticketId, p_body: body });
+      if (rpcError) throw new Error(supportErrorMessage(rpcError, "Your reply could not be sent."));
       setReply("");
       await fetchThread();
     } catch (reason) {

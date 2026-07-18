@@ -1,9 +1,64 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import zxcvbn from "zxcvbn";
+import styles from "../utilities.module.css";
+import { motion, useReducedMotion } from "framer-motion";
+import {
+  ArrowRightIcon,
+  EyeIcon,
+  EyeOffIcon,
+  GaugeIcon,
+  SearchCheckIcon,
+  ShieldAlertIcon,
+  ShieldCheckIcon,
+  ZapIcon,
+} from "lucide-react";
+import {
+  LANDING_VIEWPORT,
+  HOVER_LIFT,
+  TAP_PRESS,
+  revealVariants,
+  staggerContainer,
+  staggerItem,
+} from "@/components/dreelio/motion";
+
+function getScoreColor(score: number) {
+  switch (score) {
+    case 0:
+    case 1:
+      return "bg-destructive";
+    case 2:
+      return "bg-orange-500";
+    case 3:
+      return "bg-yellow-500";
+    case 4:
+      return "bg-system-green";
+    default:
+      return "bg-separator";
+  }
+}
+
+function getScoreLabel(score: number) {
+  switch (score) {
+    case 0:
+    case 1:
+      return "Weak";
+    case 2:
+      return "Fair";
+    case 3:
+      return "Good";
+    case 4:
+      return "Strong";
+    default:
+      return "";
+  }
+}
 
 export function PasswordStrengthClient() {
+  const reduceMotion = useReducedMotion();
+  const reveal = reduceMotion ? undefined : revealVariants(22);
+
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
@@ -12,152 +67,243 @@ export function PasswordStrengthClient() {
     return zxcvbn(password);
   }, [password]);
 
-  const getScoreColor = (score: number) => {
-    switch (score) {
-      case 0:
-      case 1:
-        return "bg-destructive";
-      case 2:
-        return "bg-orange-500";
-      case 3:
-        return "bg-yellow-500";
-      case 4:
-        return "bg-system-green";
-      default:
-        return "bg-separator";
-    }
-  };
-
-  const getScoreLabel = (score: number) => {
-    switch (score) {
-      case 0:
-      case 1:
-        return "Weak";
-      case 2:
-        return "Fair";
-      case 3:
-        return "Good";
-      case 4:
-        return "Strong";
-      default:
-        return "";
-    }
-  };
-
   return (
-    <div className="apple-surface space-y-8 max-w-2xl mx-auto w-full">
-      
-      {/* Input Section */}
-      <div className="bg-card shadow-sm rounded-[22px] overflow-hidden border border-separator p-6 sm:p-8">
-        
-        <div className="relative">
-          <input
-            type={showPassword ? "text" : "password"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Type a password to test..."
-            className="w-full h-16 bg-fill-tertiary rounded-xl px-4 sm:px-6 pr-14 text-xl sm:text-2xl font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {showPassword ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-            )}
-          </button>
-        </div>
+    <main className={styles.page}>
+      <motion.section
+        className={styles.hero}
+        initial={false}
+        animate="show"
+        variants={staggerContainer}
+      >
+        <motion.div className={styles.heroCopy} variants={staggerItem}>
+          <p className={styles.eyebrow}>Free Utility</p>
+          <h1>Password Strength Tester</h1>
+          <p>
+            Test the strength of a password entirely on your device. We evaluate
+            entropy, common patterns, and dictionary words instantly — nothing you
+            type here is ever logged, transmitted, or stored.
+          </p>
+          <div className={styles.heroActions}>
+            <a className={styles.jumpLink} href="#how-it-works">
+              How it works <ArrowRightIcon aria-hidden="true" />
+            </a>
+          </div>
+        </motion.div>
 
-        {/* Strength Bar */}
-        <div className="mt-8 space-y-2">
-          <div className="flex justify-between items-center text-sm font-semibold">
-            <span className="text-muted-foreground">Strength</span>
-            <span className={password ? "text-foreground" : "text-muted-foreground"}>
-              {password ? getScoreLabel(result!.score) : "None"}
-            </span>
+        <motion.div className={styles.heroVisual} variants={staggerItem}>
+          <div className="bg-[#F2F2F7] dark:bg-[#000000] p-6 rounded-[32px] space-y-4 border border-separator/50 shadow-[0_26px_70px_-54px_rgba(0,0,0,0.44)] relative">
+            <div className="bg-card shadow-sm rounded-[22px] border border-separator p-4 sm:p-6">
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Type a password..."
+                  className="w-full h-14 bg-fill-tertiary rounded-[14px] px-4 pr-12 text-lg font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all border border-separator/50"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? <EyeOffIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                </button>
+              </div>
+
+              <div className="mt-6 space-y-2">
+                <div className="flex justify-between items-center text-sm font-semibold">
+                  <span className="text-muted-foreground">Strength</span>
+                  <span className={password ? "text-foreground" : "text-muted-foreground"}>
+                    {password && result ? getScoreLabel(result.score) : "None"}
+                  </span>
+                </div>
+                <div className="flex gap-2 h-2.5">
+                  {[1, 2, 3, 4].map((level) => (
+                    <div
+                      key={level}
+                      className={`flex-1 rounded-full transition-colors duration-500 ${
+                        password && result && result.score >= level
+                          ? getScoreColor(result.score)
+                          : "bg-fill-tertiary"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {result ? (
+              <div className="bg-card shadow-sm rounded-[22px] overflow-hidden border border-separator">
+                <div className="divide-y divide-separator/50">
+                  <div className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center justify-center text-muted-foreground bg-fill-secondary w-8 h-8 rounded-lg">
+                        <ShieldAlertIcon className="w-4 h-4" />
+                      </span>
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-[14px]">Crack Time</span>
+                        <span className="text-xs text-muted-foreground">Estimated time to crack</span>
+                      </div>
+                    </div>
+                    <span className="font-semibold text-[14px] text-right">
+                      {result.crack_times_display.offline_slow_hashing_1e4_per_second}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center justify-center text-muted-foreground bg-fill-secondary w-8 h-8 rounded-lg">
+                        <SearchCheckIcon className="w-4 h-4" />
+                      </span>
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-[14px]">Guesses</span>
+                        <span className="text-xs text-muted-foreground">Required attempts</span>
+                      </div>
+                    </div>
+                    <span className="font-mono text-[13px] text-right font-medium">
+                      {result.guesses.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+
+                {(result.feedback.warning || result.feedback.suggestions.length > 0) && (
+                  <div className="p-4 bg-fill-tertiary border-t border-separator/50">
+                    {result.feedback.warning && (
+                      <p className="text-[13px] font-medium text-orange-500 flex items-start gap-2 mb-2">
+                        <ShieldAlertIcon className="w-4 h-4 shrink-0 mt-0.5" />
+                        {result.feedback.warning}
+                      </p>
+                    )}
+                    {result.feedback.suggestions.length > 0 && (
+                      <ul className="text-[12px] text-muted-foreground list-disc list-inside space-y-1 ml-1">
+                        {result.feedback.suggestions.map((suggestion, idx) => (
+                          <li key={idx}>{suggestion}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="bg-card shadow-sm rounded-[22px] border border-separator p-6 flex flex-col items-center justify-center text-center opacity-70">
+                <ShieldCheckIcon className="w-8 h-8 text-muted-foreground mb-3" />
+                <p className="text-[14px] text-muted-foreground font-medium">
+                  Type a password to see detailed analysis
+                </p>
+              </div>
+            )}
           </div>
-          <div className="flex gap-2 h-2.5">
-            {[1, 2, 3, 4].map((level) => (
-              <div
-                key={level}
-                className={`flex-1 rounded-full transition-colors duration-500 ${
-                  password && result!.score >= level || (result!.score === 0 && level === 1 && password)
-                    ? getScoreColor(result!.score)
-                    : "bg-fill-tertiary"
-                }`}
-              />
-            ))}
+        </motion.div>
+      </motion.section>
+
+      <motion.section
+        className={styles.factGrid}
+        initial={reduceMotion ? false : "hidden"}
+        whileInView={reduceMotion ? undefined : "show"}
+        viewport={LANDING_VIEWPORT}
+        variants={staggerContainer}
+      >
+        <motion.article className={styles.fact} variants={staggerItem}>
+          <span>Identify</span>
+          <strong>Weaknesses instantly</strong>
+          <SearchCheckIcon aria-hidden="true" />
+        </motion.article>
+        <motion.article className={styles.fact} variants={staggerItem}>
+          <span>Actionable</span>
+          <strong>Real-time feedback</strong>
+          <GaugeIcon aria-hidden="true" />
+        </motion.article>
+        <motion.article className={styles.fact} variants={staggerItem}>
+          <span>Completely</span>
+          <strong>Private, client-side</strong>
+          <ShieldCheckIcon aria-hidden="true" />
+        </motion.article>
+        <motion.article className={styles.fact} variants={staggerItem}>
+          <span>Instant</span>
+          <strong>No network round trip</strong>
+          <ZapIcon aria-hidden="true" />
+        </motion.article>
+      </motion.section>
+
+      <div id="how-it-works" className={styles.story}>
+        <motion.section
+          className={styles.storyRow}
+          initial={reduceMotion ? false : "hidden"}
+          whileInView={reduceMotion ? undefined : "show"}
+          viewport={LANDING_VIEWPORT}
+          variants={reveal}
+        >
+          <div className={styles.sectionBody}>
+            <p className={styles.sectionIndex}>01 · How it works</p>
+            <h2>How does a password strength tester work?</h2>
+            <p>
+              A reliable strength tester evaluates more than length and character
+              types. Zxcvbn, the same engine that powers this tool, analyzes
+              patterns, dictionaries, common names, and known leaked-password
+              structures to estimate real-world crack time.
+            </p>
           </div>
-        </div>
+          <div className="bg-[var(--surface-alt-soft)] border border-[var(--line)] rounded-[32px] p-10 flex flex-col items-center justify-center relative overflow-hidden h-full min-h-[340px]">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,122,255,0.1),transparent_70%)]" />
+            <GaugeIcon className="w-24 h-24 text-[var(--accent)] mb-6 relative z-10" />
+            <p className="text-center font-medium text-[var(--ink)] z-10">Estimated crack time matters far more than a simple pass/fail label.</p>
+          </div>
+        </motion.section>
+
+        <motion.section
+          className={`${styles.storyRow} ${styles.storyRowReverse}`}
+          initial={reduceMotion ? false : "hidden"}
+          whileInView={reduceMotion ? undefined : "show"}
+          viewport={LANDING_VIEWPORT}
+          variants={reveal}
+        >
+          <div className={styles.sectionBody}>
+            <p className={styles.sectionIndex}>02 · What actually helps</p>
+            <h2>What makes a password truly strong?</h2>
+            <p>
+              It&rsquo;s a common misconception that substituting letters for
+              numbers, like replacing &ldquo;e&rdquo; with &ldquo;3&rdquo;, makes
+              a password secure. Modern cracking tools already account for these
+              tricks. Real strength comes from entropy: unpredictability and length.
+            </p>
+            <ol className={styles.accessSteps}>
+              <li><span>1</span> Favor length over clever substitutions</li>
+              <li><span>2</span> Avoid names, dates, and dictionary words</li>
+              <li><span>3</span> Use a generator instead of inventing your own</li>
+              <li><span>4</span> Test it here before you rely on it</li>
+            </ol>
+          </div>
+          <div className="bg-[var(--surface-alt-soft)] border border-[var(--line)] rounded-[32px] p-10 flex flex-col items-center justify-center relative overflow-hidden h-full min-h-[340px]">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,149,0,0.1),transparent_70%)]" />
+            <div className="bg-[var(--card-white)] border border-[var(--line)] shadow-sm rounded-xl p-4 w-full mb-4 opacity-50 relative z-10 line-through font-mono">
+              P@ssw0rd1
+            </div>
+            <div className="bg-[var(--card-white)] border-2 border-[var(--accent)] shadow-sm rounded-xl p-4 w-full relative z-10">
+              <span className="text-[var(--accent)] font-mono font-bold tracking-tight break-all">T=z8.txQD~!ppX</span>
+            </div>
+          </div>
+        </motion.section>
       </div>
 
-      {result && (
-        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <h2 className="px-4 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            Detailed Analysis
-          </h2>
-
-          <div className="bg-card shadow-sm rounded-[22px] overflow-hidden border border-separator">
-            
-            {/* Crack Time */}
-            <div className="settings-control-row sm:px-5">
-              <span className="flex items-center justify-center text-muted-foreground bg-fill-secondary w-9 h-9 rounded-xl">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              </span>
-              <span>
-                <strong>Crack Time</strong>
-                <small>Estimated time to crack</small>
-              </span>
-              <span className="font-semibold text-[15px] text-right">
-                {result.crack_times_display.offline_slow_hashing_1e4_per_second}
-              </span>
-            </div>
-            
-            <div className="h-px bg-separator ml-[4.5rem]" />
-
-            {/* Guesses */}
-            <div className="settings-control-row sm:px-5">
-              <span className="flex items-center justify-center text-muted-foreground bg-fill-secondary w-9 h-9 rounded-xl">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-              </span>
-              <span>
-                <strong>Guesses</strong>
-                <small>Estimated required attempts</small>
-              </span>
-              <span className="font-mono text-[14px] text-right font-medium">
-                {result.guesses.toLocaleString()}
-              </span>
-            </div>
-
-            {/* Feedback & Suggestions */}
-            {(result.feedback.warning || result.feedback.suggestions.length > 0) && (
-              <>
-                <div className="h-px bg-separator ml-[4.5rem]" />
-                <div className="p-4 sm:px-5 sm:py-5 flex flex-col gap-3">
-                  {result.feedback.warning && (
-                    <p className="text-[14px] font-medium text-orange-500 flex items-start gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
-                      {result.feedback.warning}
-                    </p>
-                  )}
-                  {result.feedback.suggestions.length > 0 && (
-                    <ul className="text-[13px] text-muted-foreground list-disc list-inside space-y-1 ml-1">
-                      {result.feedback.suggestions.map((suggestion, idx) => (
-                        <li key={idx}>{suggestion}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </>
-            )}
-
-          </div>
+      <motion.section
+        className={styles.finalCard}
+        initial={reduceMotion ? false : "hidden"}
+        whileInView={reduceMotion ? undefined : "show"}
+        viewport={LANDING_VIEWPORT}
+        variants={reveal}
+      >
+        <div>
+          <p className={styles.eyebrow}>Peace of mind</p>
+          <h2>Stop guessing. Start knowing.</h2>
+          <p>Velora Vault generates and scores every password for you, then stores it encrypted on your device before it ever reaches our servers.</p>
         </div>
-      )}
-
-    </div>
+        <div className={styles.actions}>
+          <motion.div whileHover={reduceMotion ? undefined : HOVER_LIFT} whileTap={reduceMotion ? undefined : TAP_PRESS}>
+            <a href="/signup" className={styles.primaryAction}>Sign up free</a>
+          </motion.div>
+        </div>
+      </motion.section>
+    </main>
   );
 }

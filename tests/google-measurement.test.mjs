@@ -4,7 +4,7 @@ import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("root layout publishes Google measurement and Search Console verification", () => {
+test("root layout publishes Search Console verification and mounts consent-gated analytics", () => {
   const layout = read("src/app/layout.tsx");
 
   // Must live in the `metadata` export (Next.js renders this as a real
@@ -16,18 +16,23 @@ test("root layout publishes Google measurement and Search Console verification",
   const jsonLd = layout.match(/const ORGANIZATION_JSON_LD = (\{[\s\S]*?\n\};)/)?.[1] ?? "";
   assert.doesNotMatch(jsonLd, /verification/);
 
-  assert.match(layout, /https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-GKGJ4QD0E5/);
-  assert.match(layout, /gtag\(["']config["'],\s*["']G-GKGJ4QD0E5["']\)/);
-  assert.match(layout, /nonce=\{nonce\}/);
-  assert.match(layout, /strategy=["']afterInteractive["']/);
+  // The gtag scripts themselves live in Analytics.tsx, gated behind consent —
+  // see the next test — layout just mounts that component with the CSP nonce.
+  assert.match(layout, /<Analytics nonce=\{nonce\}/);
 });
 
-test("analytics bootstrap stays limited to initialization and never names sensitive fields", () => {
-  const layout = read("src/app/layout.tsx");
-  const bootstrap = layout.match(/const googleTagBootstrap = `([\s\S]*?)`;/)?.[1] ?? "";
+test("analytics only loads gtag after consent, and stays limited to initialization with no sensitive fields", () => {
+  const analytics = read("src/components/Analytics.tsx");
 
+  assert.match(analytics, /consent === ["']granted["']/);
+  assert.match(analytics, /https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=\$\{GA_MEASUREMENT_ID\}/);
+  assert.match(analytics, /nonce=\{nonce\}/);
+  assert.match(analytics, /strategy=["']afterInteractive["']/);
+  assert.match(analytics, /GA_MEASUREMENT_ID = ["']G-GKGJ4QD0E5["']/);
+
+  const bootstrap = analytics.match(/const googleTagBootstrap = `([\s\S]*?)`;/)?.[1] ?? "";
   assert.match(bootstrap, /gtag\('js', new Date\(\)\)/);
-  assert.match(bootstrap, /gtag\('config', 'G-GKGJ4QD0E5'\)/);
+  assert.match(bootstrap, /gtag\('config', '\$\{GA_MEASUREMENT_ID\}'\)/);
   assert.doesNotMatch(bootstrap, /password|master|vault|document|contact|message|email|payment/i);
 });
 

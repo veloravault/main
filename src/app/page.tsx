@@ -38,7 +38,7 @@ export default function HomePage() {
           body={
             <>
               <strong>Save every login once</strong>, and Velora Vault flags
-              weak, reused, or aging passwords automatically. Strength scoring
+              weak or reused passwords automatically. Strength scoring
               and duplicate detection keep you a step ahead.
             </>
           }

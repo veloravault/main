@@ -46,7 +46,17 @@
       "Bash(PORT=3100 npx next start -p 3100)",
       "Bash(tee \"/private/tmp/claude-501/-Users-tejastelkar-Desktop-Software-Projects-custom-vault/39841115-29f4-47ec-ab81-b8da31132b7f/scratchpad/nextstart.log\")",
       "Bash(curl -s -o /dev/null -m 2 http://localhost:3100/)",
-      "Bash(curl -s -D headers.txt http://localhost:3100/ -o body.html)"
+      "Bash(curl -s -D headers.txt http://localhost:3100/ -o body.html)",
+      "Bash(node --test tests/admin-route-boundaries.test.mjs tests/admin-ui-integrity.test.mjs)",
+      "Bash(npm test *)",
+      "Bash(curl -s -o /dev/null -w \"unavatar.io/github.com -> %{http_code} \\(%{content_type}\\)\\\\n\" \"https://unavatar.io/github.com?fallback=false\")",
+      "Bash(curl -s -o /dev/null -w \"unavatar.io/hdfcbank.com -> %{http_code} \\(%{content_type}\\)\\\\n\" \"https://unavatar.io/hdfcbank.com?fallback=false\")",
+      "Bash(curl -s -o /dev/null -w \"dev server: %{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(grep -n \"handleAddItem\\\\|<form onSubmit\\\\|required\\\\|const \\\\[title, setTitle\\\\]\\\\|AdaptiveSheet open={isAddOpen}\" src/components/BankVault.tsx)",
+      "Bash(supabase --version)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "mcp__plugin_playwright_playwright__browser_console_messages",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot"
     ]
   }
 }

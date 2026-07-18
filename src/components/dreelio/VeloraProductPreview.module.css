@@ -5,6 +5,7 @@
   --preview-muted: #6e6e73;
   --preview-line: rgba(29, 29, 31, .1);
   --preview-blue: #0071e3;
+  --preview-blue-text: #004c99;
   width: 100%;
   aspect-ratio: 1.44;
   overflow: hidden;
@@ -21,6 +22,7 @@
   --preview-muted: #a1a1a6;
   --preview-line: rgba(255, 255, 255, .11);
   --preview-blue: #2997ff;
+  --preview-blue-text: var(--preview-blue);
 }
 
 .preview[data-variant="passwords"],
@@ -62,7 +64,7 @@
 .recent header { display: flex; justify-content: space-between; padding: 12px 14px; font-size: 10px; }
 .recent header small { color: var(--preview-muted); }
 .recent > span { display: grid; min-height: 44px; grid-template-columns: 28px 1fr auto; align-items: center; gap: 9px; border-top: 1px solid var(--preview-line); padding: 0 14px; }
-.recent i, .itemList i, .mobileList i { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 8px; background: color-mix(in srgb, var(--preview-blue) 10%, transparent); color: var(--preview-blue); font-size: 8px; font-style: normal; font-weight: 750; }
+.recent i, .itemList i, .mobileList i { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 8px; background: color-mix(in srgb, var(--preview-blue) 10%, transparent); color: var(--preview-blue-text); font-size: 8px; font-style: normal; font-weight: 750; }
 .recent b, .recent small { font-size: 9px; }
 .recent small { color: var(--preview-muted); }
 .masterDetail { display: grid; height: calc(100% - 78px); grid-template-columns: minmax(190px, .8fr) minmax(230px, 1.2fr); gap: 14px; padding: 18px; }

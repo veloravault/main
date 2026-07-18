@@ -3,6 +3,7 @@
 import {
   ActivityIcon,
   ChartNoAxesCombinedIcon,
+  CreditCardIcon,
   ExternalLinkIcon,
   LifeBuoyIcon,
   LogOutIcon,
@@ -23,6 +24,7 @@ const NAVIGATION: Array<{
   { id: "members", label: "Members", description: "Vault access", icon: UsersIcon },
   { id: "support", label: "Support", description: "Member tickets", icon: LifeBuoyIcon },
   { id: "contact", label: "Contact", description: "Public messages", icon: MailIcon },
+  { id: "billing", label: "Billing", description: "Payment reconciliation", icon: CreditCardIcon },
   { id: "activity", label: "Activity", description: "Owner actions", icon: ActivityIcon },
 ];
 

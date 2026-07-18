@@ -1,0 +1,38 @@
+{
+  "screens": [
+    {
+      "id": "overview",
+      "path": "assets/screens/overview.png",
+      "duration": 120,
+      "title": "Your Vault",
+      "hotspots": [
+        { "x": 250, "y": 300, "startAt": 60 }
+      ]
+    },
+    {
+      "id": "passwords",
+      "path": "assets/screens/passwords.png",
+      "duration": 120,
+      "title": "Secure Passwords",
+      "hotspots": [
+        { "x": 600, "y": 150, "startAt": 60 }
+      ]
+    },
+    {
+      "id": "documents",
+      "path": "assets/screens/documents.png",
+      "duration": 120,
+      "title": "Encrypted Documents",
+      "hotspots": [
+        { "x": 800, "y": 200, "startAt": 60 }
+      ]
+    },
+    {
+      "id": "wallet",
+      "path": "assets/screens/wallet.png",
+      "duration": 120,
+      "title": "Digital Wallet",
+      "hotspots": []
+    }
+  ]
+}

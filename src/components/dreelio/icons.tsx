@@ -121,14 +121,14 @@ export const PILL_ICONS = {
   "Saved logins": IconReports,
   "Auto-lock timer": IconClock,
   "Secure notes": IconTimesheet,
-  "Activity log": IconTasks,
+  "Password health": IconTasks,
   "Identity files": IconReports,
   "Protected uploads": IconIntegrations,
   "Expiry details": IconClock,
   "Fast search": IconOrganize,
   Cards: IconInvoice,
-  Balances: IconBudget,
-  "Spending insights": IconForecast,
+  "Bank details": IconBudget,
+  "Encrypted CVV": IconForecast,
   "Magic import": IconIntegrations,
 } as const;
 

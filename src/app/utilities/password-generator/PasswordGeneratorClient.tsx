@@ -3,6 +3,26 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { secureRandomInt } from "@/lib/secureRandom";
+import styles from "../utilities.module.css";
+import { motion, useReducedMotion } from "framer-motion";
+import {
+  ArrowRightIcon,
+  CheckIcon,
+  CopyIcon,
+  RefreshCwIcon,
+  ShieldCheckIcon,
+  ShieldAlertIcon,
+  ShuffleIcon,
+  KeyIcon,
+} from "lucide-react";
+import {
+  LANDING_VIEWPORT,
+  HOVER_LIFT,
+  TAP_PRESS,
+  revealVariants,
+  staggerContainer,
+  staggerItem,
+} from "@/components/dreelio/motion";
 
 const CHAR_SETS = {
   uppercase: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -30,6 +50,9 @@ function buildPassword(length: number, options: CharsetOptions): string {
 }
 
 export function PasswordGeneratorClient() {
+  const reduceMotion = useReducedMotion();
+  const reveal = reduceMotion ? undefined : revealVariants(22);
+
   const [password, setPassword] = useState("");
   const [length, setLength] = useState(14);
   const [options, setOptions] = useState<CharsetOptions>({
@@ -45,9 +68,6 @@ export function PasswordGeneratorClient() {
     setCopied(false);
   }, [length, options]);
 
-  // Password generation must stay client-only (never rendered during SSR),
-  // so this defers into a microtask rather than calling setState directly
-  // in the effect body.
   useEffect(() => {
     queueMicrotask(generatePassword);
   }, [generatePassword]);
@@ -55,7 +75,6 @@ export function PasswordGeneratorClient() {
   const toggleOption = (key: keyof CharsetOptions) => {
     setOptions((prev) => {
       const next = { ...prev, [key]: !prev[key] };
-      // Prevent unchecking all
       if (!Object.values(next).some(Boolean)) return prev;
       return next;
     });
@@ -73,135 +92,198 @@ export function PasswordGeneratorClient() {
   };
 
   return (
-    <div className="apple-surface bg-[#F2F2F7] dark:bg-[#000000] p-4 sm:p-8 rounded-[32px] space-y-8 max-w-2xl mx-auto w-full border border-separator/50">
-      {/* Hero Display */}
-      <div className="bg-card shadow-sm rounded-[22px] overflow-hidden border border-separator p-6 sm:p-10 flex flex-col items-center justify-center relative min-h-[160px]">
-        <button
-          onClick={generatePassword}
-          className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground hover:bg-fill-secondary rounded-full transition-colors"
-          title="Regenerate"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></svg>
-        </button>
-
-        <p className="text-3xl sm:text-4xl font-mono text-center break-all select-all font-semibold text-foreground tracking-wider leading-relaxed">
-          {password || "Select options to generate"}
-        </p>
-      </div>
-
-      {/* Settings Group */}
-      <div className="space-y-4">
-        <h2 className="px-4 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-          Configuration
-        </h2>
-
-        <div className="bg-card shadow-sm rounded-[22px] overflow-hidden border border-separator">
-
-          {/* Length Slider Row */}
-          <div className="p-4 sm:px-5 sm:py-5 flex flex-col gap-4">
-            <div className="flex justify-between items-center">
-              <span className="font-semibold text-[15px]">Length</span>
-              <span className="text-[15px] text-muted-foreground font-mono">{length}</span>
-            </div>
-            <input
-              type="range"
-              min="5"
-              max="128"
-              value={length}
-              onChange={(e) => setLength(Number(e.target.value))}
-              className="w-full accent-primary h-2 bg-separator rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-7 [&::-webkit-slider-thumb]:h-7 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-[0_2px_5px_rgba(0,0,0,0.3)] cursor-pointer"
-            />
-          </div>
-
-          <div className="h-px bg-separator ml-14" />
-
-          {/* Uppercase Row */}
-          <div className="settings-control-row sm:px-5">
-            <span className="flex items-center justify-center text-white bg-blue-500 w-8 h-8 rounded-lg font-mono text-xs font-bold">A</span>
-            <span>
-              <strong>Uppercase</strong>
-              <small>Include A-Z characters</small>
-            </span>
-            <button
-              className={`settings-toggle ${options.uppercase ? 'is-on' : ''}`}
-              onClick={() => toggleOption('uppercase')}
-            >
-              <span />
-            </button>
-          </div>
-
-          <div className="h-px bg-separator ml-14" />
-
-          {/* Lowercase Row */}
-          <div className="settings-control-row sm:px-5">
-            <span className="flex items-center justify-center text-white bg-green-500 w-8 h-8 rounded-lg font-mono text-xs font-bold">a</span>
-            <span>
-              <strong>Lowercase</strong>
-              <small>Include a-z characters</small>
-            </span>
-            <button
-              className={`settings-toggle ${options.lowercase ? 'is-on' : ''}`}
-              onClick={() => toggleOption('lowercase')}
-            >
-              <span />
-            </button>
-          </div>
-
-          <div className="h-px bg-separator ml-14" />
-
-          {/* Numbers Row */}
-          <div className="settings-control-row sm:px-5">
-            <span className="flex items-center justify-center text-white bg-orange-500 w-8 h-8 rounded-lg font-mono text-xs font-bold">1</span>
-            <span>
-              <strong>Numbers</strong>
-              <small>Include 0-9 characters</small>
-            </span>
-            <button
-              className={`settings-toggle ${options.numbers ? 'is-on' : ''}`}
-              onClick={() => toggleOption('numbers')}
-            >
-              <span />
-            </button>
-          </div>
-
-          <div className="h-px bg-separator ml-14" />
-
-          {/* Special Row */}
-          <div className="settings-control-row sm:px-5">
-            <span className="flex items-center justify-center text-white bg-purple-500 w-8 h-8 rounded-lg font-mono text-xs font-bold">!</span>
-            <span>
-              <strong>Special</strong>
-              <small>Include !@#$%^&*</small>
-            </span>
-            <button
-              className={`settings-toggle ${options.special ? 'is-on' : ''}`}
-              onClick={() => toggleOption('special')}
-            >
-              <span />
-            </button>
-          </div>
-
-        </div>
-      </div>
-
-      <Button
-        onClick={copyToClipboard}
-        size="lg"
-        className="w-full rounded-[14px] h-14 text-base font-semibold gap-2 mt-4"
+    <main className={styles.page}>
+      <motion.section
+        className={styles.hero}
+        initial={false}
+        animate="show"
+        variants={staggerContainer}
       >
-        {copied ? (
-          <>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            Copied to Clipboard!
-          </>
-        ) : (
-          <>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-            Copy Password
-          </>
-        )}
-      </Button>
+        <motion.div className={styles.heroCopy} variants={staggerItem}>
+          <p className={styles.eyebrow}>Free Utility</p>
+          <h1>Password Generator</h1>
+          <p>
+            Generate highly secure, unpredictable passwords to keep your data safe.
+            Stop relying on guessable phrases and protect every account you own.
+          </p>
+          <div className={styles.heroActions}>
+            <button className={styles.primaryAction} onClick={() => generatePassword()}>
+              <RefreshCwIcon className="mr-2" aria-hidden="true" size={16} /> Generate Another
+            </button>
+            <a className={styles.jumpLink} href="#best-practices">
+              Learn best practices <ArrowRightIcon aria-hidden="true" />
+            </a>
+          </div>
+        </motion.div>
 
-    </div>
+        <motion.div className={styles.heroVisual} variants={staggerItem}>
+          <div className="bg-[#F2F2F7] dark:bg-[#000000] p-6 rounded-[32px] space-y-4 border border-separator/50 shadow-[0_26px_70px_-54px_rgba(0,0,0,0.44)] relative">
+            <div className="bg-card shadow-sm rounded-[22px] border border-separator p-6 flex flex-col items-center justify-center relative min-h-[140px]">
+              <p className="text-2xl sm:text-3xl font-mono text-center break-all select-all font-semibold text-foreground tracking-wider leading-relaxed px-4">
+                {password || "Select options to generate"}
+              </p>
+            </div>
+
+            <div className="bg-card shadow-sm rounded-[22px] border border-separator">
+              <div className="p-4 flex flex-col gap-3">
+                <div className="flex justify-between items-center px-1">
+                  <span className="font-semibold text-[14px]">Length</span>
+                  <span className="text-[14px] text-muted-foreground font-mono bg-separator/30 px-2 py-0.5 rounded-md">{length}</span>
+                </div>
+                <input
+                  type="range"
+                  min="5"
+                  max="128"
+                  value={length}
+                  onChange={(e) => setLength(Number(e.target.value))}
+                  className="w-full accent-primary h-2 bg-separator rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-[0_2px_5px_rgba(0,0,0,0.3)] cursor-pointer"
+                />
+              </div>
+
+              <div className="h-px bg-separator/50 w-full" />
+
+              <div className="divide-y divide-separator/50">
+                {[
+                  { key: "uppercase", label: "Uppercase", desc: "Include A-Z", color: "bg-blue-500", char: "A" },
+                  { key: "lowercase", label: "Lowercase", desc: "Include a-z", color: "bg-green-500", char: "a" },
+                  { key: "numbers", label: "Numbers", desc: "Include 0-9", color: "bg-orange-500", char: "1" },
+                  { key: "special", label: "Special", desc: "Include !@#$", color: "bg-purple-500", char: "!" },
+                ].map((item) => (
+                  <div key={item.key} className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-3">
+                      <span className={`flex items-center justify-center text-white ${item.color} w-8 h-8 rounded-lg font-mono text-xs font-bold`}>
+                        {item.char}
+                      </span>
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-[14px]">{item.label}</span>
+                        <span className="text-xs text-muted-foreground">{item.desc}</span>
+                      </div>
+                    </div>
+                    <button
+                      className={`settings-toggle ${options[item.key as keyof CharsetOptions] ? "is-on" : ""}`}
+                      onClick={() => toggleOption(item.key as keyof CharsetOptions)}
+                    >
+                      <span />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <Button onClick={copyToClipboard} size="lg" className="w-full rounded-[14px] h-14 text-base font-semibold gap-2">
+              {copied ? <><CheckIcon size={20} /> Copied to Clipboard!</> : <><CopyIcon size={20} /> Copy Password</>}
+            </Button>
+          </div>
+        </motion.div>
+      </motion.section>
+
+      <motion.section
+        className={styles.factGrid}
+        initial={reduceMotion ? false : "hidden"}
+        whileInView={reduceMotion ? undefined : "show"}
+        viewport={LANDING_VIEWPORT}
+        variants={staggerContainer}
+      >
+        <motion.article className={styles.fact} variants={staggerItem}>
+          <span>Maximum</span>
+          <strong>Brute-force resistance</strong>
+          <ShuffleIcon aria-hidden="true" />
+        </motion.article>
+        <motion.article className={styles.fact} variants={staggerItem}>
+          <span>Eliminating</span>
+          <strong>Human bias</strong>
+          <ShieldCheckIcon aria-hidden="true" />
+        </motion.article>
+        <motion.article className={styles.fact} variants={staggerItem}>
+          <span>Effortless</span>
+          <strong>Per-account uniqueness</strong>
+          <KeyIcon aria-hidden="true" />
+        </motion.article>
+        <motion.article className={styles.fact} variants={staggerItem}>
+          <span>Protection vs</span>
+          <strong>Credential stuffing</strong>
+          <ShieldAlertIcon aria-hidden="true" />
+        </motion.article>
+      </motion.section>
+
+      <div id="best-practices" className={styles.story}>
+        <motion.section
+          className={styles.storyRow}
+          initial={reduceMotion ? false : "hidden"}
+          whileInView={reduceMotion ? undefined : "show"}
+          viewport={LANDING_VIEWPORT}
+          variants={reveal}
+        >
+          <div className={styles.sectionBody}>
+            <p className={styles.sectionIndex}>01 · Why strength matters</p>
+            <h2>Why do strong passwords really matter?</h2>
+            <p>
+              Data breaches happen more often than ever, and weak passwords are the
+              primary vulnerability behind most of them. A strong, complex password
+              acts as an uncrackable safe for your personal data, sharply reducing
+              the risk of unauthorized access.
+            </p>
+          </div>
+          <div className="bg-[var(--surface-alt-soft)] border border-[var(--line)] rounded-[32px] p-10 flex flex-col items-center justify-center relative overflow-hidden h-full min-h-[340px]">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,122,255,0.1),transparent_70%)]" />
+            <ShieldCheckIcon className="w-24 h-24 text-[var(--accent)] mb-6 relative z-10" />
+            <p className="text-center font-medium text-[var(--ink)] z-10">A unique, random password per account limits any single breach to that one account.</p>
+          </div>
+        </motion.section>
+
+        <motion.section
+          className={`${styles.storyRow} ${styles.storyRowReverse}`}
+          initial={reduceMotion ? false : "hidden"}
+          whileInView={reduceMotion ? undefined : "show"}
+          viewport={LANDING_VIEWPORT}
+          variants={reveal}
+        >
+          <div className={styles.sectionBody}>
+            <p className={styles.sectionIndex}>02 · Best practices</p>
+            <h2>Best practices for unbreakable passwords</h2>
+            <p>
+              Many people still rely on easily guessable phrases, birth dates, or
+              pet names, which makes them a prime target for automated cracking
+              tools. Fully randomized, cryptographically secure passwords close
+              that gap for every account you own.
+            </p>
+            <ol className={styles.accessSteps}>
+              <li><span>1</span> Use 14+ characters when the site allows it</li>
+              <li><span>2</span> Mix uppercase, lowercase, numbers, and symbols</li>
+              <li><span>3</span> Never reuse a password across sites</li>
+              <li><span>4</span> Store it in a vault instead of memorizing it</li>
+            </ol>
+          </div>
+          <div className="bg-[var(--surface-alt-soft)] border border-[var(--line)] rounded-[32px] p-10 flex flex-col items-center justify-center relative overflow-hidden h-full min-h-[340px]">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,59,48,0.08),transparent_70%)]" />
+            <div className="bg-[var(--card-white)] border border-[var(--line)] shadow-sm rounded-xl p-4 w-full mb-4 opacity-50 relative z-10 line-through font-mono">
+              summer2024
+            </div>
+            <div className="bg-[var(--card-white)] border-2 border-[var(--accent)] shadow-sm rounded-xl p-4 w-full relative z-10">
+              <span className="text-[var(--accent)] font-mono font-bold tracking-tight break-all">T=z8.txQD~!ppX</span>
+            </div>
+          </div>
+        </motion.section>
+      </div>
+
+      <motion.section
+        className={styles.finalCard}
+        initial={reduceMotion ? false : "hidden"}
+        whileInView={reduceMotion ? undefined : "show"}
+        viewport={LANDING_VIEWPORT}
+        variants={reveal}
+      >
+        <div>
+          <p className={styles.eyebrow}>Peace of mind</p>
+          <h2>Stop memorizing. Start securing.</h2>
+          <p>Every password this tool generates can be saved straight into your Velora Vault, encrypted on your device before it ever reaches our servers.</p>
+        </div>
+        <div className={styles.actions}>
+          <motion.div whileHover={reduceMotion ? undefined : HOVER_LIFT} whileTap={reduceMotion ? undefined : TAP_PRESS}>
+            <a href="/signup" className={styles.primaryAction}>Sign up free</a>
+          </motion.div>
+        </div>
+      </motion.section>
+    </main>
   );
 }

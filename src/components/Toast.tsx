@@ -79,7 +79,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div className="fixed z-[9999] top-4 md:top-8 left-1/2 -translate-x-1/2 flex flex-col gap-3 pointer-events-none w-[90vw] max-w-[360px]" aria-label="Notifications">
+      <div className="fixed z-[9999] top-4 md:top-8 left-1/2 -translate-x-1/2 flex flex-col gap-3 pointer-events-none w-[90vw] max-w-[360px]" role="region" aria-label="Notifications">
         <AnimatePresence mode="popLayout">
           {toasts.map((item) => {
             const hasAction = Boolean(item.actionLabel && item.onAction);

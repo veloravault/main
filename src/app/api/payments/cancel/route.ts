@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateActiveMemberRequest } from "@/lib/server/auth";
 import { createSupabaseAdminClient } from "@/lib/server/supabase-admin";
 import { cancelSubscription, razorpayConfigured } from "@/lib/server/razorpay";
+import { recordBillingReconciliationIssue } from "@/lib/server/billing-reconciliation-repository";
 
 export const runtime = "nodejs";
 
@@ -42,8 +43,15 @@ export async function POST(req: NextRequest) {
     } catch (dbError) {
       // Razorpay has already scheduled the cancellation regardless of whether
       // this local write lands — don't tell the user to retry (that would
-      // call Razorpay's cancel API again); surface the desync for follow-up.
+      // call Razorpay's cancel API again); queue the desync for admin retry.
       console.error("cancel subscription: Razorpay cancelled but local DB update failed:", dbError);
+      await recordBillingReconciliationIssue({
+        userId: user.id,
+        razorpaySubscriptionId: row.razorpay_subscription_id,
+        action: "cancel",
+        intendedUpdate: { cancel_at_cycle_end: true, scheduled_period: null },
+        errorMessage: dbError instanceof Error ? dbError.message : String(dbError),
+      });
     }
 
     return NextResponse.json({ ok: true, cancel_at_cycle_end: true });
