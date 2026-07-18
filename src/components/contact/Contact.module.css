@@ -1,0 +1,283 @@
+.article {
+  padding-block: 132px 120px;
+}
+
+.heading {
+  max-width: 680px;
+}
+
+.eyebrow {
+  margin: 0 0 14px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(40px, 6vw, 64px);
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  line-height: 0.98;
+}
+
+.intro {
+  margin: 24px 0 0;
+  color: var(--ink-body);
+  font-size: clamp(17px, 2vw, 20px);
+  line-height: 1.55;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.72fr) minmax(0, 1.35fr);
+  gap: 28px;
+  margin-top: 54px;
+  align-items: start;
+}
+
+.channels {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.channelCard {
+  padding: 21px 22px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface-alt-soft);
+}
+
+.channelTitle {
+  margin: 0;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.channelBody {
+  margin: 7px 0 13px;
+  color: var(--ink-body);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.channelEmail {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.channelEmail:hover {
+  text-decoration: underline;
+}
+
+.responseNote {
+  margin: 7px 4px 0;
+  color: var(--ink-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.formCard {
+  padding: clamp(26px, 4vw, 42px);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: var(--surface-alt-soft);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.07);
+}
+
+.formTitle {
+  margin: 0;
+  color: var(--ink);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.formIntro {
+  margin: 8px 0 28px;
+  color: var(--ink-body);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.field input,
+.field select {
+  min-height: 48px;
+  padding: 0 14px;
+}
+
+.field textarea {
+  min-height: 150px;
+  padding: 13px 14px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.field small {
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.submitButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 50px;
+  margin-top: 2px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: white;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.submitButton:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  outline-offset: 3px;
+}
+
+.submitButton:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.submitButton svg,
+.feedback svg {
+  width: 17px;
+  height: 17px;
+}
+
+.spinner {
+  animation: spin 850ms linear infinite;
+}
+
+.feedback {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 20px;
+  color: #248a3d;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.feedbackError {
+  color: #d70015;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .submitButton,
+  .field input,
+  .field select,
+  .field textarea {
+    transition: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .article {
+    padding-block: 108px 76px;
+    background: #ffffff;
+  }
+
+  .layout,
+  .fieldRow {
+    grid-template-columns: 1fr;
+  }
+
+  .layout {
+    gap: 36px;
+    margin-top: 42px;
+  }
+
+  .formCard {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: #ffffff;
+    box-shadow: none;
+  }
+
+  .channelCard {
+    background: #f5f5f7;
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    background: #ffffff;
+  }
+}

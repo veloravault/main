@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import rootStyles from "../dreelio/dreelio.module.css";
-import styles from "@/components/legal/Legal.module.css";
+import { ContactForm } from "@/components/contact/ContactForm";
+import styles from "@/components/contact/Contact.module.css";
 import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
 import { pageMetadata } from "@/lib/seo";
 
@@ -33,31 +34,34 @@ export default function ContactPage() {
     <PublicPageShell>
       <article className={styles.article}>
         <div className={rootStyles.container}>
-          <h1 className={styles.title}>Contact us</h1>
-          <p className={styles.intro}>
-            Velora Vault doesn&rsquo;t route your message through a support
-            widget or a web form we don&rsquo;t need. Reach us directly at the
-            address that fits, and we&rsquo;ll get back to you.
-          </p>
-
-          <div className={styles.contactGrid}>
-            {CONTACT_CHANNELS.map((channel) => (
-              <div key={channel.email} className={styles.contactCard}>
-                <p className={styles.contactCardTitle}>{channel.title}</p>
-                <p className={styles.contactCardBody}>{channel.body}</p>
-                <a href={`mailto:${channel.email}`} className={styles.contactCardEmail}>
-                  {channel.email}
-                </a>
-              </div>
-            ))}
-          </div>
-
-          <div className={styles.callout}>
-            <p>
-              <strong>The short version:</strong>{" "}
-              we read every email ourselves — expect a reply within one
-              business day.
+          <header className={styles.heading}>
+            <p className={styles.eyebrow}>Talk to a person</p>
+            <h1 className={styles.title}>How can we help?</h1>
+            <p className={styles.intro}>
+              Ask about your account, privacy, or Velora Vault. For anything
+              sensitive, choose the security channel below.
             </p>
+          </header>
+
+          <div className={styles.layout}>
+            <aside className={styles.channels} aria-label="Direct email channels">
+              {CONTACT_CHANNELS.map((channel) => (
+                <div key={channel.email} className={styles.channelCard}>
+                  <p className={styles.channelTitle}>{channel.title}</p>
+                  <p className={styles.channelBody}>{channel.body}</p>
+                  <a href={`mailto:${channel.email}`} className={styles.channelEmail}>
+                    {channel.email}
+                  </a>
+                </div>
+              ))}
+              <p className={styles.responseNote}>We read every message and usually reply within one business day.</p>
+            </aside>
+
+            <section className={styles.formCard} aria-labelledby="contact-form-title">
+              <h2 id="contact-form-title" className={styles.formTitle}>Send us a message</h2>
+              <p className={styles.formIntro}>Your message goes to a private owner-only inbox.</p>
+              <ContactForm />
+            </section>
           </div>
         </div>
       </article>
