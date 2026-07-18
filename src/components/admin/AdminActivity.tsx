@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   CheckCircle2Icon,
   ChevronDownIcon,
@@ -13,6 +13,22 @@ import { StateView } from "@/components/ui/state-view";
 import { AdminSkeleton } from "./AdminSkeleton";
 import type { AdminActivityItem } from "./types";
 import styles from "@/app/admin/admin.module.css";
+
+type ActivityCategory = "all" | "access" | "support" | "invitation" | "system";
+type ActivityResult = "all" | "success" | "failure";
+
+const CATEGORY_OPTIONS: { value: ActivityCategory; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "access", label: "Access" },
+  { value: "support", label: "Support" },
+  { value: "invitation", label: "Invites" },
+  { value: "system", label: "System" },
+];
+const RESULT_OPTIONS: { value: ActivityResult; label: string }[] = [
+  { value: "all", label: "Any result" },
+  { value: "success", label: "Successful" },
+  { value: "failure", label: "Failed" },
+];
 
 function safeActivityPage(value: unknown): { items: AdminActivityItem[]; nextCursor: string | null } {
   if (!value || typeof value !== "object" || !("items" in value) || !Array.isArray(value.items)) {
@@ -27,7 +43,12 @@ function safeActivityPage(value: unknown): { items: AdminActivityItem[]; nextCur
 function activityCopy(item: AdminActivityItem) {
   if (item.action === "suspend") return { label: "Access blocked", detail: "Vault access was blocked", tone: "danger", Icon: ShieldBanIcon };
   if (item.action === "revoke") return { label: "Access revoked", detail: "Vault access was permanently revoked", tone: "danger", Icon: ShieldBanIcon };
+  if (item.action === "restore") return { label: "Access restored", detail: "Vault access was restored", tone: "success", Icon: ShieldCheckIcon };
   if (item.action === "onboarding_complete") return { label: "Onboarding completed", detail: "The member finished vault setup", tone: "success", Icon: UserCheckIcon };
+  if (item.action === "support_reply") return { label: "Support reply sent", detail: "The owner replied to a support ticket", tone: "success", Icon: CheckCircle2Icon };
+  if (item.action === "support_resolve") return { label: "Ticket resolved", detail: "A support ticket was resolved", tone: "success", Icon: CheckCircle2Icon };
+  if (item.action === "support_reopen") return { label: "Ticket reopened", detail: "A support ticket was reopened", tone: "neutral", Icon: CheckCircle2Icon };
+  if (item.action === "setup_email_resent") return { label: "Setup link sent", detail: "A secure account setup link was sent", tone: "success", Icon: ShieldCheckIcon };
   if (item.action.includes("approve") || item.action.includes("invite")) return { label: "Member approved", detail: "Account access was approved", tone: "success", Icon: ShieldCheckIcon };
   return { label: item.action.replaceAll("_", " "), detail: item.resultCode.replaceAll("_", " "), tone: "neutral", Icon: CheckCircle2Icon };
 }
@@ -41,6 +62,12 @@ function activityTime(value: string) {
 
 export function AdminActivity() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get("category");
+  const resultParam = searchParams.get("result");
+  const category: ActivityCategory = CATEGORY_OPTIONS.some((option) => option.value === categoryParam) ? categoryParam as ActivityCategory : "all";
+  const result: ActivityResult = RESULT_OPTIONS.some((option) => option.value === resultParam) ? resultParam as ActivityResult : "all";
   const [items, setItems] = useState<AdminActivityItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,8 +79,9 @@ export function AdminActivity() {
     else setLoading(true);
     setError(null);
     try {
-      const query = cursor ? `?cursor=${encodeURIComponent(cursor)}` : "";
-      const response = await fetch(`/api/admin/activity${query}`, { headers: { accept: "application/json" } });
+      const params = new URLSearchParams({ category, result });
+      if (cursor) params.set("cursor", cursor);
+      const response = await fetch(`/api/admin/activity?${params.toString()}`, { headers: { accept: "application/json" } });
       if (response.status === 401) {
         router.replace("/login?next=/admin");
         return;
@@ -76,18 +104,25 @@ export function AdminActivity() {
       if (append) setLoadingMore(false);
       else setLoading(false);
     }
-  }, [router]);
+  }, [category, result, router]);
+
+  const updateFilters = (nextCategory: ActivityCategory, nextResult: ActivityResult) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("category", nextCategory);
+    params.set("result", nextResult);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
 
   useEffect(() => {
     const timer = window.setTimeout(() => { void load(null, false); }, 0);
     return () => window.clearTimeout(timer);
   }, [load]);
 
-  if (loading) return <AdminSkeleton />;
-  if (error && items.length === 0) return <StateView kind="error" title="Activity unavailable" description={error} action={{ label: "Try again", onClick: () => void load(null, false) }} />;
-  if (items.length === 0) return <StateView kind="empty" title="No activity yet" description="Access changes and completed onboarding events will appear here." />;
-
-  return (
+  let content;
+  if (loading) content = <AdminSkeleton />;
+  else if (error && items.length === 0) content = <StateView kind="error" title="Activity unavailable" description={error} action={{ label: "Try again", onClick: () => void load(null, false) }} />;
+  else if (items.length === 0) content = <StateView kind="empty" title="No matching activity" description="Try a different category or result filter." />;
+  else content = (
     <>
       <div className={styles.activityList} role="list" aria-label="Owner activity">
         {items.map((item) => {
@@ -112,6 +147,27 @@ export function AdminActivity() {
           {!loadingMore && <ChevronDownIcon aria-hidden="true" />}
         </button>
       ) : <p className={styles.endNote}><CheckCircle2Icon aria-hidden="true" />You’re up to date.</p>}
+    </>
+  );
+
+  return (
+    <>
+      <div className={styles.activityFilters} aria-label="Activity filters">
+        <div role="group" aria-label="Activity category">
+          {CATEGORY_OPTIONS.map((option) => (
+            <button type="button" key={option.value} data-active={category === option.value || undefined} aria-pressed={category === option.value} onClick={() => updateFilters(option.value, result)}>
+              {option.label}
+            </button>
+          ))}
+        </div>
+        <label>
+          <span>Result</span>
+          <select value={result} onChange={(event) => updateFilters(category, event.target.value as ActivityResult)}>
+            {RESULT_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+          </select>
+        </label>
+      </div>
+      {content}
     </>
   );
 }

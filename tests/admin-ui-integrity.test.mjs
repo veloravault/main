@@ -148,6 +148,24 @@ test("activity view loads the real audit API and owner controls are usable", () 
   assert.doesNotMatch(css, /5\.8rem/);
 });
 
+test("activity filters are URL-synced, responsive, and preserve pagination scope", () => {
+  const activity = read("src/components/admin/AdminActivity.tsx");
+  const css = read("src/app/admin/admin.module.css");
+
+  assert.match(activity, /useSearchParams/);
+  assert.match(activity, /usePathname/);
+  for (const category of ["all", "access", "support", "invitation", "system"]) {
+    assert.match(activity, new RegExp(`value: "${category}"`));
+  }
+  for (const result of ["all", "success", "failure"]) {
+    assert.match(activity, new RegExp(`value: "${result}"`));
+  }
+  assert.match(activity, /params\.set\("category"/);
+  assert.match(activity, /params\.set\("result"/);
+  assert.match(activity, /category.*result.*cursor/s);
+  assert.match(css, /\.activityFilters/);
+});
+
 test("client search normalization preserves human names and removes filter grammar", async () => {
   const helper = read("src/components/admin/admin-client.ts");
   const consoleSource = read("src/components/admin/AdminConsole.tsx");

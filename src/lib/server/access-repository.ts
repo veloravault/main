@@ -8,6 +8,21 @@ import { isConfiguredAdminUserId } from "@/lib/server/access";
 
 export const MEMBER_PAGE_SIZE = 25;
 export const ADMIN_ACTIVITY_PAGE_SIZE = 30;
+export const ADMIN_ACTIVITY_ACTIONS = {
+  access: ["suspend", "revoke", "restore", "onboarding_complete"],
+  support: ["support_reply", "support_resolve", "support_reopen"],
+  invitation: ["invite", "approve", "setup_email_resent"],
+} as const;
+export const ADMIN_ACTIVITY_FAILURE_RESULTS = [
+  "FAILED",
+  "ERROR",
+  "CONFLICT",
+  "UNAVAILABLE",
+  "RATE_LIMITED",
+] as const;
+
+export type AdminActivityCategory = "all" | "access" | "support" | "invitation" | "system";
+export type AdminActivityResult = "all" | "success" | "failure";
 
 export type MemberAdminDto = {
   id: string;
@@ -167,7 +182,11 @@ export function parseAdminActivityCursor(value: string | null): AdminActivityCur
   }
 }
 
-export async function listAdminActivity(args: { cursor: AdminActivityCursor | null }) {
+export async function listAdminActivity(args: {
+  cursor: AdminActivityCursor | null;
+  category: AdminActivityCategory;
+  result: AdminActivityResult;
+}) {
   const admin = createSupabaseAdminClient();
   let query = admin
     .from("admin_audit_log")
@@ -175,6 +194,18 @@ export async function listAdminActivity(args: { cursor: AdminActivityCursor | nu
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
     .limit(ADMIN_ACTIVITY_PAGE_SIZE);
+
+  const categorizedActions = [
+    ...ADMIN_ACTIVITY_ACTIONS.access,
+    ...ADMIN_ACTIVITY_ACTIONS.support,
+    ...ADMIN_ACTIVITY_ACTIONS.invitation,
+  ];
+  if (args.category !== "all" && args.category !== "system") {
+    query = query.in("action", [...ADMIN_ACTIVITY_ACTIONS[args.category]]);
+  }
+  if (args.category === "system") query = query.not("action", "in", `(${categorizedActions.join(",")})`);
+  if (args.result === "failure") query = query.in("result_code", [...ADMIN_ACTIVITY_FAILURE_RESULTS]);
+  if (args.result === "success") query = query.not("result_code", "in", `(${ADMIN_ACTIVITY_FAILURE_RESULTS.join(",")})`);
 
   if (args.cursor) {
     query = query.or(

@@ -65,7 +65,7 @@ export async function getAdminOverview(): Promise<AdminOverviewDto> {
     admin.from("support_tickets").select("id", { count: "exact", head: true }).eq("status", "resolved"),
     admin.from("ai_usage_events").select("id", { count: "exact", head: true }).gte("created_at", monthStart.toISOString()),
     sumDocumentBytes(),
-    listAdminActivity({ cursor: null }),
+    listAdminActivity({ cursor: null, category: "all", result: "all" }),
   ]);
 
   const counted = [

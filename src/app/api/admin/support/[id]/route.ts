@@ -29,7 +29,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    await requireAdmin();
+    const admin = await requireAdmin();
     assertSameOrigin(request);
     const { id } = await context.params;
     if (!UUID.test(id)) return Response.json({ error: "INVALID_TICKET_ID" }, { status: 400 });
@@ -41,7 +41,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       return Response.json({ error: "INVALID_STATUS_UPDATE" }, { status: 400 });
     }
 
-    const ticket = await setSupportTicketStatusAdmin(id, status as TicketStatus);
+    const ticket = await setSupportTicketStatusAdmin({ ticketId: id, status: status as TicketStatus, adminId: admin.id });
     if (!ticket) return Response.json({ error: "TICKET_NOT_FOUND" }, { status: 404 });
     return Response.json({ ticket });
   } catch (error) {

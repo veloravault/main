@@ -59,6 +59,33 @@ test("activity is a real paginated audit feed without sensitive payloads", () =>
   assert.match(repository, /ADMIN_ACTIVITY_CURSOR/);
 });
 
+test("activity validates category and result filters and support operations are audited", () => {
+  const route = read("src/app/api/admin/activity/route.ts");
+  const repository = read("src/lib/server/access-repository.ts");
+  const supportRepository = read("src/lib/server/support-repository.ts");
+  const replyRoute = read("src/app/api/admin/support/[id]/messages/route.ts");
+  const ticketRoute = read("src/app/api/admin/support/[id]/route.ts");
+
+  for (const category of ["all", "access", "support", "invitation", "system"]) {
+    assert.match(route, new RegExp(`"${category}"`));
+  }
+  for (const result of ["all", "success", "failure"]) {
+    assert.match(route, new RegExp(`"${result}"`));
+  }
+  assert.match(route, /listAdminActivity\(\{ cursor, category, result \}\)/);
+  assert.match(repository, /category:\s*AdminActivityCategory/);
+  assert.match(repository, /result:\s*AdminActivityResult/);
+  assert.match(repository, /ADMIN_ACTIVITY_ACTIONS/);
+  assert.match(repository, /ADMIN_ACTIVITY_FAILURE_RESULTS/);
+
+  assert.match(replyRoute, /const admin = await requireAdmin\(\)/);
+  assert.match(replyRoute, /adminId:\s*admin\.id/);
+  assert.match(ticketRoute, /const admin = await requireAdmin\(\)/);
+  assert.match(ticketRoute, /adminId:\s*admin\.id/);
+  assert.match(supportRepository, /action:\s*"support_reply"/);
+  assert.match(supportRepository, /status === "resolved" \? "support_resolve" : "support_reopen"/);
+});
+
 test("updated member DTOs re-read the authoritative plan after the mutation RPC", () => {
   const repository = read("src/lib/server/access-repository.ts");
   assert.match(repository, /rpc\("mutate_member_status"[\s\S]*\.from\("app_members"\)[\s\S]*\.select\("user_id,email,status,plan,access_request_id,approved_at,activated_at,created_at"\)/);

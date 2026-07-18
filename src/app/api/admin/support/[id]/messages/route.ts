@@ -8,7 +8,7 @@ const MAX_MESSAGE_LENGTH = 4_000;
 
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    await requireAdmin();
+    const admin = await requireAdmin();
     assertSameOrigin(request);
     const { id } = await context.params;
     if (!UUID.test(id)) return Response.json({ error: "INVALID_TICKET_ID" }, { status: 400 });
@@ -24,7 +24,12 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     const existing = await getSupportTicketAdmin(id);
     if (!existing) return Response.json({ error: "TICKET_NOT_FOUND" }, { status: 404 });
 
-    const reply = await postAdminReply(id, message);
+    const reply = await postAdminReply({
+      ticketId: id,
+      body: message,
+      adminId: admin.id,
+      memberId: existing.ticket.userId,
+    });
     return Response.json({ message: reply });
   } catch (error) {
     if (error instanceof AuthorizationError || error instanceof RequestSecurityError) {

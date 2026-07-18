@@ -161,27 +161,60 @@ export async function getSupportTicketAdmin(ticketId: string): Promise<{ ticket:
   };
 }
 
-export async function postAdminReply(ticketId: string, body: string): Promise<AdminSupportMessage> {
+async function recordSupportAudit(args: {
+  adminId: string;
+  memberId: string;
+  action: "support_reply" | "support_resolve" | "support_reopen";
+  resultCode: "SENT" | "RESOLVED" | "OPEN";
+}) {
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin.from("admin_audit_log").insert({
+    actor_user_id: args.adminId,
+    member_user_id: args.memberId,
+    action: args.action,
+    result_code: args.resultCode,
+  });
+  if (error) console.error("ADMIN_SUPPORT_AUDIT_FAILED", { action: args.action });
+}
+
+export async function postAdminReply(args: {
+  ticketId: string;
+  body: string;
+  adminId: string;
+  memberId: string;
+}): Promise<AdminSupportMessage> {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("support_ticket_messages")
-    .insert({ ticket_id: ticketId, sender: "owner", body })
+    .insert({ ticket_id: args.ticketId, sender: "owner", body: args.body })
     .select("id,sender,body,created_at")
     .single();
   if (error) throw new Error("SUPPORT_REPLY_FAILED");
+  await recordSupportAudit({ adminId: args.adminId, memberId: args.memberId, action: "support_reply", resultCode: "SENT" });
   return messageDto(data as MessageRow);
 }
 
-export async function setSupportTicketStatusAdmin(ticketId: string, status: TicketStatus): Promise<AdminSupportTicket | null> {
+export async function setSupportTicketStatusAdmin(args: {
+  ticketId: string;
+  status: TicketStatus;
+  adminId: string;
+}): Promise<AdminSupportTicket | null> {
   const admin = createSupabaseAdminClient();
   const { data, error } = await admin
     .from("support_tickets")
-    .update({ status, updated_at: new Date().toISOString() })
-    .eq("id", ticketId)
+    .update({ status: args.status, updated_at: new Date().toISOString() })
+    .eq("id", args.ticketId)
     .select("id,user_id,subject,status,last_message_at,last_message_by,created_at")
     .maybeSingle();
   if (error) throw new Error("SUPPORT_STATUS_UPDATE_FAILED");
   if (!data) return null;
+
+  await recordSupportAudit({
+    adminId: args.adminId,
+    memberId: data.user_id,
+    action: args.status === "resolved" ? "support_resolve" : "support_reopen",
+    resultCode: args.status === "resolved" ? "RESOLVED" : "OPEN",
+  });
 
   const { data: memberRow } = await admin.from("app_members").select("email").eq("user_id", data.user_id).maybeSingle();
   return ticketDto(data as TicketRow, memberRow?.email ?? null);

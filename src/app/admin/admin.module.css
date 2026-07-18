@@ -162,6 +162,14 @@
 .appendError button:focus-visible { box-shadow: 0 0 0 3px var(--admin-blue); }
 .endNote { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 22px; color: var(--admin-muted); font-size: 11px; }
 .endNote svg { width: 13px; height: 13px; color: var(--admin-green); }
+.activityFilters { display: flex; align-items: center; justify-content: space-between; gap: 14px; border-bottom: 1px solid var(--admin-line); padding: 12px 16px; }
+.activityFilters > div { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.activityFilters > div::-webkit-scrollbar { display: none; }
+.activityFilters button { min-height: 36px; flex: 0 0 auto; border-radius: 999px; padding: 0 13px; color: var(--admin-muted); font-size: 11px; font-weight: 680; }
+.activityFilters button[data-active] { background: var(--admin-soft-blue); color: var(--admin-blue); }
+.activityFilters button:focus-visible, .activityFilters select:focus-visible { outline: 3px solid color-mix(in srgb, var(--admin-blue) 38%, transparent); outline-offset: 2px; }
+.activityFilters label { display: flex; flex: 0 0 auto; align-items: center; gap: 8px; color: var(--admin-muted); font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.activityFilters select { min-height: 36px; border: 1px solid var(--admin-line); border-radius: 10px; padding: 0 28px 0 10px; background: var(--admin-solid); color: var(--admin-ink); font: inherit; text-transform: none; }
 .activityList { display: grid; }
 .activityRow { display: grid; min-height: 74px; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 13px; padding: 11px 18px; }
 .activityRow + .activityRow { border-top: 1px solid var(--admin-line); }
@@ -368,6 +376,11 @@
   .memberDetailHeader { min-height: 82px; padding: 16px 18px 13px; }
   .memberDetailBody { padding: 17px 18px max(22px, env(safe-area-inset-bottom)); }
   .activityEmpty { min-height: 300px; border: 1px solid var(--admin-line); border-radius: 22px; background: var(--admin-solid); }
+  .activityFilters { align-items: stretch; flex-direction: column; border: 1px solid var(--admin-line); border-radius: 18px; margin-bottom: 10px; background: var(--admin-solid); }
+  .activityFilters > div { margin: -2px; }
+  .activityFilters button { min-height: 44px; }
+  .activityFilters label { justify-content: space-between; }
+  .activityFilters select { min-height: 44px; }
   .activityList { gap: 10px; }
   .activityRow { min-height: 74px; grid-template-columns: 40px minmax(0, 1fr); border: 1px solid var(--admin-line); border-radius: 18px; padding: 12px 13px; background: var(--admin-solid); box-shadow: 0 10px 30px rgba(0, 0, 0, .05); }
   .activityRow + .activityRow { border-top: 1px solid var(--admin-line); }
