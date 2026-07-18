@@ -54,3 +54,61 @@ test("subscription cancellation is scheduled for the billing-period end", () => 
   assert.match(settings, /Cancellation scheduled/);
   assert.match(settings, /cancel_at_cycle_end/);
 });
+
+test("Razorpay webhook idempotency uses the provider event header", () => {
+  const route = read("src/app/api/payments/webhook/route.ts");
+
+  assert.match(route, /headers\.get\("x-razorpay-event-id"\)/);
+  assert.match(route, /createHash\("sha256"\)\.update\(rawBody\)/);
+  assert.doesNotMatch(route, /typeof record\.id === "string"/);
+});
+
+test("all terminal and authorization subscription states are handled", () => {
+  const route = read("src/app/api/payments/webhook/route.ts");
+  const migrationName = readdirSync(file("supabase/migrations"), { withFileTypes: true })
+    .find((entry) => entry.isFile() && entry.name.endsWith("_razorpay_live_hardening.sql"))?.name;
+  assert.ok(migrationName, "Razorpay live hardening migration must exist");
+  const migration = read(`supabase/migrations/${migrationName}`);
+
+  assert.match(route, /case "subscription\.authenticated"/);
+  assert.match(route, /case "subscription\.expired"/);
+  assert.match(migration, /'expired'/);
+});
+
+test("unfinished checkout is reused and concurrent orphan subscriptions are cleaned up", () => {
+  const razorpay = read("src/lib/server/razorpay.ts");
+  const route = read("src/app/api/payments/create-subscription/route.ts");
+  const migrationName = readdirSync(file("supabase/migrations"), { withFileTypes: true })
+    .find((entry) => entry.isFile() && entry.name.endsWith("_razorpay_live_hardening.sql"))?.name;
+  assert.ok(migrationName, "Razorpay live hardening migration must exist");
+  const migration = read(`supabase/migrations/${migrationName}`);
+
+  assert.match(razorpay, /fetchSubscription/);
+  assert.match(razorpay, /cancelSubscriptionImmediately/);
+  assert.match(route, /existing\?\.status === "created"/);
+  assert.match(route, /cancelSubscriptionImmediately\(subscription\.id\)/);
+  assert.match(migration, /create unique index[\s\S]*subscriptions_one_open_per_user/i);
+});
+
+test("subscription duration stays within Razorpay's 100-year maximum", () => {
+  const razorpay = read("src/lib/server/razorpay.ts");
+  const route = read("src/app/api/payments/create-subscription/route.ts");
+
+  assert.match(razorpay, /totalCount:\s*number/);
+  assert.match(razorpay, /total_count:\s*params\.totalCount/);
+  assert.match(razorpay, /customer_notify:\s*true/);
+  assert.match(route, /period === "monthly" \? 120 : 100/);
+});
+
+test("out-of-order webhook deliveries cannot overwrite newer subscription state", () => {
+  const route = read("src/app/api/payments/webhook/route.ts");
+  const migrationName = readdirSync(file("supabase/migrations"), { withFileTypes: true })
+    .find((entry) => entry.isFile() && entry.name.endsWith("_razorpay_event_ordering.sql"))?.name;
+  assert.ok(migrationName, "Razorpay event ordering migration must exist");
+  const migration = read(`supabase/migrations/${migrationName}`);
+
+  assert.match(migration, /last_razorpay_event_at/);
+  assert.match(route, /eventTimestamp/);
+  assert.match(route, /last_razorpay_event_at\.is\.null,last_razorpay_event_at\.lte\./);
+  assert.match(route, /\.select\("user_id,plan"\)/);
+});

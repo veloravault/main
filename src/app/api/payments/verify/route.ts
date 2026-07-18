@@ -6,6 +6,8 @@ import { InvalidJsonBodyError, PayloadTooLargeError, readBoundedJson } from "@/l
 
 const MAX_BODY_BYTES = 2_048;
 
+export const runtime = "nodejs";
+
 // Verifies the Checkout success signature for immediate UI feedback only.
 // This route NEVER grants a plan — the webhook is the sole authority for
 // that, since a client-reported "success" is not proof a server should trust.

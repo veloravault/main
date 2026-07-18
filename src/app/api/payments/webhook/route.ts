@@ -3,6 +3,8 @@ import { createHash } from "node:crypto";
 import { createSupabaseAdminClient } from "@/lib/server/supabase-admin";
 import { periodForPlanId, verifyWebhookSignature } from "@/lib/server/razorpay";
 
+export const runtime = "nodejs";
+
 // Razorpay webhook — the SOLE authority that ever grants or revokes a paid
 // plan. Verifies the signature over the raw (unparsed) body, then processes
 // idempotently: every event is recorded in payment_events keyed by its event
@@ -39,30 +41,51 @@ function extractPaymentSubscriptionId(payload: unknown): string | null {
   return typeof fromPayment === "string" ? fromPayment : null;
 }
 
-async function revertPlanForSubscription(admin: ReturnType<typeof createSupabaseAdminClient>, subscriptionId: string, status: string, currentPeriodEnd?: number, planId?: string) {
-  const { data: row, error } = await admin
-    .from("subscriptions")
-    .select("user_id,plan")
-    .eq("razorpay_subscription_id", subscriptionId)
-    .maybeSingle();
-  if (error) throw error;
-  if (!row) return; // Unknown subscription (e.g. from a different environment's test data) — nothing to do.
+type PlanAction = "grant" | "revoke" | "preserve";
 
+async function applySubscriptionState(
+  admin: ReturnType<typeof createSupabaseAdminClient>,
+  subscriptionId: string,
+  status: string,
+  eventTimestamp: string,
+  planAction: PlanAction,
+  currentPeriodEnd?: number,
+  planId?: string,
+) {
   // Any authoritative status update supersedes a stale "payment failed"
   // warning and a completed billing-period change, so clear both here.
-  const updates: Record<string, unknown> = { status, updated_at: new Date().toISOString(), last_payment_failed_at: null };
+  const updates: Record<string, unknown> = {
+    status,
+    updated_at: new Date().toISOString(),
+    last_razorpay_event_at: eventTimestamp,
+    last_payment_failed_at: null,
+  };
   if (currentPeriodEnd) updates.current_period_end = new Date(currentPeriodEnd * 1000).toISOString();
   const resolvedPeriod = planId ? periodForPlanId(planId) : null;
   if (resolvedPeriod) {
     updates.period = resolvedPeriod;
     updates.scheduled_period = null;
   }
-  const { error: updateError } = await admin.from("subscriptions").update(updates).eq("razorpay_subscription_id", subscriptionId);
+  const { data: row, error: updateError } = await admin
+    .from("subscriptions")
+    .update(updates)
+    .eq("razorpay_subscription_id", subscriptionId)
+    .or(`last_razorpay_event_at.is.null,last_razorpay_event_at.lte.${eventTimestamp}`)
+    .select("user_id,plan")
+    .maybeSingle();
   if (updateError) throw updateError;
+  if (!row || planAction === "preserve") return;
 
-  const nextPlan = status === "active" ? row.plan : "free";
+  const nextPlan = planAction === "grant" ? row.plan : "free";
   const { error: planError } = await admin.from("app_members").update({ plan: nextPlan }).eq("user_id", row.user_id);
   if (planError) throw planError;
+}
+
+function eventTimestamp(record: Record<string, unknown>): string {
+  const seconds = typeof record.created_at === "number" && Number.isFinite(record.created_at)
+    ? record.created_at
+    : Math.floor(Date.now() / 1000);
+  return new Date(seconds * 1000).toISOString();
 }
 
 export async function POST(req: NextRequest) {
@@ -82,7 +105,9 @@ export async function POST(req: NextRequest) {
 
   const record = payload as Record<string, unknown>;
   const eventType = typeof record.event === "string" ? record.event : "unknown";
-  const eventId = typeof record.id === "string" && record.id ? record.id : createHash("sha256").update(rawBody).digest("hex");
+  const providerEventId = req.headers.get("x-razorpay-event-id");
+  const eventId = providerEventId || createHash("sha256").update(rawBody).digest("hex");
+  const occurredAt = eventTimestamp(record);
 
   const admin = createSupabaseAdminClient();
 
@@ -100,33 +125,40 @@ export async function POST(req: NextRequest) {
 
   try {
     switch (eventType) {
+      case "subscription.authenticated": {
+        const sub = extractSubscription(payload);
+        if (sub) await applySubscriptionState(admin, sub.id, "authenticated", occurredAt, "preserve");
+        break;
+      }
       case "subscription.activated":
       case "subscription.charged": {
         const sub = extractSubscription(payload);
-        if (sub) await revertPlanForSubscription(admin, sub.id, "active", sub.current_end, sub.plan_id);
+        if (sub) await applySubscriptionState(admin, sub.id, "active", occurredAt, "grant", sub.current_end, sub.plan_id);
         break;
       }
       case "subscription.pending": {
         const sub = extractSubscription(payload);
-        if (sub) {
-          const { error } = await admin.from("subscriptions").update({ status: "pending", updated_at: new Date().toISOString() }).eq("razorpay_subscription_id", sub.id);
-          if (error) throw error;
-        }
+        if (sub) await applySubscriptionState(admin, sub.id, "pending", occurredAt, "preserve");
         break;
       }
       case "subscription.halted": {
         const sub = extractSubscription(payload);
-        if (sub) await revertPlanForSubscription(admin, sub.id, "halted");
+        if (sub) await applySubscriptionState(admin, sub.id, "halted", occurredAt, "revoke");
         break;
       }
       case "subscription.cancelled": {
         const sub = extractSubscription(payload);
-        if (sub) await revertPlanForSubscription(admin, sub.id, "cancelled");
+        if (sub) await applySubscriptionState(admin, sub.id, "cancelled", occurredAt, "revoke");
         break;
       }
       case "subscription.completed": {
         const sub = extractSubscription(payload);
-        if (sub) await revertPlanForSubscription(admin, sub.id, "completed");
+        if (sub) await applySubscriptionState(admin, sub.id, "completed", occurredAt, "revoke");
+        break;
+      }
+      case "subscription.expired": {
+        const sub = extractSubscription(payload);
+        if (sub) await applySubscriptionState(admin, sub.id, "expired", occurredAt, "revoke");
         break;
       }
       case "payment.failed": {
@@ -137,8 +169,9 @@ export async function POST(req: NextRequest) {
         if (subscriptionId) {
           const { error } = await admin
             .from("subscriptions")
-            .update({ last_payment_failed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
-            .eq("razorpay_subscription_id", subscriptionId);
+            .update({ last_payment_failed_at: new Date().toISOString(), last_razorpay_event_at: occurredAt, updated_at: new Date().toISOString() })
+            .eq("razorpay_subscription_id", subscriptionId)
+            .or(`last_razorpay_event_at.is.null,last_razorpay_event_at.lte.${occurredAt}`);
           if (error) throw error;
         }
         break;

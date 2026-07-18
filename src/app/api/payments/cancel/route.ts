@@ -3,6 +3,8 @@ import { authenticateActiveMemberRequest } from "@/lib/server/auth";
 import { createSupabaseAdminClient } from "@/lib/server/supabase-admin";
 import { cancelSubscription, razorpayConfigured } from "@/lib/server/razorpay";
 
+export const runtime = "nodejs";
+
 export async function POST(req: NextRequest) {
   try {
     if (!razorpayConfigured()) {

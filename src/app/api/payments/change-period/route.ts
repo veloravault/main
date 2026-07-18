@@ -7,6 +7,8 @@ import { InvalidJsonBodyError, PayloadTooLargeError, readBoundedJson } from "@/l
 const MAX_BODY_BYTES = 256;
 const PERIODS = new Set<BillingPeriod>(["monthly", "yearly"]);
 
+export const runtime = "nodejs";
+
 export async function POST(req: NextRequest) {
   try {
     if (!razorpayConfigured()) {

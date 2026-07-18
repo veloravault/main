@@ -74,29 +74,33 @@ export async function findOrCreateCustomer(email: string, name?: string): Promis
   });
 }
 
-interface RazorpaySubscription {
+export interface RazorpaySubscription {
   id: string;
   status: string;
+  plan_id: string;
+}
+
+export async function fetchSubscription(subscriptionId: string): Promise<RazorpaySubscription> {
+  return request<RazorpaySubscription>(`/subscriptions/${encodeURIComponent(subscriptionId)}`);
 }
 
 /**
- * Creates a subscription for one billing cycle definition. total_count is set
- * high (120 cycles) to represent "until cancelled" — Razorpay subscriptions
- * require a bounded count, and this comfortably covers 10 years of monthly
- * billing (or yearly, whichever the plan uses) before it would ever need renewal.
+ * Creates a long-running subscription. Razorpay requires a bounded cycle count
+ * and caps duration at 100 years, so the caller supplies a period-safe count.
  */
 export async function createSubscription(params: {
   planId: string;
   customerId: string;
   notifyEmail: string;
+  totalCount: number;
 }): Promise<RazorpaySubscription> {
   return request<RazorpaySubscription>("/subscriptions", {
     method: "POST",
     body: JSON.stringify({
       plan_id: params.planId,
       customer_id: params.customerId,
-      total_count: 120,
-      customer_notify: 1,
+      total_count: params.totalCount,
+      customer_notify: true,
       notes: { email: params.notifyEmail },
     }),
   });
@@ -106,6 +110,14 @@ export async function cancelSubscription(subscriptionId: string): Promise<void> 
   await request(`/subscriptions/${subscriptionId}/cancel`, {
     method: "POST",
     body: JSON.stringify({ cancel_at_cycle_end: true }),
+  });
+}
+
+/** Cancels an unfinished Checkout subscription so another plan can be selected. */
+export async function cancelSubscriptionImmediately(subscriptionId: string): Promise<void> {
+  await request(`/subscriptions/${subscriptionId}/cancel`, {
+    method: "POST",
+    body: JSON.stringify({ cancel_at_cycle_end: false }),
   });
 }
 
@@ -121,7 +133,7 @@ export async function updateSubscriptionPlan(subscriptionId: string, planId: str
     body: JSON.stringify({
       plan_id: planId,
       schedule_change_at: "cycle_end",
-      customer_notify: 1,
+      customer_notify: true,
     }),
   });
 }
