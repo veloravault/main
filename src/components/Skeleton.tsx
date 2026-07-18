@@ -79,15 +79,3 @@ export function WalletSkeleton() {
     </div>
   );
 }
-
-export function MasterDetailSkeleton() {
-  return <div className="vault-skeleton-master-detail"><div>{Array.from({ length: 6 }).map((_, index) => <div key={index} className="vault-skeleton-row"><Skeleton className="h-10 w-10 rounded-xl" /><span><Skeleton className="h-4 w-36" /><Skeleton className="h-3 w-24" /></span></div>)}</div><Skeleton className="vault-skeleton-detail" /></div>;
-}
-
-export function SettingsSkeleton() {
-  return <div className="vault-skeleton-settings"><div>{Array.from({ length: 5 }).map((_, index) => <Skeleton key={index} className="h-12 w-full rounded-xl" />)}</div><div><Skeleton className="h-8 w-40" />{Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-16 w-full rounded-2xl" />)}</div></div>;
-}
-
-export function ImportReviewSkeleton() {
-  return <div className="vault-skeleton-import"><div>{Array.from({ length: 5 }).map((_, index) => <Skeleton key={index} className="h-[62px] w-full rounded-xl" />)}</div><Skeleton className="h-80 w-full rounded-3xl" /></div>;
-}

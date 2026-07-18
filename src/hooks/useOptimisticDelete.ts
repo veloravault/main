@@ -66,10 +66,6 @@ export function useOptimisticDelete<T extends { id: string }>(options: {
     });
   }, [commit, restore, toast]);
 
-  const flushPending = useCallback(async () => {
-    await Promise.all([...pending.current.keys()].map(commit));
-  }, [commit]);
-
   useEffect(() => () => {
     // Intentionally keep pending server records when navigating away. This is safer than
     // committing a destructive action after the Undo UI has disappeared.
@@ -77,5 +73,5 @@ export function useOptimisticDelete<T extends { id: string }>(options: {
     pending.current.clear();
   }, []);
 
-  return { scheduleDelete, flushPending };
+  return { scheduleDelete };
 }

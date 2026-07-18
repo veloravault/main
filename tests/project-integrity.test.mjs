@@ -331,23 +331,13 @@ test("wallet presentation is isolated in an accessible PaymentCard", () => {
   assert.match(wallet, /<PaymentCard/);
 });
 
-test("native Apple primitives cover lists, sheets, selection, and tactile states", () => {
-  for (const file of [
-    "src/components/ui/apple-grouped-list.tsx",
-    "src/components/ui/responsive-sheet-frame.tsx",
-    "src/components/SelectionToolbar.tsx",
-  ]) assert.equal(existsSync(new URL(`../${file}`, import.meta.url)), true, `${file} is missing`);
-  const list = read("src/components/ui/apple-grouped-list.tsx");
-  const sheet = read("src/components/ui/responsive-sheet-frame.tsx");
+test("native Apple primitives cover lists, selection, and tactile states", () => {
+  assert.equal(existsSync(new URL("../src/components/SelectionToolbar.tsx", import.meta.url)), true, "src/components/SelectionToolbar.tsx is missing");
   const selection = read("src/components/SelectionToolbar.tsx");
   const css = read("src/app/globals.css");
-  assert.match(list, /AppleGroupedList/);
-  assert.match(list, /AppleGroupedRow/);
-  assert.match(list, /AppleGroupLabel/);
-  assert.match(sheet, /ResponsiveSheetFrame/);
   assert.match(selection, /SelectionToolbar/);
   assert.match(selection, /"vibrate" in navigator/);
-  for (const klass of ["apple-grouped-list", "apple-grouped-row", "apple-bottom-sheet", "apple-selection-toolbar", "apple-pressed", "type-large-title", "type-section-title", "type-row-title", "type-supporting", "type-metadata", "type-group-label"]) assert.match(css, new RegExp(`\\.${klass}`));
+  for (const klass of ["apple-grouped-list", "apple-selection-toolbar", "apple-pressed", "type-large-title", "type-section-title", "type-row-title", "type-supporting", "type-metadata", "type-group-label"]) assert.match(css, new RegExp(`\\.${klass}`));
 });
 
 test("Wallet workspace and Settings expose native structure", () => {

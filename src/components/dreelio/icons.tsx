@@ -113,15 +113,19 @@ export function IconOrganize(props: IconProps) {
   );
 }
 
+// Keys must match the actual pill labels passed in from data.ts
+// (PROJECT_PILLS/FINANCE_PILLS) -- these previously carried over unrelated
+// keys from the template this file was adapted from, so no pill icon ever
+// matched and FeatureSplit rendered every pill with no icon at all.
 export const PILL_ICONS = {
-  Tasks: IconTasks,
-  "Time tracking": IconClock,
-  Timesheets: IconTimesheet,
-  Reports: IconReports,
-  Invoicing: IconInvoice,
-  Budgets: IconBudget,
-  Forecasting: IconForecast,
-  Integrations: IconIntegrations,
+  "Saved logins": IconReports,
+  "Auto-lock timer": IconClock,
+  "Secure notes": IconTimesheet,
+  "Activity log": IconTasks,
+  Cards: IconInvoice,
+  Balances: IconBudget,
+  "Spending insights": IconForecast,
+  "Magic import": IconIntegrations,
 } as const;
 
 export const CARD_ICONS = {
@@ -129,12 +133,4 @@ export const CARD_ICONS = {
   preferences: IconPreferences,
   organize: IconOrganize,
 } as const;
-
-export function IconCheck(props: IconProps) {
-  return (
-    <svg {...base} strokeWidth={2} {...props}>
-      <path d="m5 12.5 4 4 10-10" />
-    </svg>
-  );
-}
 
