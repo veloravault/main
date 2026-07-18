@@ -89,6 +89,28 @@ test("only server-confirmed member status changes are applied through an accessi
   assert.doesNotMatch(catchBlock, /setItems\(\(current\)/);
 });
 
+test("member rows open a responsive detail surface with safe owner controls", () => {
+  const detailPath = new URL("../src/components/admin/AdminMemberDetail.tsx", import.meta.url);
+  assert.equal(existsSync(detailPath), true, "AdminMemberDetail.tsx must exist");
+
+  const consoleSource = read("src/components/admin/AdminConsole.tsx");
+  const detail = read("src/components/admin/AdminMemberDetail.tsx");
+  const types = read("src/components/admin/types.ts");
+  const css = read("src/app/admin/admin.module.css");
+  assert.match(consoleSource, /AdminMemberDetail/);
+  assert.match(consoleSource, /onSelectMember/);
+  assert.match(types, /AdminMemberDetailDto/);
+  for (const key of ["documentBytes", "documents", "aiEventsThisMonth", "passwords", "notes", "walletRecords", "bankAccounts", "supportTickets", "isOwner"]) {
+    assert.match(types, new RegExp(key));
+  }
+  assert.match(detail, /Send setup link/);
+  assert.match(detail, /isOwner/);
+  assert.match(detail, /aria-modal="true"/);
+  assert.match(detail, /aria-live/);
+  assert.match(css, /\.memberDetailBackdrop/);
+  assert.match(css, /\.memberDetailSheet/);
+});
+
 test("activity view loads the real audit API and owner controls are usable", () => {
   const consoleSource = read("src/components/admin/AdminConsole.tsx");
   const activity = read("src/components/admin/AdminActivity.tsx");

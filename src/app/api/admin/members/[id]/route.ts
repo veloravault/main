@@ -1,5 +1,6 @@
-import { AuthorizationError, requireAdmin } from "@/lib/server/access";
+import { AuthorizationError, isConfiguredAdminUserId, requireAdmin } from "@/lib/server/access";
 import { mutateMemberStatus } from "@/lib/server/access-repository";
+import { getMemberDetailAdmin } from "@/lib/server/member-operations";
 import {
   assertSameOrigin,
   readBoundedJson,
@@ -16,6 +17,23 @@ function failureResponse(error: unknown) {
   return Response.json({ error: "ADMIN_REQUEST_UNAVAILABLE" }, { status: 503 });
 }
 
+export async function GET(
+  request: Request,
+  context: { params: Promise<{ id: string }> },
+) {
+  try {
+    await requireAdmin();
+    const { id } = await context.params;
+    if (!UUID.test(id)) return Response.json({ error: "INVALID_MEMBER_ID" }, { status: 400 });
+    if (new URL(request.url).search) return Response.json({ error: "INVALID_QUERY" }, { status: 400 });
+    const member = await getMemberDetailAdmin(id);
+    if (!member) return Response.json({ error: "MEMBER_NOT_FOUND" }, { status: 404 });
+    return Response.json({ member });
+  } catch (error) {
+    return failureResponse(error);
+  }
+}
+
 export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string }> },
@@ -25,6 +43,9 @@ export async function PATCH(
     assertSameOrigin(request);
     const { id } = await context.params;
     if (!UUID.test(id)) return Response.json({ error: "INVALID_MEMBER_ID" }, { status: 400 });
+    if (id === admin.id || isConfiguredAdminUserId(id)) {
+      return Response.json({ error: "OWNER_MEMBER_PROTECTED" }, { status: 409 });
+    }
 
     const body = await readBoundedJson(request, MAX_MEMBER_MUTATION_BYTES);
     const keys = Object.keys(body);

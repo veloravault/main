@@ -136,7 +136,8 @@
 .memberRow + .memberRow { border-top: 1px solid var(--admin-line); }
 .memberGlyph { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 13px; background: color-mix(in srgb, var(--admin-ink) 5%, transparent); color: var(--admin-muted); }
 .memberGlyph svg { width: 17px; height: 17px; }
-.memberIdentity { display: grid; min-width: 0; gap: 3px; }
+.memberIdentity { display: grid; min-width: 0; gap: 3px; color: inherit; text-align: left; outline: none; }
+.memberIdentity:focus-visible { border-radius: 8px; box-shadow: 0 0 0 3px var(--admin-blue); }
 .memberIdentity strong { overflow: hidden; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
 .memberIdentity small { color: var(--admin-muted); font-size: 11px; }
 .memberStatus { border-radius: 999px; padding: 6px 9px; background: color-mix(in srgb, var(--admin-muted) 10%, transparent); color: var(--admin-muted); font-size: 10px; font-weight: 700; text-transform: capitalize; }
@@ -216,6 +217,42 @@
 .ticketReplyActions button:disabled { opacity: .55; }
 
 .dialogBackdrop { position: fixed; z-index: 100; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(0, 0, 0, .32); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.memberDetailBackdrop { position: fixed; z-index: 90; inset: 0; display: flex; justify-content: flex-end; background: rgba(0, 0, 0, .24); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+.memberDetailSheet { display: flex; width: min(440px, 100%); height: 100dvh; flex-direction: column; border-left: 1px solid var(--admin-line); background: var(--admin-solid); box-shadow: -24px 0 70px rgba(0, 0, 0, .14); }
+.memberDetailHeader { display: flex; min-height: 96px; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--admin-line); padding: max(20px, env(safe-area-inset-top)) 22px 18px; }
+.memberDetailHeader > div { min-width: 0; }
+.memberDetailHeader h2 { margin-top: 5px; overflow: hidden; font-size: 19px; font-weight: 650; letter-spacing: -.025em; text-overflow: ellipsis; white-space: nowrap; }
+.memberDetailHeader button { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; border-radius: 999px; color: var(--admin-muted); outline: none; }
+.memberDetailHeader button:hover { background: color-mix(in srgb, var(--admin-ink) 6%, transparent); color: var(--admin-ink); }
+.memberDetailHeader button:focus-visible { box-shadow: 0 0 0 3px var(--admin-blue); }
+.memberDetailHeader button svg { width: 18px; height: 18px; }
+.memberDetailBody { min-height: 0; flex: 1; overflow-y: auto; padding: 20px 22px max(26px, env(safe-area-inset-bottom)); }
+.memberDetailState { display: grid; min-height: 240px; place-items: center; color: var(--admin-muted); font-size: 12px; line-height: 1.5; text-align: center; }
+.memberFacts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: hidden; border: 1px solid var(--admin-line); border-radius: 16px; }
+.memberFacts > div { display: grid; min-height: 72px; align-content: center; gap: 5px; padding: 12px 14px; }
+.memberFacts > div:nth-child(odd) { border-right: 1px solid var(--admin-line); }
+.memberFacts > div:nth-child(n + 3) { border-top: 1px solid var(--admin-line); }
+.memberFacts dt { color: var(--admin-muted); font-size: 9px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+.memberFacts dd { font-size: 12px; font-weight: 620; }
+.memberUsage, .memberControls { margin-top: 24px; }
+.memberUsage h3, .memberControls h3 { font-size: 12px; font-weight: 690; }
+.memberUsage > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 11px; }
+.memberUsage span { display: grid; min-height: 80px; grid-template-columns: 24px minmax(0, 1fr); align-content: center; align-items: center; gap: 2px 7px; border-radius: 13px; padding: 11px; background: color-mix(in srgb, var(--admin-ink) 4%, transparent); }
+.memberUsage svg { grid-row: 1 / 3; width: 17px; height: 17px; color: var(--admin-muted); }
+.memberUsage small { color: var(--admin-muted); font-size: 9px; }
+.memberUsage strong { overflow: hidden; font-size: 15px; font-variant-numeric: tabular-nums; font-weight: 670; text-overflow: ellipsis; white-space: nowrap; }
+.memberOwnerNote { display: flex; min-height: 52px; align-items: center; gap: 10px; margin-top: 24px; border-radius: 14px; padding: 10px 13px; background: var(--admin-soft-blue); color: var(--admin-blue); font-size: 11px; font-weight: 620; line-height: 1.4; }
+.memberOwnerNote svg { width: 17px; height: 17px; flex: 0 0 auto; }
+.memberControls > div { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
+.memberControls button { min-height: 44px; border: 1px solid var(--admin-line); border-radius: 11px; padding: 0 14px; color: var(--admin-ink); font-size: 11px; font-weight: 670; outline: none; }
+.memberControls button:hover:not(:disabled) { background: color-mix(in srgb, var(--admin-ink) 5%, transparent); }
+.memberControls button:focus-visible { box-shadow: 0 0 0 3px var(--admin-blue); }
+.memberControls button[data-destructive] { border-color: color-mix(in srgb, var(--admin-red) 28%, var(--admin-line)); color: var(--admin-red); }
+.memberControls .setupEmailButton { display: flex; width: 100%; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; border-color: transparent; background: var(--admin-blue); color: white; }
+.setupEmailButton svg { width: 15px; height: 15px; }
+.memberControls button:disabled { opacity: .58; }
+.memberControlHelp { margin-top: 11px; color: var(--admin-muted); font-size: 10px; line-height: 1.5; }
+.memberInlineStatus { min-height: 32px; margin-top: 8px; color: var(--admin-red); font-size: 10px; line-height: 1.45; }
 .confirmDialog { width: min(100%, 430px); border: 1px solid var(--admin-line); border-radius: 24px; padding: 28px; background: var(--admin-solid); box-shadow: 0 30px 90px rgba(0, 0, 0, .22); }
 .confirmDialog h2 { margin-top: 10px; font-size: 27px; font-weight: 620; letter-spacing: -.04em; }
 .confirmDialog > p:not(.eyebrow) { margin-top: 12px; color: var(--admin-muted); font-size: 13px; line-height: 1.55; }
@@ -294,6 +331,10 @@
   .memberRow { min-height: 74px; grid-template-columns: 40px minmax(0, 1fr) auto; row-gap: 10px; border: 1px solid var(--admin-line); border-radius: 18px; padding: 11px 13px; background: var(--admin-solid); box-shadow: 0 10px 30px rgba(0, 0, 0, .05); }
   .memberRow + .memberRow { border-top: 1px solid var(--admin-line); }
   .memberActions { grid-column: 1 / -1; justify-content: flex-start; padding-left: 53px; }
+  .memberDetailBackdrop { align-items: flex-end; }
+  .memberDetailSheet { width: 100%; height: min(88dvh, 760px); border-top: 1px solid var(--admin-line); border-left: 0; border-radius: 24px 24px 0 0; box-shadow: 0 -24px 70px rgba(0, 0, 0, .18); }
+  .memberDetailHeader { min-height: 82px; padding: 16px 18px 13px; }
+  .memberDetailBody { padding: 17px 18px max(22px, env(safe-area-inset-bottom)); }
   .activityEmpty { min-height: 300px; border: 1px solid var(--admin-line); border-radius: 22px; background: var(--admin-solid); }
   .activityList { gap: 10px; }
   .activityRow { min-height: 74px; grid-template-columns: 40px minmax(0, 1fr); border: 1px solid var(--admin-line); border-radius: 18px; padding: 12px 13px; background: var(--admin-solid); box-shadow: 0 10px 30px rgba(0, 0, 0, .05); }

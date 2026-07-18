@@ -10,6 +10,7 @@ export type AdminMember = {
   approvedAt: string;
   activatedAt: string | null;
   createdAt: string;
+  isOwner: boolean;
 };
 
 export type AdminActivityItem = {
@@ -31,6 +32,22 @@ export type AdminOverviewDto = {
   support: { open: number; needsReply: number; resolved: number };
   usage: { documentBytes: number; aiEvents: number };
   recentActivity: AdminActivityItem[];
+};
+
+export type AdminMemberUsage = {
+  documentBytes: number;
+  documents: number;
+  aiEventsThisMonth: number;
+  passwords: number;
+  notes: number;
+  walletRecords: number;
+  bankAccounts: number;
+  supportTickets: number;
+};
+
+export type AdminMemberDetailDto = AdminMember & {
+  isOwner: boolean;
+  usage: AdminMemberUsage;
 };
 
 export type TicketStatus = "open" | "resolved";

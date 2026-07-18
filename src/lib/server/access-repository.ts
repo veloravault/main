@@ -4,6 +4,7 @@ import type { InviteCursor, MemberStatus } from "@/lib/access/types";
 import type { PlanId } from "@/lib/plans";
 import { encodeInviteCursor } from "@/lib/access/validation";
 import { createSupabaseAdminClient } from "@/lib/server/supabase-admin";
+import { isConfiguredAdminUserId } from "@/lib/server/access";
 
 export const MEMBER_PAGE_SIZE = 25;
 export const ADMIN_ACTIVITY_PAGE_SIZE = 30;
@@ -17,6 +18,7 @@ export type MemberAdminDto = {
   approvedAt: string;
   activatedAt: string | null;
   createdAt: string;
+  isOwner: boolean;
 };
 
 type MemberRow = {
@@ -40,6 +42,7 @@ function memberDto(row: MemberRow): MemberAdminDto {
     approvedAt: row.approved_at,
     activatedAt: row.activated_at,
     createdAt: row.created_at,
+    isOwner: isConfiguredAdminUserId(row.user_id),
   };
 }
 

@@ -13,6 +13,7 @@ import { useToast } from "@/components/Toast";
 import { StateView } from "@/components/ui/state-view";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminOverview } from "./AdminOverview";
+import { AdminMemberDetail } from "./AdminMemberDetail";
 import { AdminActivity } from "./AdminActivity";
 import { AdminSupport } from "./AdminSupport";
 import { AdminConfirmDialog } from "./AdminConfirmDialog";
@@ -65,6 +66,7 @@ function MemberQueue(props: {
   mutatingId: string | null;
   onRetry: () => void;
   onMutate: (member: AdminMember, status: "active" | "suspended" | "revoked") => void;
+  onSelectMember: (member: AdminMember) => void;
 }) {
   if (props.error) return <StateView kind="error" title="Members unavailable" description={props.error} action={{ label: "Try again", onClick: props.onRetry }} />;
   if (props.items.length === 0) {
@@ -74,13 +76,13 @@ function MemberQueue(props: {
     <div className={styles.memberList} role="list" aria-label="Vault members">
       {props.items.map((member) => {
         const mutating = props.mutatingId === member.id;
-        const canSuspend = member.status === "invited" || member.status === "active";
-        const canRestore = member.status === "suspended";
-        const canRevoke = member.status !== "revoked";
+        const canSuspend = !member.isOwner && (member.status === "invited" || member.status === "active");
+        const canRestore = !member.isOwner && member.status === "suspended";
+        const canRevoke = !member.isOwner && member.status !== "revoked";
         return (
           <article className={styles.memberRow} key={member.id} role="listitem">
             <span className={styles.memberGlyph}><LockKeyholeIcon aria-hidden="true" /></span>
-            <span className={styles.memberIdentity}><strong>{member.email}</strong><small>Joined {memberDate(member.approvedAt)} · {member.plan === "plus" ? "Plus" : "Free"} plan</small></span>
+            <button className={styles.memberIdentity} type="button" onClick={() => props.onSelectMember(member)} aria-label={`View details for ${member.email}`}><strong>{member.email}</strong><small>Joined {memberDate(member.approvedAt)} · {member.plan === "plus" ? "Plus" : "Free"} plan{member.isOwner ? " · Owner" : ""}</small></button>
             <span className={styles.memberActions}>
               <span className={styles.memberStatus} data-status={member.status}>{member.status}</span>
               {canRestore && (
@@ -125,6 +127,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
   const [appendError, setAppendError] = useState<string | null>(null);
   const [mutatingId, setMutatingId] = useState<string | null>(null);
   const [pendingMutation, setPendingMutation] = useState<{ member: AdminMember; status: "active" | "suspended" | "revoked" } | null>(null);
+  const [selectedMember, setSelectedMember] = useState<AdminMember | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const pendingUrlSearchRef = useRef<string | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -312,6 +315,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
       if (response.ok) {
         const body = await response.json().catch(() => null) as { member?: AdminMember } | null;
         setItems((current) => current.map((item) => item.id === member.id && body?.member ? body.member : item));
+        if (body?.member) setSelectedMember((current) => current?.id === member.id ? body.member as AdminMember : current);
         const verb = status === "active" ? "restored" : status;
         setAnnouncement(`${member.email} ${verb}.`);
         toast({ message: `${member.email} was ${verb}.`, type: "success" });
@@ -403,6 +407,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
                   mutatingId={mutatingId}
                   onRetry={() => void loadPage(null, false)}
                   onMutate={(member, status) => setPendingMutation({ member, status })}
+                  onSelectMember={setSelectedMember}
                 />
               )}
             </section>
@@ -425,6 +430,13 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
       </div>
 
       <p className="sr-only" aria-live="polite" aria-atomic="true">{announcement}</p>
+      {selectedMember && (
+        <AdminMemberDetail
+          member={selectedMember}
+          onClose={() => setSelectedMember(null)}
+          onRequestStatus={(member, status) => setPendingMutation({ member, status })}
+        />
+      )}
       <AdminConfirmDialog
         open={Boolean(pendingMutation)}
         title={

@@ -10,6 +10,7 @@ const adminRoutes = [
   "src/app/api/admin/activity/route.ts",
   "src/app/api/admin/members/route.ts",
   "src/app/api/admin/members/[id]/route.ts",
+  "src/app/api/admin/members/[id]/setup-email/route.ts",
   "src/app/api/admin/support/route.ts",
   "src/app/api/admin/support/[id]/route.ts",
   "src/app/api/admin/support/[id]/messages/route.ts",
@@ -64,6 +65,29 @@ test("updated member DTOs re-read the authoritative plan after the mutation RPC"
   assert.match(repository, /return \{ kind: "updated", member: memberDto\(updatedMember as MemberRow\) \}/);
 });
 
+test("member detail and setup-email operations are owner-safe and DTO-only", () => {
+  const detailRepositoryPath = file("src/lib/server/member-operations.ts");
+  const setupRoutePath = file("src/app/api/admin/members/[id]/setup-email/route.ts");
+  assert.equal(existsSync(detailRepositoryPath), true, "member operations repository must exist");
+  assert.equal(existsSync(setupRoutePath), true, "member setup-email route must exist");
+
+  const memberRoute = read("src/app/api/admin/members/[id]/route.ts");
+  const setupRoute = read("src/app/api/admin/members/[id]/setup-email/route.ts");
+  const repository = read("src/lib/server/member-operations.ts");
+  assert.match(memberRoute, /export async function GET/);
+  assert.match(memberRoute, /getMemberDetailAdmin/);
+  assert.match(setupRoute, /await requireAdmin\(\)[\s\S]*assertSameOrigin\(request\)/);
+  assert.match(setupRoute, /readBoundedJson/);
+  assert.match(setupRoute, /sendMemberSetupEmailAdmin/);
+  assert.match(repository, /resetPasswordForEmail/);
+  assert.match(repository, /isConfiguredAdminUserId/);
+  assert.match(repository, /\.from\("vault_items"\)/);
+  assert.match(repository, /\.from\("vault_documents"\)/);
+  assert.match(repository, /\.from\("secure_notes"\)/);
+  assert.match(repository, /\.from\("secure_wallet"\)/);
+  assert.doesNotMatch(repository, /encrypted_data|encrypted_content|ciphertext|\biv\b|\bsalt\b|storage_path/);
+});
+
 test("admin mutations enforce same origin before parsing a body", () => {
   for (const file of adminRoutes.filter((file) => file.includes("[id]"))) {
     const source = read(file);
@@ -112,6 +136,15 @@ test("member status mutation is one locked transactional RPC with monotonic tran
   assert.match(schema, /grant execute on function public\.mutate_member_status\(uuid, uuid, text, timestamptz\) to service_role/i);
 });
 
+test("configured owners cannot be mutated through member operations", () => {
+  const route = read("src/app/api/admin/members/[id]/route.ts");
+  const repository = read("src/lib/server/access-repository.ts");
+  const consoleSource = read("src/components/admin/AdminConsole.tsx");
+  assert.match(route, /id === admin\.id\s*\|\|\s*isConfiguredAdminUserId\(id\)/);
+  assert.match(repository, /isOwner:\s*isConfiguredAdminUserId\(row\.user_id\)/);
+  assert.match(consoleSource, /!member\.isOwner/);
+});
+
 test("a suspended member can be restored to active, but a revoked member can never be restored", () => {
   const migrationName = readdirSync(file("supabase/migrations"), { withFileTypes: true })
     .find((entry) => entry.isFile() && entry.name.endsWith("_admin_restore_access.sql"))?.name;
@@ -125,7 +158,7 @@ test("a suspended member can be restored to active, but a revoked member can nev
   const route = read("src/app/api/admin/members/[id]/route.ts");
   const consoleSource = read("src/components/admin/AdminConsole.tsx");
   assert.match(route, /status\s*!==\s*"active"/);
-  assert.match(consoleSource, /canRestore\s*=\s*member\.status\s*===\s*"suspended"/);
+  assert.match(consoleSource, /canRestore\s*=\s*!member\.isOwner\s*&&\s*member\.status\s*===\s*"suspended"/);
   assert.match(consoleSource, /Restore access/);
 });
 

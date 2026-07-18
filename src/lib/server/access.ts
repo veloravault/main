@@ -9,6 +9,10 @@ import { createServerSupabaseClient } from "@/lib/server/supabase";
 const MAX_ACCESS_TOKEN_LENGTH = 8_192;
 const ADMIN_USER_IDS: ReadonlySet<string> = parseAdminUserIds(process.env.ADMIN_USER_IDS);
 
+export function isConfiguredAdminUserId(userId: string) {
+  return ADMIN_USER_IDS.has(userId.toLowerCase());
+}
+
 export type AuthorizationErrorCode =
   | "UNAUTHENTICATED"
   | "NOT_ADMIN"
@@ -67,7 +71,7 @@ export async function requireUser(): Promise<User> {
 
 export async function requireAdmin(): Promise<User> {
   const user = await requireUser();
-  if (!ADMIN_USER_IDS.has(user.id.toLowerCase())) throw new AuthorizationError("NOT_ADMIN");
+  if (!isConfiguredAdminUserId(user.id)) throw new AuthorizationError("NOT_ADMIN");
   return user;
 }
 
