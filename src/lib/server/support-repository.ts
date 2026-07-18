@@ -6,6 +6,7 @@ export const SUPPORT_TICKET_PAGE_SIZE = 25;
 
 export type TicketStatus = "open" | "resolved";
 export type MessageSender = "member" | "owner";
+export type TicketFilter = "open" | "needs_reply" | "resolved" | "all";
 
 export type AdminSupportTicket = {
   id: string;
@@ -86,7 +87,7 @@ function messageDto(row: MessageRow): AdminSupportMessage {
 }
 
 export async function listSupportTicketsAdmin(args: {
-  status: TicketStatus | null;
+  filter: TicketFilter;
   cursor: SupportTicketCursor | null;
 }) {
   const admin = createSupabaseAdminClient();
@@ -97,7 +98,9 @@ export async function listSupportTicketsAdmin(args: {
     .order("id", { ascending: false })
     .limit(SUPPORT_TICKET_PAGE_SIZE);
 
-  if (args.status) query = query.eq("status", args.status);
+  if (args.filter === "open") query = query.eq("status", "open");
+  if (args.filter === "needs_reply") query = query.eq("status", "open").eq("last_message_by", "member");
+  if (args.filter === "resolved") query = query.eq("status", "resolved");
   if (args.cursor) {
     query = query.or(
       `last_message_at.lt.${args.cursor.lastMessageAt},and(last_message_at.eq.${args.cursor.lastMessageAt},id.lt.${args.cursor.id})`,

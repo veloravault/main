@@ -111,6 +111,26 @@ test("member rows open a responsive detail surface with safe owner controls", ()
   assert.match(css, /\.memberDetailSheet/);
 });
 
+test("support uses a reliable split inbox and full-screen mobile thread", () => {
+  const threadPath = new URL("../src/components/admin/AdminSupportThread.tsx", import.meta.url);
+  assert.equal(existsSync(threadPath), true, "AdminSupportThread.tsx must exist");
+  const support = read("src/components/admin/AdminSupport.tsx");
+  const thread = read("src/components/admin/AdminSupportThread.tsx");
+  const types = read("src/components/admin/types.ts");
+  const css = read("src/app/admin/admin.module.css");
+  for (const filter of ["open", "needs_reply", "resolved", "all"]) assert.match(types, new RegExp(filter));
+  assert.match(support, /AdminSupportThread/);
+  assert.match(support, /Needs reply/);
+  assert.match(support, /if \(loading && items\.length === 0 && !activeTicketId\)/);
+  assert.match(thread, /sending/);
+  assert.match(thread, /reply/);
+  assert.match(thread, /aria-live/);
+  assert.match(thread, /threadRef/);
+  assert.match(css, /\.supportWorkspace/);
+  assert.match(css, /\.supportThread/);
+  assert.match(css, /position:\s*fixed/);
+});
+
 test("activity view loads the real audit API and owner controls are usable", () => {
   const consoleSource = read("src/components/admin/AdminConsole.tsx");
   const activity = read("src/components/admin/AdminActivity.tsx");

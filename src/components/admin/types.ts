@@ -52,7 +52,7 @@ export type AdminMemberDetailDto = AdminMember & {
 
 export type TicketStatus = "open" | "resolved";
 export type MessageSender = "member" | "owner";
-export type TicketFilter = "all" | TicketStatus;
+export type TicketFilter = "open" | "needs_reply" | "resolved" | "all";
 
 export type AdminSupportTicket = {
   id: string;

@@ -177,14 +177,18 @@
 .activityList ~ .loadMore,
 .activityList ~ .endNote { margin-bottom: 22px; }
 
-.ticketFilterRow { display: inline-flex; gap: 4px; margin-top: 34px; padding: 4px; border-radius: 999px; background: color-mix(in srgb, var(--admin-ink) 5%, transparent); }
-.ticketFilterRow button { min-height: 34px; padding: 0 14px; border-radius: 999px; color: var(--admin-muted); font-size: 12px; font-weight: 650; }
+.supportInbox { display: grid; }
+.ticketFilterRow { display: inline-flex; width: fit-content; gap: 4px; margin: 14px 16px; padding: 4px; border-radius: 999px; background: color-mix(in srgb, var(--admin-ink) 5%, transparent); }
+.ticketFilterRow button { min-height: 36px; padding: 0 14px; border-radius: 999px; color: var(--admin-muted); font-size: 12px; font-weight: 650; }
 .ticketFilterRow button[data-active] { background: var(--admin-solid); color: var(--admin-ink); box-shadow: 0 2px 8px rgba(0, 0, 0, .1); }
+.supportWorkspace { display: grid; min-height: 520px; grid-template-columns: minmax(280px, .85fr) minmax(360px, 1.15fr); border-top: 1px solid var(--admin-line); }
+.supportTicketPane { min-width: 0; border-right: 1px solid var(--admin-line); overflow-y: auto; }
 
 .ticketList { display: grid; }
 .ticketRow { display: grid; width: 100%; min-height: 76px; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 13px; padding: 11px 18px; text-align: left; }
 .ticketRow + .ticketRow { border-top: 1px solid var(--admin-line); }
 .ticketRow:hover { background: color-mix(in srgb, var(--admin-ink) 3%, transparent); }
+.ticketRow[data-active] { background: var(--admin-soft-blue); }
 .ticketGlyph { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 13px; background: color-mix(in srgb, var(--admin-muted) 9%, transparent); color: var(--admin-muted); }
 .ticketGlyph[data-needs-reply] { background: color-mix(in srgb, var(--admin-blue) 12%, transparent); color: var(--admin-blue); }
 .ticketGlyph svg { width: 17px; height: 17px; }
@@ -195,6 +199,34 @@
 .ticketStatus { border-radius: 999px; padding: 5px 9px; background: color-mix(in srgb, var(--admin-muted) 10%, transparent); color: var(--admin-muted); font-size: 10px; font-weight: 700; text-transform: capitalize; }
 .ticketStatus[data-status="open"] { background: var(--admin-soft-blue); color: var(--admin-blue); }
 .ticketMeta time { color: var(--admin-muted); font-size: 10px; white-space: nowrap; }
+.supportListError { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px; border-radius: 12px; padding: 9px 10px 9px 12px; background: color-mix(in srgb, var(--admin-red) 7%, transparent); color: var(--admin-red); font-size: 10px; }
+.supportListError button { min-height: 36px; border-radius: 9px; padding: 0 11px; background: var(--admin-solid); color: var(--admin-blue); font-size: 11px; font-weight: 670; }
+.supportThreadPlaceholder { display: grid; place-content: center; justify-items: center; gap: 7px; padding: 30px; color: var(--admin-muted); text-align: center; }
+.supportThreadPlaceholder svg { width: 28px; height: 28px; margin-bottom: 5px; }
+.supportThreadPlaceholder strong { color: var(--admin-ink); font-size: 14px; }
+.supportThreadPlaceholder p { font-size: 11px; }
+.supportThread { display: flex; min-width: 0; min-height: 0; flex-direction: column; background: var(--admin-solid); }
+.supportThreadHeader { display: flex; min-height: 82px; align-items: center; justify-content: space-between; gap: 14px; border-bottom: 1px solid var(--admin-line); padding: 14px 17px; }
+.supportThreadHeader > div { position: relative; min-width: 0; padding-right: 68px; }
+.supportThreadHeader h2 { margin-top: 4px; overflow: hidden; font-size: 16px; font-weight: 660; letter-spacing: -.02em; text-overflow: ellipsis; white-space: nowrap; }
+.supportThreadHeader .ticketStatus { position: absolute; right: 0; bottom: 0; }
+.supportThreadHeader > button { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; border-radius: 999px; color: var(--admin-muted); outline: none; }
+.supportThreadHeader > button:hover { background: color-mix(in srgb, var(--admin-ink) 6%, transparent); }
+.supportThreadHeader > button:focus-visible { box-shadow: 0 0 0 3px var(--admin-blue); }
+.supportThreadHeader > button svg { width: 17px; height: 17px; }
+.supportThreadState { display: grid; min-height: 300px; place-content: center; justify-items: center; gap: 12px; padding: 24px; color: var(--admin-muted); font-size: 12px; text-align: center; }
+.supportThreadState button { min-height: 44px; border-radius: 11px; padding: 0 15px; background: var(--admin-blue); color: white; font-size: 11px; font-weight: 670; }
+.supportThreadMessages { display: flex; min-height: 240px; flex: 1; flex-direction: column; gap: 10px; overflow-y: auto; padding: 18px; scroll-behavior: smooth; }
+.supportComposer { display: grid; gap: 8px; border-top: 1px solid var(--admin-line); padding: 13px 16px 16px; background: var(--admin-solid); }
+.supportComposer textarea { width: 100%; min-height: 76px; resize: vertical; border: 1px solid var(--admin-line); border-radius: 13px; padding: 10px 12px; background: var(--admin-bg); color: var(--admin-ink); font: inherit; font-size: 13px; outline: none; }
+.supportComposer textarea:focus-visible { border-color: var(--admin-blue); box-shadow: 0 0 0 4px var(--admin-soft-blue); }
+.supportInlineError { color: var(--admin-red); font-size: 10px; line-height: 1.4; }
+.supportComposerActions { display: flex; justify-content: space-between; gap: 8px; }
+.supportComposerActions button { display: flex; min-height: 44px; align-items: center; justify-content: center; gap: 6px; border-radius: 11px; padding: 0 14px; background: color-mix(in srgb, var(--admin-ink) 6%, transparent); color: var(--admin-ink); font-size: 11px; font-weight: 680; outline: none; }
+.supportComposerActions button[data-primary] { background: var(--admin-blue); color: white; }
+.supportComposerActions button:focus-visible { box-shadow: 0 0 0 3px var(--admin-blue); }
+.supportComposerActions button:disabled { opacity: .55; }
+.supportComposerActions svg { width: 14px; height: 14px; }
 
 .ticketDialog { display: flex; width: min(100%, 560px); max-height: min(80vh, 640px); flex-direction: column; border: 1px solid var(--admin-line); border-radius: 24px; background: var(--admin-solid); box-shadow: 0 30px 90px rgba(0, 0, 0, .22); overflow: hidden; }
 .ticketDialogHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 22px 24px 16px; border-bottom: 1px solid var(--admin-line); }
@@ -342,6 +374,20 @@
   .activityRow time { grid-column: 2; }
   .activityList + .loadMore,
   .activityList ~ .endNote { margin-bottom: 0; }
+  .supportInbox { gap: 10px; }
+  .ticketFilterRow { width: 100%; margin: 0; overflow-x: auto; border-radius: 14px; }
+  .ticketFilterRow button { min-height: 44px; flex: 1 0 auto; }
+  .supportWorkspace { display: block; min-height: 0; border-top: 0; }
+  .supportTicketPane { border-right: 0; overflow: visible; }
+  .ticketList { gap: 10px; }
+  .ticketRow { border: 1px solid var(--admin-line); border-radius: 17px; background: var(--admin-solid); box-shadow: 0 8px 26px rgba(0, 0, 0, .045); }
+  .ticketRow + .ticketRow { border-top: 1px solid var(--admin-line); }
+  .supportThreadPlaceholder { display: none; }
+  .supportThread { position: fixed; z-index: 80; inset: 0; width: 100%; height: 100dvh; }
+  .supportThreadHeader { min-height: calc(72px + env(safe-area-inset-top)); padding: max(14px, env(safe-area-inset-top)) 16px 12px; }
+  .supportThreadMessages { padding: 16px; }
+  .supportComposer { padding: 12px 14px max(14px, env(safe-area-inset-bottom)); }
+  .supportComposer textarea { resize: none; font-size: 16px; }
   .rowSkeleton { display: none; }
   .cardSkeleton { display: block; }
   .skeleton { gap: 12px; }

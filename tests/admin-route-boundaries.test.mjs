@@ -202,6 +202,15 @@ test("support tickets: members can only read/reply on their own active-member ti
   assert.doesNotMatch(repository, /\.select\(\s*"\*"\s*\)/);
 });
 
+test("support inbox validates all operational filters and needs-reply semantics", () => {
+  const route = read("src/app/api/admin/support/route.ts");
+  const repository = read("src/lib/server/support-repository.ts");
+  assert.match(route, /"open",\s*"needs_reply",\s*"resolved",\s*"all"/);
+  assert.match(route, /listSupportTicketsAdmin\(\{ filter, cursor \}\)/);
+  assert.match(repository, /filter:\s*TicketFilter/);
+  assert.match(repository, /args\.filter === "needs_reply"[\s\S]*\.eq\("status", "open"\)[\s\S]*\.eq\("last_message_by", "member"\)/);
+});
+
 test("self-signup provisioning and activation are service-role-only RPCs that tolerate no linked access request", () => {
   const repository = read("src/lib/server/access-repository.ts");
   const migration = read("supabase/migrations/20260716232955_self_signup_membership.sql");
