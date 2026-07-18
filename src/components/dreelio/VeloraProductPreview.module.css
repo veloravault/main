@@ -24,6 +24,7 @@
 }
 
 .preview[data-variant="passwords"],
+.preview[data-variant="documents"],
 .preview[data-variant="wallet"] { aspect-ratio: .83; min-height: 520px; }
 .preview[data-variant="mobile"] { aspect-ratio: 1.33; }
 .previewInner { display: grid; width: 100%; height: 100%; grid-template-columns: 184px minmax(0, 1fr); }

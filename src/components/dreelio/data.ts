@@ -11,6 +11,7 @@ export const NAV_LINKS = [
 ];
 
 export const PROJECT_PILLS = ["Saved logins", "Auto-lock timer", "Secure notes", "Activity log"] as const;
+export const DOCUMENT_PILLS = ["Identity files", "Protected uploads", "Expiry details", "Fast search"] as const;
 export const FINANCE_PILLS = ["Cards", "Balances", "Spending insights", "Magic import"] as const;
 
 export const SMALL_FEATURES = [

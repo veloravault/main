@@ -122,6 +122,10 @@ export const PILL_ICONS = {
   "Auto-lock timer": IconClock,
   "Secure notes": IconTimesheet,
   "Activity log": IconTasks,
+  "Identity files": IconReports,
+  "Protected uploads": IconIntegrations,
+  "Expiry details": IconClock,
+  "Fast search": IconOrganize,
   Cards: IconInvoice,
   Balances: IconBudget,
   "Spending insights": IconForecast,
@@ -133,4 +137,3 @@ export const CARD_ICONS = {
   preferences: IconPreferences,
   organize: IconOrganize,
 } as const;
-

@@ -10,7 +10,7 @@ import { Highlights } from "@/components/dreelio/Highlights";
 import { SecurityArchitecture } from "@/components/dreelio/SecurityArchitecture";
 import { Pricing } from "@/components/dreelio/Pricing";
 import { FinalCTA } from "@/components/dreelio/FinalCTA";
-import { PROJECT_PILLS, FINANCE_PILLS } from "@/components/dreelio/data";
+import { DOCUMENT_PILLS, PROJECT_PILLS, FINANCE_PILLS } from "@/components/dreelio/data";
 
 const TITLE = "Velora Vault — One private vault for everything that matters";
 const DESCRIPTION =
@@ -48,6 +48,20 @@ export default function HomePage() {
 
         <FeatureSplit
           reverse
+          eyebrow="Document vault"
+          title={<>Important files, protected and organized</>}
+          body={
+            <>
+              <strong>Store identity and personal documents</strong> with the
+              details you need beside them. Files are encrypted before storage,
+              searchable by their safe labels, and ready when you need them.
+            </>
+          }
+          pills={DOCUMENT_PILLS}
+          preview="documents"
+        />
+
+        <FeatureSplit
           eyebrow="Wallet & bank vault"
           title={<>Your cards and accounts, one tap away</>}
           body={

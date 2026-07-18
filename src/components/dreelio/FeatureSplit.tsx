@@ -21,7 +21,7 @@ type Props = {
   title: React.ReactNode;
   body: React.ReactNode;
   pills: readonly string[];
-  preview: Extract<VeloraPreviewVariant, "passwords" | "wallet">;
+  preview: Extract<VeloraPreviewVariant, "passwords" | "documents" | "wallet">;
   reverse?: boolean;
 };
 

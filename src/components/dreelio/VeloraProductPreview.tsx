@@ -11,7 +11,7 @@ import {
 import { VeloraBrandMark } from "./VeloraBrand";
 import styles from "./VeloraProductPreview.module.css";
 
-export type VeloraPreviewVariant = "overview" | "passwords" | "wallet" | "mobile";
+export type VeloraPreviewVariant = "overview" | "passwords" | "documents" | "wallet" | "mobile";
 
 const NAV_ITEMS = [
   { label: "Passwords", icon: KeyRoundIcon },
@@ -95,6 +95,31 @@ function Passwords() {
   );
 }
 
+function Documents() {
+  return (
+    <>
+      <Sidebar active="Home" />
+      <section className={styles.workspace}>
+        <Topbar title="Documents" />
+        <div className={styles.masterDetail}>
+          <div className={styles.itemList}>
+            <header><strong>8 documents</strong><button type="button">+ Add</button></header>
+            {[["ID", "Passport", "Identity"], ["IN", "Insurance policy", "Finance"], ["TX", "Tax statement", "Records"]].map(([mark, name, group], index) => (
+              <span data-selected={index === 0} key={name}><i>{mark}</i><b>{name}</b><small>{group}</small></span>
+            ))}
+          </div>
+          <article className={styles.detailCard}>
+            <span className={styles.detailIcon}><FileTextIcon /></span>
+            <small>Protected document</small><h3>Passport</h3>
+            <dl><div><dt>Document number</dt><dd>•••••• 4821</dd></div><div><dt>Expires</dt><dd>18 July 2032</dd></div></dl>
+            <span className={styles.health}><ShieldCheckIcon />Encrypted file · 2.4 MB</span>
+          </article>
+        </div>
+      </section>
+    </>
+  );
+}
+
 function Wallet() {
   return (
     <>
@@ -132,6 +157,7 @@ export function VeloraProductPreview({ variant }: { variant: VeloraPreviewVarian
       <div className={styles.previewInner} aria-hidden="true">
         {variant === "overview" && <Overview />}
         {variant === "passwords" && <Passwords />}
+        {variant === "documents" && <Documents />}
         {variant === "wallet" && <Wallet />}
         {variant === "mobile" && <Mobile />}
       </div>

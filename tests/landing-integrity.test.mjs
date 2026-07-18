@@ -42,6 +42,20 @@ test("landing product media depicts Velora rather than imported Dreelio screensh
   assert.match(files, /VeloraProductPreview/);
 });
 
+test("every product story uses a matching deterministic vault preview", () => {
+  const page = read("src/app/page.tsx");
+  const split = read("src/components/dreelio/FeatureSplit.tsx");
+  const preview = read("src/components/dreelio/VeloraProductPreview.tsx");
+
+  assert.match(page, /eyebrow="Password vault"[\s\S]*?preview="passwords"/);
+  assert.match(page, /eyebrow="Document vault"[\s\S]*?preview="documents"/);
+  assert.match(page, /eyebrow="Wallet & bank vault"[\s\S]*?preview="wallet"/);
+  assert.match(split, /"passwords" \| "documents" \| "wallet"/);
+  assert.match(preview, /"overview" \| "passwords" \| "documents" \| "wallet" \| "mobile"/);
+  assert.match(preview, /function Documents\(\)/);
+  assert.doesNotMatch(preview, /https?:\/\//);
+});
+
 test("landing palette keeps body text and actions accessible", () => {
   const css = read("src/app/dreelio/dreelio.module.css");
 
