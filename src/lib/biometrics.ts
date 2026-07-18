@@ -1,6 +1,7 @@
 "use client";
 
 import { canUseVaultWrapper, commitForExpectedAuthenticatedUser, requireAuthenticatedVaultUserId, requireVaultWrapperOwner, type AuthenticatedUserPredicate } from "@/lib/vaultKeyOwnership";
+import { BiometricError, normalizeBiometricError } from "@/lib/biometricErrors";
 
 // Keys for localStorage
 const BIO_ENCRYPTED_KEY = "vault_bio_encrypted_master";
@@ -94,8 +95,12 @@ export async function enableBiometrics(
   isAuthenticatedUserCurrent: AuthenticatedUserPredicate,
 ): Promise<void> {
   const ownerUserId = requireAuthenticatedVaultUserId(userId);
-  if (!isAuthenticatedUserCurrent(ownerUserId)) throw new Error("The authenticated account changed during biometric enrollment.");
-  if (!isBiometricsSupported()) throw new Error("Biometrics not supported on this device/browser.");
+  if (!isAuthenticatedUserCurrent(ownerUserId)) {
+    throw new BiometricError("account_changed", "The signed-in account changed during biometric setup. Try again.");
+  }
+  if (!isBiometricsSupported()) {
+    throw new BiometricError("unsupported", "This device or browser does not support biometric unlock. Continue with your master key.");
+  }
 
   // Generate a secure 32-byte (256-bit) AES key
   const aesKey = crypto.getRandomValues(new Uint8Array(32));
@@ -104,8 +109,10 @@ export async function enableBiometrics(
   const challenge = crypto.getRandomValues(new Uint8Array(32));
   
   // Request biometric registration
-  const credential = await navigator.credentials.create({
-    publicKey: {
+  let credential: Credential | null;
+  try {
+    credential = await navigator.credentials.create({
+      publicKey: {
       challenge,
       rp: {
         name: "Velora Vault",
@@ -126,11 +133,14 @@ export async function enableBiometrics(
         residentKey: "required" // Discoverable credential required so userHandle is returned
       },
       timeout: 60000
-    }
-  }) as PublicKeyCredential;
+      }
+    });
+  } catch (reason) {
+    throw normalizeBiometricError(reason, "enroll");
+  }
 
-  if (!credential) {
-    throw new Error("Biometric registration cancelled or failed.");
+  if (!(credential instanceof PublicKeyCredential)) {
+    throw new BiometricError("prompt_cancelled", "Biometric setup was not completed. Try again or continue with your master key.");
   }
 
   // Save the encrypted master key
@@ -146,7 +156,9 @@ export async function enableBiometrics(
       localStorage.setItem(BIO_OWNER_KEY, verifiedOwnerUserId);
     },
   );
-  if (!committed) throw new Error("The authenticated account changed during biometric enrollment.");
+  if (!committed) {
+    throw new BiometricError("account_changed", "The signed-in account changed during biometric setup. Try again.");
+  }
 }
 
 export async function unlockWithBiometrics(
@@ -157,13 +169,17 @@ export async function unlockWithBiometrics(
 
   const encryptedMaster = localStorage.getItem(BIO_ENCRYPTED_KEY);
   const credIdBase64url = localStorage.getItem(BIO_CRED_ID);
-  if (!encryptedMaster || !credIdBase64url) throw new Error("Biometrics not set up.");
+  if (!encryptedMaster || !credIdBase64url) {
+    throw new BiometricError("credential_unavailable", "Biometric unlock is not set up on this device. Use your PIN or master key.");
+  }
 
   const challenge = crypto.getRandomValues(new Uint8Array(32));
 
   // Request biometric authentication
-  const assertion = await navigator.credentials.get({
-    publicKey: {
+  let assertion: Credential | null;
+  try {
+    assertion = await navigator.credentials.get({
+      publicKey: {
       challenge,
       rpId: window.location.hostname,
       allowCredentials: [{
@@ -172,19 +188,22 @@ export async function unlockWithBiometrics(
       }],
       userVerification: "required",
       timeout: 60000
-    }
-  });
+      }
+    });
+  } catch (reason) {
+    throw normalizeBiometricError(reason, "unlock");
+  }
 
   // The WebAuthn prompt is a multi-second user-interaction gap -- re-check the
   // authenticated user is still who we started this for, matching every
   // sibling function here (enableBiometrics, savePinForMaster,
   // verifyPinAndRecoverMaster) instead of only checking once up front.
   if (!isAuthenticatedUserCurrent(ownerUserId)) {
-    throw new Error("The authenticated account changed during biometric unlock.");
+    throw new BiometricError("account_changed", "The signed-in account changed during biometric unlock. Try again.");
   }
 
   if (!(assertion instanceof PublicKeyCredential) || !(assertion.response instanceof AuthenticatorAssertionResponse) || !assertion.response.userHandle) {
-    throw new Error("Authentication failed or device did not return the decryption key.");
+    throw new BiometricError("credential_unavailable", "This device did not return the saved biometric credential. Use your master key, then set up biometric unlock again.");
   }
 
   // The userHandle IS our AES key
@@ -196,6 +215,6 @@ export async function unlockWithBiometrics(
     return masterKey;
   } catch (err) {
     console.error("Biometric decryption failed:", err);
-    throw new Error("Failed to decrypt master key. You may need to reset biometric unlock.");
+    throw new BiometricError("reset_required", "Biometric unlock could not open this vault. Use your master key, then reset biometric unlock in Settings.", { cause: err });
   }
 }

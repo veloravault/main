@@ -303,6 +303,7 @@ export function PinLock({ authenticatedUserId, onUnlock, onFallback }: PinLockPr
         >
           {Array.from({ length: 6 }).map((_, i) => (
             <motion.div
+              role="alert"
               key={i}
               className="w-4 h-4 rounded-full border-2"
               animate={{
@@ -374,7 +375,7 @@ export function PinLock({ authenticatedUserId, onUnlock, onFallback }: PinLockPr
                     throw new Error("Your authenticated account changed before the vault finished unlocking.");
                   }
                 } catch (error: unknown) {
-                  setError(error instanceof Error ? error.message : "Biometric unlock failed.");
+                  setError(error instanceof Error ? error.message : "Biometric unlock could not be completed. Use your PIN or master key and try again.");
                   setChecking(false);
                 }
               }}

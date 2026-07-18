@@ -85,7 +85,7 @@ export function LocalVerificationSheet(props: {
       if (!accepted) return;
     } catch (reason) {
       if (!isActive()) return;
-      setError(reason instanceof Error ? reason.message : "Verification failed.");
+      setError(reason instanceof Error ? reason.message : "Verification could not be completed. Use your PIN or master key and try again.");
     } finally {
       if (isActive()) setWorking(false);
     }

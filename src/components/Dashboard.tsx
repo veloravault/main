@@ -305,7 +305,7 @@ export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
                     await enableBiometrics(masterPassword, authenticatedUserId, isAuthenticatedUserCurrent);
                     setShowBioBanner(false);
                   } catch (error: unknown) {
-                    toast(error instanceof Error ? error.message : "Biometric enrollment failed.", "error");
+                    toast(error instanceof Error ? error.message : "Biometric setup could not be completed. Try again or continue with your master key.", "error");
                   }
                 }}
                 className="px-4 py-2 bg-primary text-primary-foreground text-[13px] font-semibold rounded-lg hover:opacity-90 transition-opacity"

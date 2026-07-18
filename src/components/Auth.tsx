@@ -175,7 +175,7 @@ export function Auth({ onLogin }: { onLogin: (masterPass: string, expectedUserId
                         throw new Error("Your authenticated account changed before the vault finished unlocking.");
                       }
                     } catch (error: unknown) {
-                      setPinError(error instanceof Error ? error.message : "Biometric enrollment failed.");
+                      setPinError(error instanceof Error ? error.message : "Biometric setup could not be completed. Try again or continue with your master key.");
                     }
                   }}
                   className="w-full py-3 rounded-xl bg-foreground text-background font-semibold text-[16px] hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
@@ -203,7 +203,7 @@ export function Auth({ onLogin }: { onLogin: (masterPass: string, expectedUserId
                 Skip for now
               </button>
               {pinError && (
-                <p className="text-destructive text-[13px] font-medium mt-2">{pinError}</p>
+                <p className="text-destructive text-[13px] font-medium mt-2" role="alert">{pinError}</p>
               )}
             </div>
           </motion.div>
@@ -250,6 +250,7 @@ export function Auth({ onLogin }: { onLogin: (masterPass: string, expectedUserId
           <AnimatePresence>
             {pinError && (
               <motion.p
+                role="alert"
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
@@ -319,7 +320,7 @@ export function Auth({ onLogin }: { onLogin: (masterPass: string, expectedUserId
                     throw new Error("Your authenticated account changed before the vault finished unlocking.");
                   }
                 } catch (error: unknown) {
-                  setError(error instanceof Error ? error.message : "Biometric unlock failed.");
+                  setError(error instanceof Error ? error.message : "Biometric unlock could not be completed. Use your PIN or master key and try again.");
                 }
               }}
               type="button"
@@ -370,6 +371,7 @@ export function Auth({ onLogin }: { onLogin: (masterPass: string, expectedUserId
           <AnimatePresence>
             {error && (
               <motion.div
+                role="alert"
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}

@@ -60,7 +60,7 @@ export function SecuritySettings({ masterPassword, onLock }: { masterPassword: s
         toast("Biometric unlock enabled", "success");
       }
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Biometric setup could not be completed.");
+      setError(reason instanceof Error ? reason.message : "Biometric setup could not be completed. Try again or continue with your master key.");
     } finally {
       setBioWorking(false);
     }
