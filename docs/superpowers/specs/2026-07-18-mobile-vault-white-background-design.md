@@ -10,9 +10,10 @@ The change applies at viewports below 768px to the shared authenticated vault sh
 
 ## Design
 
-- Set the mobile light-mode `--background` token to `#FFFFFF`.
+- Keep the global mobile light-mode `--background` token at `#F2F2F7` so public, authentication, card, and portal surfaces retain their existing treatment.
+- Override `--background` to `#FFFFFF` only on the authenticated `.ios-app-shell`.
 - Replace the mobile `.ios-content-scroll` gray gradient with a solid `var(--background)` canvas.
-- Keep the mobile `.dark` override at `#000000`, so dark mode remains unchanged.
+- Add a `.dark .ios-app-shell` override at `#000000`, so dark mode remains unchanged.
 - Keep `--card`, separators, safe-area behavior, scrolling, header, and bottom tab bar behavior unchanged.
 - Do not alter desktop background behavior.
 
@@ -22,4 +23,3 @@ The change applies at viewports below 768px to the shared authenticated vault sh
 - Confirm the regression test fails before the CSS change and passes afterward.
 - Run the full project integrity test suite.
 - Visually inspect representative authenticated mobile screens at approximately 400px width, including Dashboard and Passwords, and confirm the canvas is white from header to tab bar without gray gaps.
-

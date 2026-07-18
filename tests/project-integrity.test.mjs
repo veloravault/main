@@ -287,6 +287,19 @@ test("mobile shell keeps iOS-style safe areas and native tab treatment", () => {
   assert.match(css, /@media \(max-width:\s*767px\)/);
 });
 
+test("mobile vault uses a solid white light-mode canvas", () => {
+  const css = read("src/app/globals.css");
+  const mobileShellStart = css.indexOf("@media (max-width: 767px) {", css.indexOf(".ios-mobile-tabbar"));
+  const mobileShellEnd = css.indexOf("\n}\n\n@media (prefers-reduced-motion", mobileShellStart) + 2;
+  const mobileShellCss = css.slice(mobileShellStart, mobileShellEnd);
+
+  assert.ok(mobileShellStart >= 0 && mobileShellEnd > mobileShellStart);
+  assert.match(mobileShellCss, /:root\s*\{[^}]*--background:\s*#F2F2F7;/);
+  assert.match(mobileShellCss, /\.ios-app-shell\s*\{[^}]*--background:\s*#FFFFFF;/);
+  assert.match(mobileShellCss, /\.dark \.ios-app-shell\s*\{[^}]*--background:\s*#000000;/);
+  assert.match(mobileShellCss, /\.ios-content-scroll\s*\{[^}]*background:\s*var\(--background\);/);
+});
+
 test("responsive shell uses the shared Apple ecosystem chrome", () => {
   const page = read("src/components/VaultApp.tsx");
   for (const klass of ["apple-app", "apple-sidebar", "vault-header", "vault-header-search", "apple-tabbar"]) {
