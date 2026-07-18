@@ -8,7 +8,6 @@ import {
   ShieldCheckIcon,
   SparklesIcon,
 } from "lucide-react";
-import { VeloraBrandMark } from "./VeloraBrand";
 import styles from "./VeloraProductPreview.module.css";
 
 export type VeloraPreviewVariant = "overview" | "passwords" | "documents" | "wallet" | "mobile";
@@ -20,10 +19,18 @@ const NAV_ITEMS = [
   { label: "Bank vault", icon: BanknoteIcon },
 ] as const;
 
+function PreviewBrandMark() {
+  return (
+    <span className={styles.previewMark} aria-hidden="true">
+      <i /><i /><i /><i /><b />
+    </span>
+  );
+}
+
 function Sidebar({ active }: { active: "Passwords" | "Wallet" | "Home" }) {
   return (
     <aside className={styles.sidebar}>
-      <span className={styles.brand}><VeloraBrandMark /><strong>Velora Vault</strong></span>
+      <span className={styles.brand}><PreviewBrandMark /><strong>Velora Vault</strong></span>
       <nav>
         <span data-active={active === "Home"}><SparklesIcon />Overview</span>
         {NAV_ITEMS.map(({ label, icon: Icon }) => (
@@ -140,7 +147,7 @@ function Mobile() {
   return (
     <div className={styles.mobileStage}>
       <div className={styles.phone}>
-        <header><VeloraBrandMark /><span><small>Good evening</small><strong>Your vault</strong></span><i>AT</i></header>
+        <header><PreviewBrandMark /><span><small>Good evening</small><strong>Your vault</strong></span><i>AT</i></header>
         <div className={styles.mobileSearch}><SearchIcon />Search everything</div>
         <div className={styles.mobileCards}><article><KeyRoundIcon /><strong>24</strong><small>Passwords</small></article><article><CreditCardIcon /><strong>3</strong><small>Wallet</small></article></div>
         <div className={styles.mobileList}><strong>Recently used</strong><span><i>EM</i><b>Email account</b><small>Now</small></span><span><i>ID</i><b>Identity document</b><small>Today</small></span></div>
