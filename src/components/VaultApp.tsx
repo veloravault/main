@@ -105,7 +105,13 @@ export default function VaultApp() {
 
   useEffect(() => {
     clearLocalVaultSession();
+    let authEventReceived = false;
     supabase.auth.getSession().then(({ data: { session } }) => {
+      // onAuthStateChange (subscribed right below) can resolve before this
+      // promise does -- e.g. a SIGNED_OUT event racing ahead of it. Its
+      // result is more current, so don't let this stale getSession() result
+      // overwrite it and resurrect a signed-out user.
+      if (authEventReceived) return;
       const user = session?.user ?? null;
       const pinEnabled = Boolean(user && hasPinLock(user.id));
       setSessionUser(user);
@@ -114,11 +120,13 @@ export default function VaultApp() {
       setLoading(false);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      authEventReceived = true;
       const nextUser = session?.user ?? null;
       const pinEnabled = Boolean(nextUser && hasPinLock(nextUser.id));
       setSessionUser(nextUser);
       setShowPinLock(pinEnabled);
       setShowFullAuth(Boolean(nextUser) && !pinEnabled);
+      setLoading(false);
       if (event === "SIGNED_OUT") {
         clearMasterKey();
         clearLocalVaultSession();

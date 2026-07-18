@@ -125,9 +125,6 @@
 .appendError button:focus-visible { box-shadow: 0 0 0 3px var(--admin-blue); }
 .endNote { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 22px; color: var(--admin-muted); font-size: 11px; }
 .endNote svg { width: 13px; height: 13px; color: var(--admin-green); }
-.activityEmpty { display: grid; min-height: 294px; place-content: center; justify-items: center; padding: 28px; }
-.activityEmpty > span { display: grid; width: 42px; height: 42px; place-items: center; margin-bottom: -18px; border-radius: 14px; background: var(--admin-soft-blue); color: var(--admin-blue); }
-.activityEmpty > span svg { width: 18px; height: 18px; }
 .activityList { display: grid; }
 .activityRow { display: grid; min-height: 74px; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 13px; padding: 11px 18px; }
 .activityRow + .activityRow { border-top: 1px solid var(--admin-line); }
@@ -140,7 +137,7 @@
 .activityCopy small { overflow: hidden; color: var(--admin-muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 .activityRow time { color: var(--admin-muted); font-size: 10px; white-space: nowrap; }
 .inlineActivityError { margin: 12px 18px 0; color: var(--admin-red); font-size: 11px; text-align: center; }
-.activityList + .loadMore,
+.activityList ~ .loadMore,
 .activityList ~ .endNote { margin-bottom: 22px; }
 
 .ticketFilterRow { display: inline-flex; gap: 4px; margin-top: 34px; padding: 4px; border-radius: 999px; background: color-mix(in srgb, var(--admin-ink) 5%, transparent); }
@@ -237,7 +234,7 @@
   .search kbd { display: none; }
   .adminIdentity { grid-column: 3; }
   .adminIdentity > span { width: 32px; height: 32px; }
-  .mobileSignOut { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 10px; color: var(--admin-muted); }
+  .mobileSignOut { display: grid; grid-column: 4; width: 36px; height: 36px; place-items: center; border-radius: 10px; color: var(--admin-muted); }
   .mobileSignOut svg { width: 17px; height: 17px; }
   .readOnlyNote { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .mobileNav { position: sticky; z-index: 19; top: calc(66px + env(safe-area-inset-top, 0px)); display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--admin-line); padding: 8px 16px; background: color-mix(in srgb, var(--admin-bg) 86%, transparent); backdrop-filter: blur(22px) saturate(150%); scrollbar-width: none; }

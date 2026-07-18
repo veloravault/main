@@ -165,7 +165,9 @@ function TicketDetail({ ticketId, onClose, onChanged }: { ticketId: string; onCl
       const payload = await response.json().catch(() => ({})) as { message?: AdminSupportMessage; error?: string };
       if (!response.ok || !payload.message) throw new Error(payload.error ?? "REPLY_FAILED");
       setMessages((current) => [...current, payload.message as AdminSupportMessage]);
-      setTicket((current) => current && { ...current, status: "open", lastMessageBy: "owner", lastMessageAt: (payload.message as AdminSupportMessage).createdAt });
+      // Status is left as-is: the DB trigger only reopens a ticket on a
+      // *member* reply, so an owner reply must not optimistically flip it.
+      setTicket((current) => current && { ...current, lastMessageBy: "owner", lastMessageAt: (payload.message as AdminSupportMessage).createdAt });
       setReply("");
       toast("Reply sent", "success");
       onChanged();

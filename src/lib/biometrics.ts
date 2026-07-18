@@ -149,8 +149,11 @@ export async function enableBiometrics(
   if (!committed) throw new Error("The authenticated account changed during biometric enrollment.");
 }
 
-export async function unlockWithBiometrics(userId: string): Promise<string> {
-  requireVaultWrapperOwner(localStorage.getItem(BIO_OWNER_KEY), userId, "Biometric");
+export async function unlockWithBiometrics(
+  userId: string,
+  isAuthenticatedUserCurrent: AuthenticatedUserPredicate,
+): Promise<string> {
+  const ownerUserId = requireVaultWrapperOwner(localStorage.getItem(BIO_OWNER_KEY), userId, "Biometric");
 
   const encryptedMaster = localStorage.getItem(BIO_ENCRYPTED_KEY);
   const credIdBase64url = localStorage.getItem(BIO_CRED_ID);
@@ -171,6 +174,14 @@ export async function unlockWithBiometrics(userId: string): Promise<string> {
       timeout: 60000
     }
   });
+
+  // The WebAuthn prompt is a multi-second user-interaction gap -- re-check the
+  // authenticated user is still who we started this for, matching every
+  // sibling function here (enableBiometrics, savePinForMaster,
+  // verifyPinAndRecoverMaster) instead of only checking once up front.
+  if (!isAuthenticatedUserCurrent(ownerUserId)) {
+    throw new Error("The authenticated account changed during biometric unlock.");
+  }
 
   if (!(assertion instanceof PublicKeyCredential) || !(assertion.response instanceof AuthenticatorAssertionResponse) || !assertion.response.userHandle) {
     throw new Error("Authentication failed or device did not return the decryption key.");

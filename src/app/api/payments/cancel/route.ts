@@ -28,12 +28,21 @@ export async function POST(req: NextRequest) {
 
     // The subscription remains active until Razorpay emits
     // subscription.cancelled at the billing-period end. Track the scheduled
-    // state locally without revoking paid access early.
-    const { error: updateError } = await admin
-      .from("subscriptions")
-      .update({ cancel_at_cycle_end: true, updated_at: new Date().toISOString() })
-      .eq("razorpay_subscription_id", row.razorpay_subscription_id);
-    if (updateError) throw updateError;
+    // state locally without revoking paid access early. Clear any pending
+    // period change too — it would otherwise show a "switching to X" message
+    // alongside "cancelling," which is now moot.
+    try {
+      const { error: updateError } = await admin
+        .from("subscriptions")
+        .update({ cancel_at_cycle_end: true, scheduled_period: null, updated_at: new Date().toISOString() })
+        .eq("razorpay_subscription_id", row.razorpay_subscription_id);
+      if (updateError) throw updateError;
+    } catch (dbError) {
+      // Razorpay has already scheduled the cancellation regardless of whether
+      // this local write lands — don't tell the user to retry (that would
+      // call Razorpay's cancel API again); surface the desync for follow-up.
+      console.error("cancel subscription: Razorpay cancelled but local DB update failed:", dbError);
+    }
 
     return NextResponse.json({ ok: true, cancel_at_cycle_end: true });
   } catch (error: unknown) {

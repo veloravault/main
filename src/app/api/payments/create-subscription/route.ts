@@ -46,7 +46,14 @@ export async function POST(req: NextRequest) {
       period,
       status: "created",
     });
-    if (dbError) throw dbError;
+    if (dbError) {
+      // No charge occurs (the client never receives subscription.id below to
+      // open checkout with), but Razorpay is left holding an orphaned
+      // "created" subscription with no local record. Log it with enough
+      // detail to cancel by hand until this has a real cleanup job.
+      console.error(`create-subscription: DB insert failed for dangling Razorpay subscription ${subscription.id} (user ${user.id}):`, dbError);
+      throw dbError;
+    }
 
     return NextResponse.json({ subscriptionId: subscription.id, keyId: razorpayPublicKeyId() });
   } catch (error: unknown) {

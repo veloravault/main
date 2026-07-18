@@ -38,6 +38,10 @@ export function Devices() {
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={tab}
+              id={`devices-panel-${tab}`}
+              role="tabpanel"
+              aria-labelledby={`devices-tab-${tab}`}
+              tabIndex={0}
               initial={reduceMotion ? false : "hidden"}
               animate="show"
               exit={reduceMotion ? undefined : "exit"}
@@ -49,8 +53,10 @@ export function Devices() {
 
           <div className={styles.toggle} role="tablist" aria-label="Platform">
             <motion.button
+              id="devices-tab-mobile"
               role="tab"
               aria-selected={tab === "mobile"}
+              aria-controls="devices-panel-mobile"
               data-active={tab === "mobile"}
               onClick={() => setTab("mobile")}
               whileTap={reduceMotion ? undefined : TAP_PRESS}
@@ -58,8 +64,10 @@ export function Devices() {
               Mobile App
             </motion.button>
             <motion.button
+              id="devices-tab-web"
               role="tab"
               aria-selected={tab === "web"}
+              aria-controls="devices-panel-web"
               data-active={tab === "web"}
               onClick={() => setTab("web")}
               whileTap={reduceMotion ? undefined : TAP_PRESS}

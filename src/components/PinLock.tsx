@@ -11,6 +11,12 @@ import { canUseVaultWrapper, commitForExpectedAuthenticatedUser, requireAuthenti
 const MAX_ATTEMPTS = 3;
 const PIN_STORAGE_KEY = "vault_pin_hash";
 const PIN_ENCRYPTED_KEY = "vault_pin_encrypted_master";
+// Scoped per owner so one account's failed attempts can't carry over and
+// lock out (or wipe the PIN of) the next account that sets one up on the
+// same shared device/browser.
+function pinAttemptsKey(userId: string): string {
+  return `vault_pin_attempts:${userId}`;
+}
 const LEGACY_PIN_ITERATIONS = 100_000;
 // Doubled from 600_000 (OWASP's current PBKDF2-SHA256 minimum) to raise the
 // cost of offline brute-forcing the 6-digit PIN keyspace if an attacker ever
@@ -169,12 +175,13 @@ export async function verifyPinAndRecoverMaster(
     if (!isAuthenticatedUserCurrent(ownerUserId)) {
       throw new Error("The authenticated account changed during PIN verification.");
     }
+    const attemptsKey = pinAttemptsKey(ownerUserId);
     if (inputHash !== parsed.hash) {
-      const attempts = Number.parseInt(localStorage.getItem("vault_pin_attempts") || "0", 10) + 1;
-      localStorage.setItem("vault_pin_attempts", String(attempts));
+      const attempts = Number.parseInt(localStorage.getItem(attemptsKey) || "0", 10) + 1;
+      localStorage.setItem(attemptsKey, String(attempts));
       if (attempts >= MAX_ATTEMPTS) {
         clearPinLock();
-        localStorage.removeItem("vault_pin_attempts");
+        localStorage.removeItem(attemptsKey);
         throw new Error("Too many wrong attempts. Sign in with your master key.");
       }
       const remaining = MAX_ATTEMPTS - attempts;
@@ -185,7 +192,7 @@ export async function verifyPinAndRecoverMaster(
     if (iterations < PIN_ITERATIONS || scheme !== CURRENT_PIN_SCHEME) {
       await savePinForMaster(pin, masterKey, ownerUserId, isAuthenticatedUserCurrent);
     }
-    localStorage.removeItem("vault_pin_attempts");
+    localStorage.removeItem(attemptsKey);
     return masterKey;
   } catch (error) {
     if (error instanceof Error) throw error;
@@ -207,22 +214,22 @@ export function PinLock({ authenticatedUserId, onUnlock, onFallback }: PinLockPr
   const [error, setError] = useState<string | null>(null);
   const [attempts, setAttempts] = useState(() => {
     if (typeof window === "undefined") return 0;
-    return parseInt(localStorage.getItem("vault_pin_attempts") || "0");
+    return parseInt(localStorage.getItem(pinAttemptsKey(authenticatedUserId)) || "0");
   });
   const [checking, setChecking] = useState(false);
   const [shake, setShake] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   const hasBio = hasBiometricsEnabled(authenticatedUserId);
 
   // Read attempts from localStorage so they persist across refreshes
   useEffect(() => {
     if (attempts >= MAX_ATTEMPTS) {
       clearPinLock();
-      localStorage.removeItem("vault_pin_attempts");
+      localStorage.removeItem(pinAttemptsKey(authenticatedUserId));
       onFallback();
     }
-  }, [attempts, onFallback]);
+  }, [attempts, authenticatedUserId, onFallback]);
 
   // Focus container for keyboard input
   useEffect(() => {
@@ -255,7 +262,7 @@ export function PinLock({ authenticatedUserId, onUnlock, onFallback }: PinLockPr
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to verify PIN. Use your master key.";
-      const nextAttempts = Number.parseInt(localStorage.getItem("vault_pin_attempts") || "0", 10);
+      const nextAttempts = Number.parseInt(localStorage.getItem(pinAttemptsKey(authenticatedUserId)) || "0", 10);
       setAttempts(nextAttempts);
       setError(message);
       if (!hasPinLock(authenticatedUserId)) {
@@ -362,7 +369,7 @@ export function PinLock({ authenticatedUserId, onUnlock, onFallback }: PinLockPr
               onClick={async () => {
                 setChecking(true);
                 try {
-                  const masterKey = await unlockWithBiometrics(authenticatedUserId);
+                  const masterKey = await unlockWithBiometrics(authenticatedUserId, isAuthenticatedUserCurrent);
                   if (!onUnlock(masterKey, authenticatedUserId)) {
                     throw new Error("Your authenticated account changed before the vault finished unlocking.");
                   }

@@ -109,7 +109,8 @@ test("PIN and biometric helpers persist and require explicit ownership", () => {
   assert.match(biometrics, /BIO_OWNER_KEY/);
   assert.match(biometrics, /enableBiometrics\([\s\S]*userId:\s*string,[\s\S]*isAuthenticatedUserCurrent:\s*AuthenticatedUserPredicate/);
   assert.match(biometrics, /commitForExpectedAuthenticatedUser/);
-  assert.match(biometrics, /unlockWithBiometrics\(userId:\s*string\)/);
+  assert.match(biometrics, /unlockWithBiometrics\([\s\S]*userId:\s*string,[\s\S]*isAuthenticatedUserCurrent:\s*AuthenticatedUserPredicate/);
+  assert.match(biometrics, /isAuthenticatedUserCurrent\(ownerUserId\)/);
 });
 
 test("every PIN and biometric UI call site supplies the authenticated user id", () => {

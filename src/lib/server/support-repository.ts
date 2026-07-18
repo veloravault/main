@@ -45,6 +45,7 @@ type MessageRow = {
 export type SupportTicketCursor = { lastMessageAt: string; id: string };
 const SUPPORT_CURSOR_PATTERN = /^[A-Za-z0-9_-]+$/;
 const ISO_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export function encodeSupportTicketCursor(cursor: SupportTicketCursor) {
   return Buffer.from(JSON.stringify(cursor), "utf8").toString("base64url");
@@ -59,6 +60,7 @@ export function parseSupportTicketCursor(value: string | null): SupportTicketCur
       || !ISO_TIMESTAMP.test(parsed.lastMessageAt)
       || !Number.isFinite(Date.parse(parsed.lastMessageAt))
       || typeof parsed.id !== "string"
+      || !UUID.test(parsed.id)
     ) return null;
     return { lastMessageAt: parsed.lastMessageAt, id: parsed.id };
   } catch {

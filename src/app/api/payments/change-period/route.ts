@@ -39,17 +39,33 @@ export async function POST(req: NextRequest) {
     if (row.period === targetPeriod && !row.scheduled_period) {
       return NextResponse.json({ error: `Already billed ${targetPeriod}.` }, { status: 409 });
     }
+    if (row.scheduled_period === targetPeriod) {
+      return NextResponse.json({ error: `Already scheduled to switch to ${targetPeriod}.` }, { status: 409 });
+    }
 
     const razorpayPlanId = planIdFor(row.plan as PaidPlanId, targetPeriod);
     await updateSubscriptionPlan(row.razorpay_subscription_id, razorpayPlanId);
 
-    const { error: updateError } = await admin
-      .from("subscriptions")
-      .update({ scheduled_period: targetPeriod, updated_at: new Date().toISOString() })
-      .eq("razorpay_subscription_id", row.razorpay_subscription_id);
-    if (updateError) throw updateError;
+    // Reverting to the currently-billed period cancels the pending switch
+    // rather than scheduling a "change" to the value already in effect —
+    // otherwise the UI would show "switching to X" forever with nothing
+    // actually changing at the next renewal.
+    const nextScheduledPeriod = targetPeriod === row.period ? null : targetPeriod;
 
-    return NextResponse.json({ ok: true, scheduled_period: targetPeriod });
+    try {
+      const { error: updateError } = await admin
+        .from("subscriptions")
+        .update({ scheduled_period: nextScheduledPeriod, updated_at: new Date().toISOString() })
+        .eq("razorpay_subscription_id", row.razorpay_subscription_id);
+      if (updateError) throw updateError;
+    } catch (dbError) {
+      // Razorpay has already applied the plan change regardless of whether
+      // this local write lands — don't tell the user to retry (that would
+      // call Razorpay's update API again); surface the desync for follow-up.
+      console.error("change-period: Razorpay updated but local DB update failed:", dbError);
+    }
+
+    return NextResponse.json({ ok: true, scheduled_period: nextScheduledPeriod });
   } catch (error: unknown) {
     if (error instanceof PayloadTooLargeError) return NextResponse.json({ error: "Request too large." }, { status: 413 });
     if (error instanceof InvalidJsonBodyError) return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 });

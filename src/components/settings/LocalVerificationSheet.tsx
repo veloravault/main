@@ -67,7 +67,7 @@ export function LocalVerificationSheet(props: {
     setError(null);
     try {
       const recovered = usesBio
-        ? await unlockWithBiometrics(expectedUserId)
+        ? await unlockWithBiometrics(expectedUserId, isAuthenticatedUserCurrent)
         : usesPin
           ? await verifyPinAndRecoverMaster(value, expectedUserId, isAuthenticatedUserCurrent)
           : value;

@@ -237,7 +237,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
         iv: encrypted.iv,
         salt: encrypted.salt,
         category: metadata.category,
-        domain: metadata.domain,
+        domain: extractDomain(metadata.domain ?? undefined),
       });
 
       if (error) throw error;
@@ -325,7 +325,8 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
           const { data: { user } } = await supabase.auth.getUser();
           if (!user) throw new Error("No user found");
 
-          const newItems = [];
+          const newItems: { user_id: string; title: string; encrypted_data: string; iv: string; salt: string; category: string; domain: string | null }[] = [];
+          const newItemUsernames: (string | null)[] = [];
           let updatedCount = 0;
 
           for (const row of results.data as CsvPasswordRow[]) {
@@ -335,7 +336,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
             const password = row.password || row.Password;
             const rawUsername = row.username || row.Username || row.login || row.Login || row.email || row.Email;
             const parsedUsername = rawUsername ? rawUsername.trim() : null;
-            
+
             if (!password) continue;
 
             let secretText = "";
@@ -346,13 +347,19 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
             }
 
             const encrypted = await encryptText(secretText, masterPassword);
-            
-            const duplicate = items.find(existing => {
-              if (existing.title.toLowerCase() !== title.toLowerCase()) return false;
-              const isCombo = existing.plaintext.startsWith("Username: ") && existing.plaintext.includes("\nPassword: ");
-              const existingUsername = isCombo ? existing.plaintext.split("\n")[0].replace("Username: ", "").trim() : null;
-              return (existingUsername || "").toLowerCase() === (parsedUsername || "").toLowerCase();
-            });
+
+            // Only match on a real, non-empty username on both sides — matching
+            // on "both blank" would treat any two unrelated same-titled items
+            // (e.g. a manually-added password with no username) as duplicates
+            // and silently overwrite one with the other.
+            const duplicate = parsedUsername
+              ? items.find(existing => {
+                  if (existing.title.toLowerCase() !== title.toLowerCase()) return false;
+                  const isCombo = existing.plaintext.startsWith("Username: ") && existing.plaintext.includes("\nPassword: ");
+                  const existingUsername = isCombo ? existing.plaintext.split("\n")[0].replace("Username: ", "").trim() : null;
+                  return !!existingUsername && existingUsername.toLowerCase() === parsedUsername.toLowerCase();
+                })
+              : undefined;
 
             if (duplicate) {
               const { error } = await supabase.from("vault_items").update({
@@ -361,6 +368,19 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
                 salt: encrypted.salt,
               }).eq("id", duplicate.id);
               if (!error) updatedCount++;
+              continue;
+            }
+
+            // Also check against rows already staged earlier in this same CSV
+            // so two identical rows in one file merge instead of both inserting.
+            const batchIndex = parsedUsername
+              ? newItems.findIndex((candidate, index) =>
+                  candidate.title.toLowerCase() === title.toLowerCase()
+                  && newItemUsernames[index]?.toLowerCase() === parsedUsername.toLowerCase())
+              : -1;
+
+            if (batchIndex >= 0) {
+              newItems[batchIndex] = { ...newItems[batchIndex], encrypted_data: encrypted.ciphertext, iv: encrypted.iv, salt: encrypted.salt, domain };
             } else {
               newItems.push({
                 user_id: user.id,
@@ -371,6 +391,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
                 category: "Uncategorized",
                 domain,
               });
+              newItemUsernames.push(parsedUsername);
             }
           }
 

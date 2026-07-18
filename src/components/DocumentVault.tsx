@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { encryptFile, decryptFile } from "@/lib/crypto";
 import { Button } from "@/components/ui/button";
 import { analyzeImageName, categorizeDocument } from "@/app/actions";
-import { setCache, invalidateCache } from "@/lib/vaultCache";
+import { getCache, setCache, invalidateCache } from "@/lib/vaultCache";
 import { CardListSkeleton } from "@/components/Skeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { SelectionToolbar } from "@/components/SelectionToolbar";
@@ -70,7 +70,14 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
     const { error } = await supabase.from("vault_documents").delete().eq("id", item.id);
     if (error) throw error;
     invalidateCache("vault_documents");
-    await deleteObjects([item.storage_path]);
+    try {
+      await deleteObjects([item.storage_path]);
+    } catch (reason) {
+      // The DB row is already gone, so resurrecting this item in the UI
+      // (useOptimisticDelete's failure path) would show a document that no
+      // longer exists. Only the R2 blob is now orphaned; log and move on.
+      console.error("Failed to delete R2 object for a removed document:", reason);
+    }
   } });
 
   useEffect(() => {
@@ -84,6 +91,13 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
   }, [focusedItemId]);
 
   const fetchDocuments = useCallback(async () => {
+    const cached = getCache<VaultDocument>("vault_documents");
+    if (cached) {
+      setDocuments(cached);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     const { data, error } = await supabase
       .from("vault_documents")
@@ -281,10 +295,18 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
       setIsSelectionMode(false);
       invalidateCache("vault_documents");
       fetchDocuments();
-      await deleteObjects(pathsToRemove);
     } catch (err) {
       console.error("Failed to delete documents:", err);
       toast("Failed to delete items", "error");
+      return;
+    }
+
+    try {
+      await deleteObjects(pathsToRemove);
+    } catch (reason) {
+      // The DB rows are already gone -- this only orphans R2 blobs, it isn't
+      // a failed delete from the user's point of view, so no error toast.
+      console.error("Failed to delete R2 objects for removed documents:", reason);
     }
   };
 

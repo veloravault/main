@@ -223,9 +223,14 @@ export function PlanSettings({ autoUpgrade }: { autoUpgrade?: SettingsAutoUpgrad
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ period: targetPeriod }),
       });
-      const payload = await response.json().catch(() => ({})) as { error?: string };
+      const payload = await response.json().catch(() => ({})) as { error?: string; scheduled_period?: BillingPeriod | null };
       if (!response.ok) throw new Error(payload.error ?? "Could not change your billing period.");
-      toast(`Billing will switch to ${targetPeriod === "yearly" ? "yearly" : "monthly"} at your next renewal`, "success");
+      toast(
+        payload.scheduled_period
+          ? `Billing will switch to ${payload.scheduled_period === "yearly" ? "yearly" : "monthly"} at your next renewal`
+          : "Pending billing change cancelled — you'll stay on your current plan",
+        "success",
+      );
       await refresh();
     } catch (reason) {
       toast(reason instanceof Error ? reason.message : "Could not change your billing period.", "error");

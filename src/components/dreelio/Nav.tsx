@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { MoonIcon, SunIcon } from "lucide-react";
 import shared from "@/app/dreelio/dreelio.module.css";
@@ -14,6 +14,7 @@ import {
   revealVariants,
 } from "./motion";
 import { useTheme } from "@/components/ThemeProvider";
+import { supabase } from "@/lib/supabase";
 
 type ThemeToggleProps = {
   className?: string;
@@ -54,10 +55,23 @@ function ThemeToggle({
 
 export function Nav() {
   const [open, setOpen] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
   const reduceMotion = useReducedMotion();
 
   const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
+
+  // Keeps the nav's CTAs from contradicting the page body (e.g. Pricing
+  // already swaps its own CTAs for a signed-in visitor) when a signed-in
+  // member revisits a public page via a bookmark or the back button.
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => { if (active) setSignedIn(data.session != null); });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (active) setSignedIn(session != null);
+    });
+    return () => { active = false; subscription.unsubscribe(); };
+  }, []);
 
   return (
     <motion.header
@@ -90,21 +104,34 @@ export function Nav() {
         </ul>
 
         <div className={styles.authActions}>
-          <motion.a
-            href="/login"
-            className={styles.signIn}
-            whileHover={reduceMotion ? undefined : { y: -1 }}
-          >
-            Sign in
-          </motion.a>
-          <motion.a
-            href="/signup"
-            className={`${shared.btn} ${shared.btnDark} ${styles.cta}`}
-            whileHover={reduceMotion ? undefined : HOVER_LIFT}
-            whileTap={reduceMotion ? undefined : TAP_PRESS}
-          >
-            Sign up
-          </motion.a>
+          {signedIn ? (
+            <motion.a
+              href="/vault"
+              className={`${shared.btn} ${shared.btnDark} ${styles.cta}`}
+              whileHover={reduceMotion ? undefined : HOVER_LIFT}
+              whileTap={reduceMotion ? undefined : TAP_PRESS}
+            >
+              Open vault
+            </motion.a>
+          ) : (
+            <>
+              <motion.a
+                href="/login"
+                className={styles.signIn}
+                whileHover={reduceMotion ? undefined : { y: -1 }}
+              >
+                Sign in
+              </motion.a>
+              <motion.a
+                href="/signup"
+                className={`${shared.btn} ${shared.btnDark} ${styles.cta}`}
+                whileHover={reduceMotion ? undefined : HOVER_LIFT}
+                whileTap={reduceMotion ? undefined : TAP_PRESS}
+              >
+                Sign up
+              </motion.a>
+            </>
+          )}
           <ThemeToggle
             className={styles.themeToggle}
             isDark={resolvedTheme === "dark"}
@@ -147,20 +174,32 @@ export function Nav() {
               {link.label}
             </a>
           ))}
-          <a
-            href="/login"
-            className={styles.mobileSignIn}
-            onClick={() => setOpen(false)}
-          >
-            Sign in
-          </a>
-          <a
-            href="/signup"
-            className={`${shared.btn} ${shared.btnDark}`}
-            onClick={() => setOpen(false)}
-          >
-            Sign up
-          </a>
+          {signedIn ? (
+            <a
+              href="/vault"
+              className={`${shared.btn} ${shared.btnDark}`}
+              onClick={() => setOpen(false)}
+            >
+              Open vault
+            </a>
+          ) : (
+            <>
+              <a
+                href="/login"
+                className={styles.mobileSignIn}
+                onClick={() => setOpen(false)}
+              >
+                Sign in
+              </a>
+              <a
+                href="/signup"
+                className={`${shared.btn} ${shared.btnDark}`}
+                onClick={() => setOpen(false)}
+              >
+                Sign up
+              </a>
+            </>
+          )}
         </motion.div>
         )}
       </AnimatePresence>

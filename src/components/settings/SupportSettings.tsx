@@ -82,12 +82,12 @@ export function SupportSettings() {
         .insert({ user_id: user.id, subject: newSubject.trim() })
         .select("id")
         .single();
-      if (ticketError || !ticket) throw new Error("Your ticket could not be created.");
+      if (ticketError || !ticket) throw new Error(ticketError?.message ?? "Your ticket could not be created.");
 
       const { error: messageError } = await supabase
         .from("support_ticket_messages")
         .insert({ ticket_id: ticket.id, sender: "member", body: newMessage.trim() });
-      if (messageError) throw new Error("Your message could not be sent.");
+      if (messageError) throw new Error(messageError.message);
 
       setNewSubject("");
       setNewMessage("");
@@ -228,7 +228,7 @@ function TicketThread({ ticketId, onBack }: { ticketId: string; onBack: () => vo
       const { error: replyError } = await supabase
         .from("support_ticket_messages")
         .insert({ ticket_id: ticketId, sender: "member", body });
-      if (replyError) throw new Error("Your reply could not be sent.");
+      if (replyError) throw new Error(replyError.message);
       setReply("");
       await fetchThread();
     } catch (reason) {

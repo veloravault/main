@@ -94,7 +94,13 @@ export async function listMembersAdmin(args: {
     .limit(MEMBER_PAGE_SIZE);
 
   if (args.status) query = query.eq("status", args.status);
-  if (args.search) query = query.ilike("email", `%${args.search}%`);
+  if (args.search) {
+    // `_` is a valid email character but also ILIKE's single-character
+    // wildcard — escape it (and `%`/`\` defensively) so a literal underscore
+    // in the query doesn't match unrelated emails.
+    const escapedSearch = args.search.replace(/[\\%_]/g, (char) => `\\${char}`);
+    query = query.ilike("email", `%${escapedSearch}%`);
+  }
   if (args.cursor) {
     query = query.or(
       `created_at.lt.${args.cursor.requestedAt},and(created_at.eq.${args.cursor.requestedAt},user_id.lt.${args.cursor.id})`,

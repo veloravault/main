@@ -149,7 +149,7 @@ export function Auth({ onLogin }: { onLogin: (masterPass: string, expectedUserId
 
     if (pinSetupPhase === "prompt") {
       return (
-        <div className="flex h-dvh w-full items-center justify-center bg-background px-4 relative">
+        <div className="apple-app apple-surface flex h-dvh w-full items-center justify-center px-4 relative">
           {themeToggleButton}
           <motion.div
             className="w-full max-w-xs flex flex-col items-center gap-8 text-center"
@@ -212,7 +212,7 @@ export function Auth({ onLogin }: { onLogin: (masterPass: string, expectedUserId
     }
 
     return (
-      <div className="flex h-dvh w-full items-center justify-center bg-background px-4 relative">
+      <div className="apple-app apple-surface flex h-dvh w-full items-center justify-center px-4 relative">
         {themeToggleButton}
         <motion.div
           key={pinSetupPhase}
@@ -294,7 +294,7 @@ export function Auth({ onLogin }: { onLogin: (masterPass: string, expectedUserId
   }
 
   return (
-    <div className="flex h-dvh w-full items-center justify-center bg-background px-4 sm:px-0 font-sans relative">
+    <div className="apple-app apple-surface flex h-dvh w-full items-center justify-center px-4 sm:px-0 font-sans relative">
       {themeToggleButton}
       <motion.div
         className="w-full max-w-sm"
@@ -314,7 +314,7 @@ export function Auth({ onLogin }: { onLogin: (masterPass: string, expectedUserId
                 try {
                   const expectedUserId = authenticatedUserId;
                   if (!expectedUserId) throw new Error("Your authenticated account could not be verified.");
-                  const masterKey = await unlockWithBiometrics(expectedUserId);
+                  const masterKey = await unlockWithBiometrics(expectedUserId, isAuthenticatedUserCurrent);
                   if (!onLogin(masterKey, expectedUserId)) {
                     throw new Error("Your authenticated account changed before the vault finished unlocking.");
                   }
