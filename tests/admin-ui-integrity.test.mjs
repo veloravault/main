@@ -50,6 +50,7 @@ test("admin console exposes the complete owner operations navigation", () => {
   assert.match(consoleSource, /nextCursor/);
   assert.match(consoleSource, /member\.plan === "plus"/);
   assert.match(consoleSource, /setItems\(\(current\).*\.\.\.current.*\.\.\.page\.items/s);
+  assert.match(consoleSource, /selectView[\s\S]*category:\s*null[\s\S]*result:\s*null[\s\S]*search:\s*null/);
 });
 
 test("admin components never expose public signup or a way to undo a revoke", () => {

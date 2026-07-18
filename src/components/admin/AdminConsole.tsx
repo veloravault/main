@@ -294,11 +294,28 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
   }, [loadPage]);
 
   const selectView = (nextView: AdminView) => {
-    updateUrl({ view: nextView === "overview" ? null : nextView, status: null, cursor: null, ticket: null }, "push");
+    updateUrl({
+      view: nextView === "overview" ? null : nextView,
+      status: null,
+      cursor: null,
+      ticket: null,
+      category: null,
+      result: null,
+      search: null,
+    }, "push");
   };
 
   const navigateFromOverview = (nextView: AdminView, params: Record<string, string> = {}) => {
-    updateUrl({ view: nextView, status: null, cursor: null, ticket: null, ...params }, "push");
+    updateUrl({
+      view: nextView,
+      status: null,
+      cursor: null,
+      ticket: null,
+      category: null,
+      result: null,
+      search: null,
+      ...params,
+    }, "push");
   };
 
   const mutateMember = async (member: AdminMember, status: "active" | "suspended" | "revoked") => {
