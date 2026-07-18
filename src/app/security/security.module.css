@@ -121,6 +121,69 @@
   padding-top: 120px;
 }
 
+.controlsSection {
+  padding: 120px 0 0;
+}
+
+.controlGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 44px;
+}
+
+.controlCard {
+  display: flex;
+  min-height: 340px;
+  flex-direction: column;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--surface-alt-soft);
+}
+
+.controlIcon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--line));
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--accent) 9%, var(--card-white));
+  color: var(--accent);
+}
+
+.controlIcon svg {
+  width: 21px;
+  height: 21px;
+}
+
+.controlCard > p:first-of-type {
+  margin: 28px 0 0;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.controlCard h3 {
+  margin: 12px 0 0;
+  color: var(--ink);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.18;
+}
+
+.controlCard > p:last-child {
+  margin: auto 0 0;
+  padding-top: 28px;
+  color: var(--ink-body);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
 .storyRow,
 .recoverySection {
   display: grid;
@@ -385,6 +448,19 @@
   .boundaries {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .controlGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .controlCard {
+    min-height: 0;
+  }
+
+  .controlCard > p:last-child {
+    margin-top: 28px;
+    padding-top: 0;
+  }
 }
 
 @media (max-width: 720px) {
@@ -419,6 +495,10 @@
 
   .story {
     padding-top: 52px;
+  }
+
+  .controlsSection {
+    padding-top: 84px;
   }
 
   .storyRow,

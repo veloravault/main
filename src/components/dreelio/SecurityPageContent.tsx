@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRightIcon, CheckIcon, EyeOffIcon } from "lucide-react";
+import { ArrowRightIcon, CheckIcon, CreditCardIcon, EyeOffIcon, FingerprintIcon, ShieldCheckIcon } from "lucide-react";
 import styles from "@/app/security/security.module.css";
 import {
   LANDING_VIEWPORT,
@@ -78,6 +78,61 @@ export function SecurityPageContent() {
             <CheckIcon aria-hidden="true" />
           </motion.article>
         ))}
+      </motion.section>
+
+      <motion.section
+        id="implemented-controls"
+        className={styles.controlsSection}
+        aria-labelledby="implemented-controls-title"
+        initial={reduceMotion ? false : "hidden"}
+        whileInView={reduceMotion ? undefined : "show"}
+        viewport={LANDING_VIEWPORT}
+        variants={reveal}
+      >
+        <div className={styles.sectionHeading}>
+          <p className={styles.sectionIndex}>Protection in practice</p>
+          <h2 id="implemented-controls-title">Security beyond encryption.</h2>
+          <p>
+            These controls protect the device session, authorize stored data,
+            and keep account billing state trustworthy without changing what
+            the vault encryption can and cannot do.
+          </p>
+        </div>
+        <motion.div className={styles.controlGrid} variants={staggerContainer}>
+          <motion.article className={styles.controlCard} variants={staggerItem}>
+            <span className={styles.controlIcon}><FingerprintIcon aria-hidden="true" /></span>
+            <p>This device</p>
+            <h3>Local unlock stays with the signed-in account.</h3>
+            <p>
+              PIN and biometric wrappers are bound to the authenticated account.
+              Velora re-checks that account after a biometric prompt before it
+              commits setup or unlocks. Auto-lock and optional clipboard clearing
+              reduce how long readable secrets remain available on this device.
+            </p>
+          </motion.article>
+          <motion.article className={styles.controlCard} variants={staggerItem}>
+            <span className={styles.controlIcon}><ShieldCheckIcon aria-hidden="true" /></span>
+            <p>Account and data</p>
+            <h3>Authorization is checked independently.</h3>
+            <p>
+              Supabase row-level security, active-membership gates, and private
+              document storage policies limit access to owned ciphertext and files.
+              “Sign out other devices” revokes other refresh sessions while keeping
+              the current browser signed in.
+            </p>
+          </motion.article>
+          <motion.article className={styles.controlCard} variants={staggerItem}>
+            <span className={styles.controlIcon}><CreditCardIcon aria-hidden="true" /></span>
+            <p>Billing integrity</p>
+            <h3>Subscription updates are verified and ordered.</h3>
+            <p>
+              Razorpay webhook signatures are verified before processing. Events
+              are handled idempotently, and stale subscription events cannot replace
+              newer state. This protects account entitlements; it does not encrypt
+              vault data.
+            </p>
+          </motion.article>
+        </motion.div>
       </motion.section>
 
       <div id="security-model" className={styles.story}>

@@ -138,6 +138,31 @@ test("security explainer uses the public shell and an accessible motion story", 
   assert.match(content, /manual entry/i);
 });
 
+test("security explainer documents shipped device, access, and billing controls", () => {
+  const content = read("src/components/dreelio/SecurityPageContent.tsx");
+
+  for (const claim of [
+    "Protection in practice",
+    "bound to the authenticated account",
+    "auto-lock",
+    "clipboard",
+    "Sign out other devices",
+    "row-level security",
+    "webhook signature",
+    "idempotent",
+    "stale subscription events",
+  ]) {
+    assert.match(content, new RegExp(claim, "i"));
+  }
+
+  assert.match(content, /private\s+document storage/i);
+  assert.match(content, /id="implemented-controls"/);
+  assert.match(content, /Billing integrity/);
+  assert.match(content, /does not encrypt\s+vault data/i);
+  assert.match(content, /cannot recover/i);
+  assert.match(content, /offline guessing/i);
+});
+
 test("every public page uses the shared Velora header and footer shell", () => {
   const shellPath = "src/components/dreelio/PublicPageShell.tsx";
   assert.equal(exists(shellPath), true, "missing shared public page shell");
