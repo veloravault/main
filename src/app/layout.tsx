@@ -67,9 +67,6 @@ const ORGANIZATION_JSON_LD = {
   },
   description:
     "A private, encrypted home for passwords, documents, notes and financial essentials.",
-  verification: {
-    google: "Ujcj8cwdFNvamMuqMoR_Bhhs2mUTxHctWA4Xhf6sr8k",
-  },
 };
 
 const WEBSITE_JSON_LD = {
@@ -101,6 +98,9 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: "Velora Vault",
+  },
+  verification: {
+    google: "Ujcj8cwdFNvamMuqMoR_Bhhs2mUTxHctWA4Xhf6sr8k",
   },
 };
 

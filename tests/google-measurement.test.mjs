@@ -7,7 +7,15 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 test("root layout publishes Google measurement and Search Console verification", () => {
   const layout = read("src/app/layout.tsx");
 
-  assert.match(layout, /verification:\s*\{\s*google:\s*["']Ujcj8cwdFNvamMuqMoR_Bhhs2mUTxHctWA4Xhf6sr8k["']/);
+  // Must live in the `metadata` export (Next.js renders this as a real
+  // <meta name="google-site-verification"> tag) — NOT inside the JSON-LD
+  // blocks, which Google Search Console's verifier does not read at all.
+  const metadataBlock = layout.match(/export const metadata: Metadata = (\{[\s\S]*?\n\};)/)?.[1] ?? "";
+  assert.match(metadataBlock, /verification:\s*\{\s*google:\s*["']Ujcj8cwdFNvamMuqMoR_Bhhs2mUTxHctWA4Xhf6sr8k["']/);
+
+  const jsonLd = layout.match(/const ORGANIZATION_JSON_LD = (\{[\s\S]*?\n\};)/)?.[1] ?? "";
+  assert.doesNotMatch(jsonLd, /verification/);
+
   assert.match(layout, /https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-GKGJ4QD0E5/);
   assert.match(layout, /gtag\(["']config["'],\s*["']G-GKGJ4QD0E5["']\)/);
   assert.match(layout, /nonce=\{nonce\}/);
