@@ -1,8 +1,31 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+
+test("admin overview is the default responsive operations landing view", () => {
+  const overviewPath = new URL("../src/components/admin/AdminOverview.tsx", import.meta.url);
+  assert.equal(existsSync(overviewPath), true, "AdminOverview.tsx must exist");
+
+  const overview = read("src/components/admin/AdminOverview.tsx");
+  const consoleSource = read("src/components/admin/AdminConsole.tsx");
+  const sidebar = read("src/components/admin/AdminSidebar.tsx");
+  const types = read("src/components/admin/types.ts");
+  const css = read("src/app/admin/admin.module.css");
+
+  assert.match(consoleSource, /<AdminOverview/);
+  assert.match(consoleSource, /:\s*"overview"/);
+  assert.match(sidebar, /id:\s*"overview"/);
+  assert.match(types, /AdminView\s*=\s*"overview"/);
+  for (const key of ["active", "invited", "suspended", "revoked", "free", "plus", "needsReply", "documentBytes", "aiEvents"]) {
+    assert.match(types, new RegExp(key));
+  }
+  assert.match(overview, /\/api\/admin\/overview/);
+  assert.match(overview, /aria-live/);
+  assert.match(css, /\.overviewGrid/);
+  assert.match(css, /grid-template-columns:\s*repeat\(4/);
+});
 
 test("admin page protects owner data and handles authentication outcomes", () => {
   const page = read("src/app/admin/page.tsx");
@@ -13,11 +36,11 @@ test("admin page protects owner data and handles authentication outcomes", () =>
   assert.match(page, /adminEmail/);
 });
 
-test("admin console exposes only the Members and Activity sections", () => {
+test("admin console exposes the complete owner operations navigation", () => {
   const consoleSource = read("src/components/admin/AdminConsole.tsx");
   const sidebar = read("src/components/admin/AdminSidebar.tsx");
 
-  for (const label of ["Members", "Activity"]) {
+  for (const label of ["Overview", "Members", "Support", "Activity"]) {
     assert.match(sidebar, new RegExp(`label: "${label}"`));
   }
   assert.doesNotMatch(sidebar, /label: "Pending"|label: "Invited"/);

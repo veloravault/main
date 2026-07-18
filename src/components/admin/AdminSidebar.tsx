@@ -2,6 +2,7 @@
 
 import {
   ActivityIcon,
+  ChartNoAxesCombinedIcon,
   ExternalLinkIcon,
   LifeBuoyIcon,
   LogOutIcon,
@@ -17,6 +18,7 @@ const NAVIGATION: Array<{
   description: string;
   icon: typeof UsersIcon;
 }> = [
+  { id: "overview", label: "Overview", description: "Operations", icon: ChartNoAxesCombinedIcon },
   { id: "members", label: "Members", description: "Vault access", icon: UsersIcon },
   { id: "support", label: "Support", description: "Member tickets", icon: LifeBuoyIcon },
   { id: "activity", label: "Activity", description: "Owner actions", icon: ActivityIcon },

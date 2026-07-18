@@ -22,8 +22,16 @@ export type AdminActivityItem = {
   createdAt: string;
 };
 
-export type AdminView = "members" | "activity" | "support";
+export type AdminView = "overview" | "members" | "activity" | "support";
 export type MemberFilter = "all" | MemberStatus;
+
+export type AdminOverviewDto = {
+  members: { total: number; invited: number; active: number; suspended: number; revoked: number };
+  plans: { free: number; plus: number };
+  support: { open: number; needsReply: number; resolved: number };
+  usage: { documentBytes: number; aiEvents: number };
+  recentActivity: AdminActivityItem[];
+};
 
 export type TicketStatus = "open" | "resolved";
 export type MessageSender = "member" | "owner";

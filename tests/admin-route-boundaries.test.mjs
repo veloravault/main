@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { test } from "node:test";
 
 const file = (path) => new URL(`../${path}`, import.meta.url);
 const read = (path) => readFileSync(file(path), "utf8");
 
 const adminRoutes = [
+  "src/app/api/admin/overview/route.ts",
   "src/app/api/admin/activity/route.ts",
   "src/app/api/admin/members/route.ts",
   "src/app/api/admin/members/[id]/route.ts",
@@ -13,6 +14,23 @@ const adminRoutes = [
   "src/app/api/admin/support/[id]/route.ts",
   "src/app/api/admin/support/[id]/messages/route.ts",
 ];
+
+test("admin overview authorizes before returning narrow operational aggregates", () => {
+  const routePath = file("src/app/api/admin/overview/route.ts");
+  const repositoryPath = file("src/lib/server/admin-overview-repository.ts");
+  assert.equal(existsSync(routePath), true, "admin overview route must exist");
+  assert.equal(existsSync(repositoryPath), true, "admin overview repository must exist");
+
+  const route = read("src/app/api/admin/overview/route.ts");
+  const repository = read("src/lib/server/admin-overview-repository.ts");
+  assert.match(route, /await requireAdmin\(\)/);
+  assert.match(route, /getAdminOverview/);
+  assert.match(repository, /\.from\("app_members"\)/);
+  assert.match(repository, /\.from\("support_tickets"\)/);
+  assert.match(repository, /\.select\("size_bytes"\)/);
+  assert.match(repository, /\.from\("ai_usage_events"\)/);
+  assert.doesNotMatch(repository, /ciphertext|encrypted|message.*body|access_token|refresh_token|metadata/i);
+});
 
 test("every admin handler authorizes before any privileged repository operation", () => {
   for (const file of adminRoutes) {

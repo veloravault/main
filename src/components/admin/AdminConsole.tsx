@@ -12,6 +12,7 @@ import {
 import { useToast } from "@/components/Toast";
 import { StateView } from "@/components/ui/state-view";
 import { AdminSidebar } from "./AdminSidebar";
+import { AdminOverview } from "./AdminOverview";
 import { AdminActivity } from "./AdminActivity";
 import { AdminSupport } from "./AdminSupport";
 import { AdminConfirmDialog } from "./AdminConfirmDialog";
@@ -26,11 +27,12 @@ import styles from "@/app/admin/admin.module.css";
 import { VeloraMark } from "@/components/VeloraMark";
 import { supabase } from "@/lib/supabase";
 
-const ADMIN_VIEWS: readonly AdminView[] = ["members", "support", "activity"];
+const ADMIN_VIEWS: readonly AdminView[] = ["overview", "members", "support", "activity"];
 const MEMBER_FILTERS: readonly MemberFilter[] = ["all", "invited", "active", "suspended", "revoked"];
-const VIEW_LABELS: Record<AdminView, string> = { members: "Members", support: "Support", activity: "Activity" };
+const VIEW_LABELS: Record<AdminView, string> = { overview: "Overview", members: "Members", support: "Support", activity: "Activity" };
 
 const TITLES: Record<AdminView, { eyebrow: string; title: string; description: string }> = {
+  overview: { eyebrow: "Owner operations", title: "Overview", description: "Membership, support, usage, and recent access decisions at a glance." },
   members: { eyebrow: "Vault membership", title: "Members", description: "Everyone with an account, and their current vault access." },
   support: { eyebrow: "Member requests", title: "Support", description: "Tickets opened by members, and your replies." },
   activity: { eyebrow: "Owner record", title: "Activity", description: "A calm record of access decisions made from this console." },
@@ -109,7 +111,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const toast = useToast();
-  const view = isAdminView(searchParams.get("view")) ? searchParams.get("view") as AdminView : "members";
+  const view = isAdminView(searchParams.get("view")) ? searchParams.get("view") as AdminView : "overview";
   const memberFilter = isMemberFilter(searchParams.get("status")) ? searchParams.get("status") as MemberFilter : "all";
   const rawUrlSearch = searchParams.get("search") ?? "";
   const urlSearch = normalizeAdminSearch(rawUrlSearch);
@@ -117,7 +119,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
   const [searchQuery, setSearchQuery] = useState(urlSearch);
   const [items, setItems] = useState<AdminMember[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [loading, setLoading] = useState(view !== "activity");
+  const [loading, setLoading] = useState(view === "members");
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [appendError, setAppendError] = useState<string | null>(null);
@@ -187,7 +189,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
   }, [view]);
 
   const loadPage = useCallback(async (cursor: string | null, append: boolean, generation = queryGenerationRef.current) => {
-    if (view === "activity" || view === "support") {
+    if (view !== "members") {
       if (generation !== queryGenerationRef.current) return;
       setItems([]);
       setNextCursor(null);
@@ -289,7 +291,11 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
   }, [loadPage]);
 
   const selectView = (nextView: AdminView) => {
-    updateUrl({ view: nextView === "members" ? null : nextView, status: null, cursor: null }, "push");
+    updateUrl({ view: nextView === "overview" ? null : nextView, status: null, cursor: null, ticket: null }, "push");
+  };
+
+  const navigateFromOverview = (nextView: AdminView, params: Record<string, string> = {}) => {
+    updateUrl({ view: nextView, status: null, cursor: null, ticket: null, ...params }, "push");
   };
 
   const mutateMember = async (member: AdminMember, status: "active" | "suspended" | "revoked") => {
@@ -363,7 +369,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
                 <input ref={searchRef} value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder="Search member email" maxLength={100} />
                 <kbd>⌘ K</kbd>
               </label>
-            ) : view === "activity" ? <p className={styles.readOnlyNote}>Read-only audit record</p> : null}
+            ) : view === "activity" ? <p className={styles.readOnlyNote}>Read-only audit record</p> : view === "overview" ? <p className={styles.readOnlyNote}>Live operations summary</p> : null}
             <div className={styles.adminIdentity}><span>{adminEmail.slice(0, 1).toUpperCase()}</span><div><small>Verified owner</small><strong>{adminEmail}</strong></div></div>
             <button className={styles.mobileSignOut} type="button" aria-label="Sign out" onClick={() => void signOut()}><LogOutIcon aria-hidden="true" /></button>
           </header>
@@ -388,8 +394,8 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
               </label>
             )}
 
-            <section className={styles.listSurface} aria-label={`${title.eyebrow} content`}>
-              {view === "activity" ? <AdminActivity /> : view === "support" ? <AdminSupport /> : loading ? <AdminSkeleton /> : (
+            <section className={view === "overview" ? styles.overviewSurface : styles.listSurface} aria-label={`${title.eyebrow} content`}>
+              {view === "overview" ? <AdminOverview onNavigate={navigateFromOverview} /> : view === "activity" ? <AdminActivity /> : view === "support" ? <AdminSupport /> : loading ? <AdminSkeleton /> : (
                 <MemberQueue
                   items={items}
                   searchActive={Boolean(searchQuery)}
