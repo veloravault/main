@@ -414,6 +414,18 @@ test("Bank Vault renders selected account in an accessible sibling detail surfac
   assert.equal(bank.includes("apple-mobile-detail-sheet space-y-4 relative z-10 mt-5"), false);
 });
 
+test("reset password keeps the server shell above a focused client leaf", () => {
+  const clientPath = new URL("../src/components/auth/ResetPasswordClient.tsx", import.meta.url);
+  assert.equal(existsSync(clientPath), true, "ResetPasswordClient.tsx must contain the interactive reset flow");
+
+  const page = read("src/app/reset-password/page.tsx");
+  const client = read("src/components/auth/ResetPasswordClient.tsx");
+  assert.doesNotMatch(page, /^"use client"/);
+  assert.match(page, /<PublicPageShell>[\s\S]*<ResetPasswordClient\s*\/>[\s\S]*<\/PublicPageShell>/);
+  assert.match(client, /^"use client"/);
+  assert.doesNotMatch(client, /@\/lib\/server\//);
+});
+
 test("Bank Vault locks desktop master and detail into a compact two-column workspace", () => {
   const bank = read("src/components/BankVault.tsx");
   assert.match(bank, /apple-bank-workspace grid w-full items-start/);

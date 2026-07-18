@@ -41,16 +41,18 @@ test("the complete account journey shares presentation and preserves secure hand
   const onboardingPage = read("src/app/onboarding/page.tsx");
   const onboardingFlow = read("src/components/auth/OnboardingFlow.tsx");
   const reset = read("src/app/reset-password/page.tsx");
+  const resetClient = read("src/components/auth/ResetPasswordClient.tsx");
 
-  for (const source of [confirmSignup, reset]) assert.match(source, /AuthShell/);
+  for (const source of [confirmSignup, resetClient]) assert.match(source, /AuthShell/);
+  assert.match(reset, /<PublicPageShell>[\s\S]*<ResetPasswordClient/);
   assert.match(confirmSignup, /action="\/auth\/confirm-signup"/);
   assert.match(onboardingPage, /requireUser/);
   assert.match(onboardingPage, /getMembershipForUser/);
   assert.match(onboardingPage, /OnboardingFlow/);
   assert.doesNotMatch(onboardingFlow, /getExpectedUserAuthorization/);
   assert.match(onboardingFlow, /setMasterKey\(masterKey, userId\)/);
-  assert.match(reset, /exchangeCodeForSession/);
-  assert.match(reset, /auth\.updateUser\(\{ password \}\)/);
+  assert.match(resetClient, /exchangeCodeForSession/);
+  assert.match(resetClient, /auth\.updateUser\(\{ password \}\)/);
 });
 
 test("public authentication uses dedicated single-purpose pages under the standard site chrome", () => {
