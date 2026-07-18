@@ -16,6 +16,7 @@ import { AdminOverview } from "./AdminOverview";
 import { AdminMemberDetail } from "./AdminMemberDetail";
 import { AdminActivity } from "./AdminActivity";
 import { AdminSupport } from "./AdminSupport";
+import { AdminContact } from "./AdminContact";
 import { AdminConfirmDialog } from "./AdminConfirmDialog";
 import { AdminSkeleton } from "./AdminSkeleton";
 import { normalizeAdminSearch } from "./admin-client";
@@ -28,14 +29,15 @@ import styles from "@/app/admin/admin.module.css";
 import { VeloraMark } from "@/components/VeloraMark";
 import { supabase } from "@/lib/supabase";
 
-const ADMIN_VIEWS: readonly AdminView[] = ["overview", "members", "support", "activity"];
+const ADMIN_VIEWS: readonly AdminView[] = ["overview", "members", "support", "contact", "activity"];
 const MEMBER_FILTERS: readonly MemberFilter[] = ["all", "invited", "active", "suspended", "revoked"];
-const VIEW_LABELS: Record<AdminView, string> = { overview: "Overview", members: "Members", support: "Support", activity: "Activity" };
+const VIEW_LABELS: Record<AdminView, string> = { overview: "Overview", members: "Members", support: "Support", contact: "Contact", activity: "Activity" };
 
 const TITLES: Record<AdminView, { eyebrow: string; title: string; description: string }> = {
   overview: { eyebrow: "Owner operations", title: "Overview", description: "Membership, support, usage, and recent access decisions at a glance." },
   members: { eyebrow: "Vault membership", title: "Members", description: "Everyone with an account, and their current vault access." },
   support: { eyebrow: "Member requests", title: "Support", description: "Tickets opened by members, and your replies." },
+  contact: { eyebrow: "Public enquiries", title: "Contact", description: "Messages from the public contact form, kept separate from member support." },
   activity: { eyebrow: "Owner record", title: "Activity", description: "A calm record of access decisions made from this console." },
 };
 
@@ -299,6 +301,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
       status: null,
       cursor: null,
       ticket: null,
+      contact: null,
       category: null,
       result: null,
       search: null,
@@ -311,6 +314,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
       status: null,
       cursor: null,
       ticket: null,
+      contact: null,
       category: null,
       result: null,
       search: null,
@@ -416,7 +420,7 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
             )}
 
             <section className={view === "overview" ? styles.overviewSurface : styles.listSurface} aria-label={`${title.eyebrow} content`}>
-              {view === "overview" ? <AdminOverview onNavigate={navigateFromOverview} /> : view === "activity" ? <AdminActivity /> : view === "support" ? <AdminSupport /> : loading ? <AdminSkeleton /> : (
+              {view === "overview" ? <AdminOverview onNavigate={navigateFromOverview} /> : view === "activity" ? <AdminActivity /> : view === "support" ? <AdminSupport /> : view === "contact" ? <AdminContact /> : loading ? <AdminSkeleton /> : (
                 <MemberQueue
                   items={items}
                   searchActive={Boolean(searchQuery)}

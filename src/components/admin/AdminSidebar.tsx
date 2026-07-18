@@ -6,6 +6,7 @@ import {
   ExternalLinkIcon,
   LifeBuoyIcon,
   LogOutIcon,
+  MailIcon,
   UsersIcon,
 } from "lucide-react";
 import type { AdminView } from "./types";
@@ -21,6 +22,7 @@ const NAVIGATION: Array<{
   { id: "overview", label: "Overview", description: "Operations", icon: ChartNoAxesCombinedIcon },
   { id: "members", label: "Members", description: "Vault access", icon: UsersIcon },
   { id: "support", label: "Support", description: "Member tickets", icon: LifeBuoyIcon },
+  { id: "contact", label: "Contact", description: "Public messages", icon: MailIcon },
   { id: "activity", label: "Activity", description: "Owner actions", icon: ActivityIcon },
 ];
 

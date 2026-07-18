@@ -40,7 +40,7 @@ test("admin console exposes the complete owner operations navigation", () => {
   const consoleSource = read("src/components/admin/AdminConsole.tsx");
   const sidebar = read("src/components/admin/AdminSidebar.tsx");
 
-  for (const label of ["Overview", "Members", "Support", "Activity"]) {
+  for (const label of ["Overview", "Members", "Support", "Contact", "Activity"]) {
     assert.match(sidebar, new RegExp(`label: "${label}"`));
   }
   assert.doesNotMatch(sidebar, /label: "Pending"|label: "Invited"/);
@@ -202,6 +202,6 @@ test("narrow admin widths keep every primary control inside the viewport", () =>
   const css = read("src/app/admin/admin.module.css");
   assert.match(css, /@media \(max-width:\s*480px\)[\s\S]*\.mobileBrand\s*\{\s*display:\s*none/);
   assert.match(css, /@media \(max-width:\s*480px\)[\s\S]*\.topbar\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto\s+auto/s);
-  assert.match(css, /@media \(max-width:\s*480px\)[\s\S]*\.mobileNav\s*\{[^}]*grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/s);
+  assert.match(css, /@media \(max-width:\s*480px\)[\s\S]*\.mobileNav\s*\{[^}]*grid-template-columns:\s*repeat\(5,\s*minmax\(0,\s*1fr\)\)/s);
   assert.match(css, /@media \(max-width:\s*480px\)[\s\S]*\.activityFilters\s*>\s*div\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/s);
 });

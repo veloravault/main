@@ -23,7 +23,7 @@ export type AdminActivityItem = {
   createdAt: string;
 };
 
-export type AdminView = "overview" | "members" | "activity" | "support";
+export type AdminView = "overview" | "members" | "activity" | "support" | "contact";
 export type MemberFilter = "all" | MemberStatus;
 
 export type AdminOverviewDto = {
@@ -71,3 +71,20 @@ export type AdminSupportMessage = {
   body: string;
   createdAt: string;
 };
+
+export type ContactSubmissionStatus = "new" | "read" | "resolved";
+export type ContactSubmissionFilter = ContactSubmissionStatus | "all";
+
+export type AdminContactSubmission = {
+  id: string;
+  name: string;
+  email: string;
+  topic: "general" | "account" | "security" | "privacy" | "partnership";
+  subject: string;
+  status: ContactSubmissionStatus;
+  createdAt: string;
+  updatedAt: string;
+  resolvedAt: string | null;
+};
+
+export type AdminContactSubmissionDetail = AdminContactSubmission & { message: string };
