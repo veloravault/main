@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+const exists = (path) => existsSync(new URL(`../${path}`, import.meta.url));
 
 const relativeLuminance = (hex) => {
   const channels = hex
@@ -54,6 +55,26 @@ test("every product story uses a matching deterministic vault preview", () => {
   assert.match(preview, /"overview" \| "passwords" \| "documents" \| "wallet" \| "mobile"/);
   assert.match(preview, /function Documents\(\)/);
   assert.doesNotMatch(preview, /https?:\/\//);
+});
+
+test("hero walkthrough is poster-first and respects motion and data preferences", () => {
+  const mediaPath = "src/components/dreelio/HeroVaultMedia.tsx";
+  assert.equal(exists(mediaPath), true, "missing resilient hero media component");
+
+  const hero = read("src/components/dreelio/Hero.tsx");
+  const media = read(mediaPath);
+  assert.match(hero, /import \{ HeroVaultMedia \}/);
+  assert.match(hero, /<HeroVaultMedia\s*\/>/);
+  assert.doesNotMatch(hero, /VaultSeal/);
+  assert.match(media, /autoPlay/);
+  assert.match(media, /muted/);
+  assert.match(media, /loop/);
+  assert.match(media, /playsInline/);
+  assert.match(media, /prefers-reduced-motion:\s*reduce/);
+  assert.match(media, /saveData/);
+  assert.match(media, /onError/);
+  assert.match(media, /velora-vault-walkthrough\.mp4/);
+  assert.match(media, /velora-vault-walkthrough-poster\.png/);
 });
 
 test("landing palette keeps body text and actions accessible", () => {

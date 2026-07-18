@@ -3,9 +3,8 @@
 import { motion, useReducedMotion } from "framer-motion";
 import shared from "@/app/dreelio/dreelio.module.css";
 import styles from "./Hero.module.css";
+import { HeroVaultMedia } from "./HeroVaultMedia";
 import { ParallaxMedia } from "./ParallaxMedia";
-import { VaultSeal } from "./VaultSeal";
-import { VeloraProductPreview } from "./VeloraProductPreview";
 import {
   HOVER_LIFT,
   TAP_PRESS,
@@ -57,11 +56,8 @@ export function Hero() {
         </motion.div>
 
         <ParallaxMedia className={styles.stage} distance={12} delay={0.18} aboveFold>
-          <motion.span className={styles.seal} variants={staggerItem}>
-            <VaultSeal />
-          </motion.span>
           <div className={styles.dashboard}>
-            <VeloraProductPreview variant="overview" />
+            <HeroVaultMedia />
           </div>
           <motion.span
             className={styles.badge}
