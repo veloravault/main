@@ -124,9 +124,10 @@
 .field input[aria-invalid="true"] { box-shadow: inset 3px 0 var(--auth-red); }
 .fieldHint { display: block; margin: -5px 15px 10px; color: var(--auth-muted); font-size: 10px; font-weight: 450; line-height: 1.4; }
 
-.strengthMeter { display: flex; align-items: center; gap: 8px; margin: -5px 15px 10px; }
-.strengthTrack { flex: 1; height: 3px; border-radius: 2px; background: var(--auth-fill); overflow: hidden; }
-.strengthFill { height: 100%; border-radius: 2px; transition: width 160ms ease, background-color 160ms ease; }
+.strengthMeter { display: flex; align-items: center; gap: 9px; margin: -5px 15px 10px; }
+.strengthTrack { display: grid; grid-template-columns: repeat(4, 1fr); flex: 1; gap: 4px; }
+.strengthSegment { display: block; height: 4px; border-radius: 999px; background: var(--auth-fill); transition: background-color 180ms ease, opacity 180ms ease; }
+.strengthSegment[data-active="true"] { background: var(--strength-color); }
 .strengthLabel { flex: none; font-size: 10px; font-weight: 650; letter-spacing: 0.02em; }
 
 .arrowButton {

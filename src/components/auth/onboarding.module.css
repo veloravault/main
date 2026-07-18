@@ -29,7 +29,7 @@
   background: var(--auth-blue);
 }
 
-.introBadge {
+.stepIcon {
   display: grid;
   place-items: center;
   width: 60px;
@@ -38,7 +38,11 @@
   border-radius: 18px;
   background: color-mix(in srgb, var(--auth-blue) 12%, transparent);
   color: var(--auth-blue);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 10%, transparent);
 }
+.stepIcon[data-kind="security"], .stepIcon[data-kind="done"] { background: color-mix(in srgb, var(--auth-green) 13%, transparent); color: var(--auth-green); }
+.stepIcon[data-kind="avatar"] { background: color-mix(in srgb, #af52de 13%, transparent); color: #af52de; }
+.stepIcon[data-kind="master-key"] { background: color-mix(in srgb, var(--auth-amber) 14%, transparent); color: var(--auth-amber); }
 
 .introList { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
 
@@ -56,7 +60,17 @@
   line-height: 1.4;
   letter-spacing: -0.01em;
 }
-.introItem svg { margin-top: 1px; color: var(--auth-blue); }
+
+.benefitIcon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  margin-top: -4px;
+  place-items: center;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--auth-blue) 11%, transparent);
+  color: var(--auth-blue);
+}
 
 .stepFooter {
   display: flex;

@@ -3,15 +3,9 @@
 import { FormEvent, useState } from "react";
 import { ArrowRightIcon } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { getStrength, type StrengthLevel } from "@/lib/passwordHealth";
+import { getStrength } from "@/lib/passwordHealth";
+import { PasswordStrengthMeter } from "@/components/auth/PasswordStrengthMeter";
 import styles from "./auth-shell.module.css";
-
-const STRENGTH_COLOR_VAR: Record<StrengthLevel, string> = {
-  weak: "var(--auth-red)",
-  fair: "var(--auth-amber)",
-  strong: "var(--auth-blue)",
-  "very-strong": "var(--auth-green)",
-};
 
 export function SignUpForm() {
   const [email, setEmail] = useState("");
@@ -92,19 +86,7 @@ export function SignUpForm() {
             disabled={submitting}
             required
           />
-          {password && (
-            <div className={styles.strengthMeter} aria-live="polite">
-              <span className={styles.strengthTrack}>
-                <span
-                  className={styles.strengthFill}
-                  style={{ width: `${strength.score}%`, backgroundColor: STRENGTH_COLOR_VAR[strength.level] }}
-                />
-              </span>
-              <span className={styles.strengthLabel} style={{ color: STRENGTH_COLOR_VAR[strength.level] }}>
-                {strength.label}
-              </span>
-            </div>
-          )}
+          {password && <PasswordStrengthMeter strength={strength} />}
         </label>
         <label className={styles.field} htmlFor="sign-up-password-confirm">
           <span className={styles.fieldLabel}>Confirm password</span>

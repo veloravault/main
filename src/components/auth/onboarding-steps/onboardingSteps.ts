@@ -1,6 +1,8 @@
 import type { Variants } from "framer-motion";
 
 export type OnboardingStepId = "vault" | "security" | "avatar" | "master-key" | "done";
+export type OnboardingBenefitIcon = "key" | "file-lock" | "shield-check" | "monitor-smartphone" | "eye-off" | "key-round";
+export type OnboardingBenefit = { icon: OnboardingBenefitIcon; text: string };
 
 export const ONBOARDING_STEPS: readonly OnboardingStepId[] = [
   "vault", "security", "avatar", "master-key", "done",
@@ -36,21 +38,21 @@ export const STEP_HEADINGS: Record<OnboardingStepId, { eyebrow: string; title: s
   },
 };
 
-export const INTRO_CONTENT: Record<"vault" | "security", { icon: "vault" | "shield"; bullets: string[] }> = {
+export const INTRO_CONTENT: Record<"vault" | "security", { icon: "vault" | "security"; bullets: OnboardingBenefit[] }> = {
   "vault": {
     icon: "vault",
     bullets: [
-      "Logins, cards, and secure notes in one place",
-      "Attach and store important documents",
-      "Encrypted end to end — even from us",
+      { icon: "key", text: "Logins, cards, and secure notes in one place" },
+      { icon: "file-lock", text: "Attach and store important documents" },
+      { icon: "shield-check", text: "Encrypted end to end — even from us" },
     ],
   },
   "security": {
-    icon: "shield",
+    icon: "security",
     bullets: [
-      "Your master key never leaves this browser",
-      "Not sent, not stored, not logged",
-      "If you lose it, no one — including us — can recover your vault",
+      { icon: "monitor-smartphone", text: "Your master key never leaves this browser" },
+      { icon: "eye-off", text: "Not sent, not stored, not logged" },
+      { icon: "key-round", text: "If you lose it, no one — including us — can recover your vault" },
     ],
   },
 };
