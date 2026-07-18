@@ -130,6 +130,11 @@ export async function POST(req: NextRequest) {
         if (sub) await applySubscriptionState(admin, sub.id, "authenticated", occurredAt, "preserve");
         break;
       }
+      case "subscription.updated": {
+        const sub = extractSubscription(payload);
+        if (sub) await applySubscriptionState(admin, sub.id, sub.status || "active", occurredAt, "preserve", sub.current_end, sub.plan_id);
+        break;
+      }
       case "subscription.activated":
       case "subscription.charged": {
         const sub = extractSubscription(payload);

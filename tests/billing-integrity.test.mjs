@@ -112,3 +112,10 @@ test("out-of-order webhook deliveries cannot overwrite newer subscription state"
   assert.match(route, /last_razorpay_event_at\.is\.null,last_razorpay_event_at\.lte\./);
   assert.match(route, /\.select\("user_id,plan"\)/);
 });
+
+test("scheduled billing changes reconcile from the subscription updated webhook", () => {
+  const route = read("src/app/api/payments/webhook/route.ts");
+
+  assert.match(route, /case "subscription\.updated"/);
+  assert.match(route, /applySubscriptionState\(admin, sub\.id, sub\.status \|\| "active", occurredAt, "preserve", sub\.current_end, sub\.plan_id\)/);
+});
