@@ -1,7 +1,56 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { readBoundedJson, RequestSecurityError } from "../src/lib/server/request-security.ts";
+import { assertSameOrigin, readBoundedJson, RequestSecurityError } from "../src/lib/server/request-security.ts";
+
+test("same-origin checks trust the canonical app and the actual request origin", () => {
+  const previousAppUrl = process.env.APP_URL;
+  process.env.APP_URL = "https://veloravault.in";
+
+  try {
+    for (const request of [
+      new Request("https://veloravault.in/api/admin/support", {
+        headers: { origin: "https://veloravault.in" },
+      }),
+      new Request("http://localhost:3000/api/admin/support", {
+        headers: { origin: "http://localhost:3000" },
+      }),
+      new Request("https://preview.veloravault.test/api/admin/support", {
+        headers: { origin: "https://preview.veloravault.test" },
+      }),
+      new Request("http://localhost:3000/api/admin/support", {
+        headers: { origin: "null", referer: "http://localhost:3000/admin?view=support" },
+      }),
+    ]) {
+      assert.doesNotThrow(() => assertSameOrigin(request));
+    }
+  } finally {
+    if (previousAppUrl === undefined) delete process.env.APP_URL;
+    else process.env.APP_URL = previousAppUrl;
+  }
+});
+
+test("same-origin checks reject hostile, malformed, and missing request sources", () => {
+  const previousAppUrl = process.env.APP_URL;
+  process.env.APP_URL = "https://veloravault.in";
+
+  try {
+    for (const headers of [
+      { origin: "https://evil.example" },
+      { origin: "not a URL" },
+      { origin: "null", referer: "https://evil.example/admin" },
+      {},
+    ]) {
+      assert.throws(
+        () => assertSameOrigin(new Request("http://localhost:3000/api/admin/support", { headers })),
+        (error) => error instanceof RequestSecurityError && error.code === "ORIGIN_MISMATCH" && error.status === 403,
+      );
+    }
+  } finally {
+    if (previousAppUrl === undefined) delete process.env.APP_URL;
+    else process.env.APP_URL = previousAppUrl;
+  }
+});
 
 test("bounded request JSON requires application/json and exactly one object", async () => {
   const textRequest = new Request("https://vault.test/api/onboarding/complete", {

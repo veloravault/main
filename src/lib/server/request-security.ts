@@ -18,17 +18,24 @@ export function requiredAppUrl() {
   return url.origin;
 }
 
-export function assertSameOrigin(request: Request) {
-  const origin = request.headers.get("origin");
-  let parsedOrigin: string | null = null;
+function normalizedOrigin(value: string | null) {
+  if (!value || value === "null") return null;
   try {
-    parsedOrigin = origin && origin !== "null" ? new URL(origin).origin : null;
+    return new URL(value).origin;
   } catch {
-    parsedOrigin = null;
+    return null;
   }
+}
 
-  const expected = requiredAppUrl();
-  if (parsedOrigin === expected) return;
+export function trustedRequestOrigins(request: Request): ReadonlySet<string> {
+  return new Set([requiredAppUrl(), new URL(request.url).origin]);
+}
+
+export function assertSameOrigin(request: Request) {
+  const trustedOrigins = trustedRequestOrigins(request);
+  const origin = request.headers.get("origin");
+  const parsedOrigin = normalizedOrigin(origin);
+  if (parsedOrigin && trustedOrigins.has(parsedOrigin)) return;
 
   // Some browsers (observed: Brave) send a literal "null" Origin on certain
   // top-level form-POST navigations, e.g. when the page was reached from an
@@ -36,20 +43,15 @@ export function assertSameOrigin(request: Request) {
   // fall back to Referer, which browsers still populate for genuine
   // same-origin navigations under the default Referrer-Policy.
   const referer = request.headers.get("referer");
-  let parsedReferer: string | null = null;
-  try {
-    parsedReferer = referer ? new URL(referer).origin : null;
-  } catch {
-    parsedReferer = null;
-  }
-  if (parsedReferer === expected) return;
+  const parsedReferer = normalizedOrigin(referer);
+  if (parsedReferer && trustedOrigins.has(parsedReferer)) return;
 
   console.error("ORIGIN_MISMATCH_DETAIL", {
     receivedOriginHeader: origin,
     parsedOrigin,
     receivedRefererHeader: referer,
     parsedReferer,
-    expectedAppUrl: expected,
+    trustedOrigins: [...trustedOrigins],
   });
   throw new RequestSecurityError("ORIGIN_MISMATCH", 403);
 }
