@@ -6,28 +6,23 @@ import styles from "./Footer.module.css";
 import { VeloraBrandMark } from "./VeloraBrand";
 import { PaymentBadges } from "./PaymentBadges";
 import { FOOTER_COLUMNS } from "./data";
-import {
-  LANDING_VIEWPORT,
-  TAP_PRESS,
-  revealVariants,
-  staggerContainer,
-  staggerItem,
-} from "./motion";
+import { TAP_PRESS } from "./motion";
 
+// The footer holds Privacy/Terms links and always sits at the bottom of the
+// page, so it doesn't get a scroll-triggered entrance animation: a
+// `whileInView` reveal here can leave it (and those links) stuck at
+// `opacity:0` if the page is scrolled non-linearly — an anchor jump, browser
+// scroll restoration, or a fast trackpad flick can all land past the
+// intersection threshold before Framer Motion registers it. Hover/tap
+// feedback on individual links is unaffected and stays.
 export function Footer() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <motion.footer
-      className={styles.footer}
-      initial={reduceMotion ? false : "hidden"}
-      whileInView="show"
-      viewport={LANDING_VIEWPORT}
-      variants={revealVariants(18)}
-    >
-      <motion.div className={styles.inner} variants={staggerContainer}>
+    <footer className={styles.footer}>
+      <div className={styles.inner}>
         <div className={styles.primary}>
-          <motion.div className={styles.identity} variants={staggerItem}>
+          <div className={styles.identity}>
             <motion.a
               href="/"
               className={styles.brand}
@@ -42,16 +37,11 @@ export function Footer() {
             <p className={styles.desc}>
               A private home for passwords, documents, notes, and financial essentials.
             </p>
-          </motion.div>
+          </div>
 
-          <motion.div className={styles.linkCols} variants={staggerContainer}>
+          <div className={styles.linkCols}>
             {FOOTER_COLUMNS.map((col) => (
-              <motion.nav
-                key={col.heading}
-                className={styles.linkCol}
-                aria-label={col.heading}
-                variants={staggerItem}
-              >
+              <nav key={col.heading} className={styles.linkCol} aria-label={col.heading}>
                 <p className={styles.colHeading}>{col.heading}</p>
                 <ul>
                   {col.links.map((link) => (
@@ -65,17 +55,17 @@ export function Footer() {
                     </li>
                   ))}
                 </ul>
-              </motion.nav>
+              </nav>
             ))}
-          </motion.div>
+          </div>
         </div>
 
-        <motion.div className={styles.trustRail} variants={staggerItem}>
+        <div className={styles.trustRail}>
           <PaymentBadges className={styles.paymentBadges} />
           <span className={styles.securedBy}>
             <ShieldCheckIcon aria-hidden="true" /> Payments secured by Razorpay
           </span>
-        </motion.div>
+        </div>
 
         <div className={styles.legal}>
           <p>© 2026 Velora Vault. All rights reserved.</p>
@@ -84,7 +74,7 @@ export function Footer() {
             <a href="/terms">Terms</a>
           </nav>
         </div>
-      </motion.div>
-    </motion.footer>
+      </div>
+    </footer>
   );
 }

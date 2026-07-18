@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { AuthGateway } from "@/components/auth/AuthGateway";
 import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Sign up — Velora Vault",
+export const metadata: Metadata = pageMetadata({
+  title: "Sign up",
   description: "Create your Velora Vault account.",
-};
+  path: "/signup",
+});
 
 const STATE_NOTICES: Record<string, string> = {
   "setup-incomplete": "We couldn't find an account to finish setting up. Sign up again to get a fresh confirmation email.",

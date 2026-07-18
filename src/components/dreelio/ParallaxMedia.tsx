@@ -15,6 +15,14 @@ type Props = {
   className?: string;
   distance?: number;
   delay?: number;
+  /**
+   * Set for above-the-fold usage (e.g. the homepage hero). Skips the
+   * hidden→shown entrance animation so the element never ships as
+   * `opacity:0` in the server-rendered HTML — that gates the LCP element
+   * behind JS hydration, which reproduces in production, not just dev.
+   * Scroll-linked parallax (the `y` transform) is unaffected either way.
+   */
+  aboveFold?: boolean;
 };
 
 export function ParallaxMedia({
@@ -22,6 +30,7 @@ export function ParallaxMedia({
   className,
   distance = 14,
   delay = 0,
+  aboveFold = false,
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const reduceMotion = useReducedMotion();
@@ -36,7 +45,7 @@ export function ParallaxMedia({
       ref={ref}
       className={className}
       style={{ y: reduceMotion ? 0 : y }}
-      initial={reduceMotion ? false : "hidden"}
+      initial={reduceMotion || aboveFold ? false : "hidden"}
       whileInView="show"
       viewport={LANDING_VIEWPORT}
       variants={revealVariants(18, delay)}

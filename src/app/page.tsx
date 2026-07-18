@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import styles from "./dreelio/dreelio.module.css";
 import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
 import { Hero } from "@/components/dreelio/Hero";
@@ -11,10 +12,16 @@ import { Pricing } from "@/components/dreelio/Pricing";
 import { FinalCTA } from "@/components/dreelio/FinalCTA";
 import { PROJECT_PILLS, FINANCE_PILLS } from "@/components/dreelio/data";
 
+const TITLE = "Velora Vault — One private vault for everything that matters";
+const DESCRIPTION =
+  "A private, encrypted home for passwords, documents, notes and financial essentials. Your master key never leaves your device.";
+
 export const metadata: Metadata = {
-  title: "Velora Vault — One private vault for everything that matters",
-  description:
-    "A private, encrypted home for passwords, documents, notes and financial essentials. Your master key never leaves your device.",
+  ...pageMetadata({ title: TITLE, description: DESCRIPTION, path: "/" }),
+  // Bypass the root layout's title template: the homepage deliberately leads
+  // with the brand name itself, so appending "— Velora Vault" again would
+  // duplicate it.
+  title: { absolute: TITLE },
 };
 
 export default function HomePage() {

@@ -354,6 +354,7 @@ export function Auth({ onLogin }: { onLogin: (masterPass: string, expectedUserId
               />
               <button
                 type="submit"
+                aria-label="Unlock vault"
                 disabled={loading}
                 className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground transition-colors disabled:opacity-50"
               >

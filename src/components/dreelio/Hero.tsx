@@ -20,7 +20,11 @@ export function Hero() {
     <section className={styles.hero}>
       <motion.div
         className={`${shared.container} ${styles.inner}`}
-        initial={reduceMotion ? false : "hidden"}
+        // Above-the-fold content: `initial={false}` renders directly at the
+        // "show" target so the H1/subtitle/CTA/hero visual never ship as
+        // `opacity:0` in the server HTML (that would gate the LCP element
+        // behind JS hydration in production, not just in dev).
+        initial={false}
         animate="show"
         variants={staggerContainer}
       >
@@ -52,7 +56,7 @@ export function Hero() {
           </motion.a>
         </motion.div>
 
-        <ParallaxMedia className={styles.stage} distance={12} delay={0.18}>
+        <ParallaxMedia className={styles.stage} distance={12} delay={0.18} aboveFold>
           <motion.span className={styles.seal} variants={staggerItem}>
             <VaultSeal />
           </motion.span>
@@ -61,9 +65,8 @@ export function Hero() {
           </div>
           <motion.span
             className={styles.badge}
-            initial={reduceMotion ? false : { opacity: 0, x: 10, scale: 0.96 }}
+            initial={false}
             animate={{ opacity: 1, x: 0, scale: 1 }}
-            transition={{ delay: 0.72, duration: 0.42 }}
           >
             <span className={styles.badgeDot} aria-hidden="true" />
             AES-256-GCM · encrypted before storage

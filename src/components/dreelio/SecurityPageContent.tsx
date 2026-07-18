@@ -37,21 +37,26 @@ export function SecurityPageContent() {
     <main className={styles.page}>
       <motion.section
         className={styles.hero}
-        initial={reduceMotion ? false : "hidden"}
+        // Above-the-fold: skip the hidden→shown entrance so the H1/visual
+        // never ship as `opacity:0` in the server HTML.
+        initial={false}
         animate="show"
         variants={staggerContainer}
       >
         <motion.div className={styles.heroCopy} variants={staggerItem}>
           <p className={styles.eyebrow}>Security architecture</p>
-          <h1>What Velora protects—and what it cannot.</h1>
+          <h1>What Velora Vault protects—and what it cannot.</h1>
           <p>
             Security claims should be inspectable. This page describes the
             encryption and access controls implemented today, along with the
             recovery and device-level risks they do not solve.
           </p>
-          <a className={styles.jumpLink} href="#security-model">
-            Follow the security model <ArrowRightIcon aria-hidden="true" />
-          </a>
+          <div className={styles.heroActions}>
+            <Link href="/signup" className={styles.primaryAction}>Sign up free</Link>
+            <a className={styles.jumpLink} href="#security-model">
+              Follow the security model <ArrowRightIcon aria-hidden="true" />
+            </a>
+          </div>
         </motion.div>
         <motion.div className={styles.heroVisual} variants={staggerItem}>
           <SecurityHeroVisual />
@@ -89,7 +94,7 @@ export function SecurityPageContent() {
             <p>
               Password records, secure notes, wallet records, bank records, and
               document contents are encrypted with AES-256-GCM before Velora
-              sends them to database or object storage. Each encryption operation
+              Vault sends them to database or object storage. Each encryption operation
               uses PBKDF2-SHA-256 with 600,000 iterations, a fresh 16-byte salt,
               and a fresh 12-byte IV.
             </p>
@@ -146,7 +151,7 @@ export function SecurityPageContent() {
               A six-digit PIN derives a local wrapping key. A supported platform
               authenticator can also protect a local wrapper. Either method recovers
               the master key into memory for the active unlocked session; neither
-              replaces the master key or sends it to Velora.
+              replaces the master key or sends it to Velora Vault.
             </p>
             <p>
               PIN attempts are limited in the interface, but a copied local wrapper
@@ -168,7 +173,7 @@ export function SecurityPageContent() {
       >
         <div className={styles.sectionBody}>
           <p className={styles.sectionIndex}>04 · Recovery</p>
-          <h2>Velora cannot recover a lost master key.</h2>
+          <h2>Velora Vault cannot recover a lost master key.</h2>
           <p>
             Resetting the account password only restores account sign-in. It does
             not change, reveal, or recover the vault master key. Without the same
@@ -193,7 +198,7 @@ export function SecurityPageContent() {
         <div className={styles.sectionHeading}>
           <p className={styles.sectionIndex}>05 · Threat boundaries</p>
           <h2>Storage encryption cannot secure a compromised endpoint.</h2>
-          <p>Velora&rsquo;s current model does not protect against:</p>
+          <p>Velora Vault&rsquo;s current model does not protect against:</p>
         </div>
         <motion.ul className={styles.boundaries} variants={staggerContainer}>
           {THREAT_BOUNDARIES.map((boundary) => (
@@ -218,7 +223,7 @@ export function SecurityPageContent() {
             <h2>Selected import material is processed before encrypted storage.</h2>
             <p>
               AI-assisted import is optional. When you choose text or an image for
-              processing, that selected source material is sent through Velora&rsquo;s
+              processing, that selected source material is sent through Velora Vault&rsquo;s
               configured processing service so draft records can be extracted. Your
               master key is not included. You review the drafts before the approved
               results are encrypted and saved.

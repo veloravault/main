@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import rootStyles from "../dreelio/dreelio.module.css";
 import styles from "@/components/legal/Legal.module.css";
 import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy — Velora Vault",
+export const metadata: Metadata = pageMetadata({
+  title: "Privacy Policy",
   description: "How Velora Vault collects, encrypts, and handles your data.",
-};
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (

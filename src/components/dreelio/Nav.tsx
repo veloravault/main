@@ -53,9 +53,16 @@ function ThemeToggle({
   );
 }
 
-export function Nav() {
+type NavProps = {
+  /** Server-resolved signed-in state, so the CTA renders correctly on first
+   * paint instead of always starting signed-out and swapping after the
+   * client re-checks the session — that swap is a real layout shift. */
+  initialSignedIn?: boolean;
+};
+
+export function Nav({ initialSignedIn = false }: NavProps) {
   const [open, setOpen] = useState(false);
-  const [signedIn, setSignedIn] = useState(false);
+  const [signedIn, setSignedIn] = useState(initialSignedIn);
   const { resolvedTheme, setTheme } = useTheme();
   const reduceMotion = useReducedMotion();
 
@@ -76,7 +83,9 @@ export function Nav() {
   return (
     <motion.header
       className={styles.header}
-      initial={reduceMotion ? false : "hidden"}
+      // Above-the-fold on every page: skip the hidden→shown entrance so the
+      // nav never ships as `opacity:0` in the server HTML.
+      initial={false}
       animate="show"
       variants={revealVariants(14, 0.04)}
     >

@@ -43,3 +43,21 @@ export async function authenticateActiveMemberRequest(request: Request) {
     return null;
   }
 }
+
+/**
+ * Lightweight signed-in check for public marketing pages, used only to pick
+ * the right initial CTA copy (e.g. "Open vault" vs "Sign up") server-side so
+ * it renders correctly on first paint instead of flashing the signed-out
+ * state and swapping after the client re-checks — a real CLS source. Not a
+ * security gate; real page access still goes through requireActiveMember /
+ * requireAdmin.
+ */
+export async function getInitialSignedIn(): Promise<boolean> {
+  try {
+    const supabase = await createServerSupabaseClient();
+    const { data } = await supabase.auth.getUser();
+    return data.user != null;
+  } catch {
+    return false;
+  }
+}

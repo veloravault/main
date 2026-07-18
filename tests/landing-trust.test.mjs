@@ -115,7 +115,7 @@ test("security explainer uses the public shell and an accessible motion story", 
   assert.match(page, /import \{ SecurityPageContent \}/);
   assert.match(page, /<PublicPageShell>/);
   assert.match(page, /<SecurityPageContent\s*\/>/);
-  assert.match(shell, /<Nav\s*\/>/);
+  assert.match(shell, /<Nav[^>]*\/>/);
   assert.match(shell, /<Footer\s*\/>/);
   assert.doesNotMatch(page, /LegalHeader/);
   assert.match(navigation, /href: "\/#features"/);
@@ -145,7 +145,7 @@ test("every public page uses the shared Velora header and footer shell", () => {
   const shell = read(shellPath);
   assert.match(shell, /import \{ Nav \}/);
   assert.match(shell, /import \{ Footer \}/);
-  assert.match(shell, /<Nav\s*\/>/);
+  assert.match(shell, /<Nav[^>]*\/>/);
   assert.match(shell, /<Footer\s*\/>/);
 
   for (const route of [

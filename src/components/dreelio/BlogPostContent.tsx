@@ -29,7 +29,8 @@ export function BlogPostContent({
 
   return (
     <main className={styles.page}>
-      <motion.div initial={reduceMotion ? false : "hidden"} animate="show" variants={staggerContainer}>
+      {/* Above-the-fold: skip the hidden→shown entrance so the H1 never ships as `opacity:0` in the server HTML. */}
+      <motion.div initial={false} animate="show" variants={staggerContainer}>
         <motion.div variants={staggerItem}>
           <Link href="/blog" className={styles.backLink}>
             <ArrowLeftIcon aria-hidden="true" /> Back to the blog
@@ -55,7 +56,7 @@ export function BlogPostContent({
 
       <motion.article
         className={styles.article}
-        initial={reduceMotion ? false : "hidden"}
+        initial={false}
         animate="show"
         variants={revealVariants(16, 0.08)}
       >
@@ -69,6 +70,20 @@ export function BlogPostContent({
                 ))}
               </ul>
             );
+          if (block.type === "link") {
+            const isExternal = block.href.startsWith("http");
+            return (
+              <p key={index} className={styles.inlineLink}>
+                {isExternal ? (
+                  <a href={block.href} target="_blank" rel="noopener noreferrer">
+                    {block.text}
+                  </a>
+                ) : (
+                  <Link href={block.href}>{block.text}</Link>
+                )}
+              </p>
+            );
+          }
           return <p key={index}>{block.text}</p>;
         })}
       </motion.article>

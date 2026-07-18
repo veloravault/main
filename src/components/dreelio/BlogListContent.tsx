@@ -31,7 +31,9 @@ export function BlogListContent() {
     <main className={styles.page}>
       <motion.div
         className={styles.hero}
-        initial={reduceMotion ? false : "hidden"}
+        // Above-the-fold: skip the hidden→shown entrance so the H1 never
+        // ships as `opacity:0` in the server HTML.
+        initial={false}
         animate="show"
         variants={revealVariants(18)}
       >
@@ -42,6 +44,9 @@ export function BlogListContent() {
           the ways accounts actually get compromised — plus the occasional
           look at how the vault itself is built.
         </p>
+        <Link href="/signup" className={`${shared.btn} ${shared.btnDark} ${styles.heroCta}`}>
+          Sign up free
+        </Link>
       </motion.div>
 
       {featured && (

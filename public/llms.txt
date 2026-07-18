@@ -1,0 +1,22 @@
+# Velora Vault
+
+> Encrypted-before-storage vault for passwords, documents, notes, and financial records.
+
+Cipher: AES-256-GCM. Key derivation: PBKDF2-SHA-256, 600,000 iterations (matching OWASP's current minimum), per-record 16-byte salt and 12-byte IV. The master key never leaves the user's device and cannot be recovered if lost.
+
+## Docs
+
+- [Security architecture](https://veloravault.in/security): the encryption model, access control, recovery limits, and threat boundaries
+- [Pricing](https://veloravault.in/pricing): Free and Plus plans, feature comparison, FAQ
+- [Privacy Policy](https://veloravault.in/privacy)
+- [Terms of Use](https://veloravault.in/terms)
+- [Blog](https://veloravault.in/blog): security and product-engineering writing
+
+## Posts
+
+- [How to choose a master key that actually holds](https://veloravault.in/blog/master-key-that-actually-holds)
+- [Passkeys vs. passwords: what actually changes when you switch](https://veloravault.in/blog/passkeys-vs-passwords)
+- [Why your master key gets hashed 600,000 times before it touches a database](https://veloravault.in/blog/why-600000-iterations)
+- [Spotting a phishing page before you type your password](https://veloravault.in/blog/spotting-a-phishing-page)
+- [The case for a quarterly reused-password audit](https://veloravault.in/blog/quarterly-reused-password-audit)
+- [What "encryption at rest" does — and doesn't — protect you from](https://veloravault.in/blog/what-encryption-at-rest-doesnt-protect)

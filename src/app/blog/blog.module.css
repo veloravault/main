@@ -29,6 +29,15 @@
   line-height: 1.65;
 }
 
+/* Mobile has no CTA visible above the fold otherwise — the nav collapses to
+   just a hamburger + theme toggle on small screens, so the hero needs its
+   own. Desktop keeps this too rather than showing it only on mobile: it's a
+   reasonable CTA placement either way. */
+.heroCta {
+  display: inline-flex;
+  margin-top: 28px;
+}
+
 .featured {
   display: block;
   margin-bottom: 56px;

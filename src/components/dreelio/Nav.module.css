@@ -81,8 +81,10 @@
 .themeToggle,
 .mobileThemeToggle {
   display: grid;
-  width: 36px;
-  height: 36px;
+  /* 44px, not 36px: below the 44x44pt (iOS) / 48x48dp (Material) minimum
+     tap-target size. */
+  width: 44px;
+  height: 44px;
   place-items: center;
   flex-shrink: 0;
   border: 0;
@@ -158,11 +160,17 @@
 .burger {
   display: none;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 5px;
+  /* 44x44 minimum tap target (iOS/Material), not the ~38x25px the previous
+     8px padding produced around the two span lines. */
+  min-width: 44px;
+  min-height: 44px;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 8px;
+  padding: 0;
 }
 
 .burger span {

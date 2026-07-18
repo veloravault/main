@@ -593,7 +593,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
           </DropdownMenu>
           )}
 
-          <button type="button" onClick={() => setIsAddOpen(true)} className="vault-section-primary-action rounded-full h-9 px-4 sm:px-5 font-semibold text-[14px] flex items-center gap-1.5 shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 outline-none">
+          <button type="button" onClick={() => setIsAddOpen(true)} aria-label="New Password" className="vault-section-primary-action rounded-full h-9 px-4 sm:px-5 font-semibold text-[14px] flex items-center gap-1.5 shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 outline-none">
               <PlusIcon className="w-4 h-4" />
               <span className="hidden min-[380px]:inline">New</span>
           </button>
@@ -605,6 +605,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
                   <label className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold block mb-1">Title</label>
                   <input
                     type="text"
+                    autoComplete="off"
                     placeholder="e.g. Netflix, Bank"
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
@@ -617,6 +618,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
                   <div className="flex items-center gap-2">
                     <input
                       type={showNewSecret ? "text" : "password"}
+                      autoComplete="new-password"
                       placeholder="••••••••••••"
                       value={newSecret}
                       onChange={(e) => setNewSecret(e.target.value)}

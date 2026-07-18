@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import { AuthGateway } from "@/components/auth/AuthGateway";
 import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
 import { parseSafeNextPath } from "@/lib/access/validation";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = pageMetadata({
+  title: "Log in",
+  description: "Sign in to your Velora Vault account.",
+  path: "/login",
+});
 
 const STATE_NOTICES: Record<string, string> = {
   suspended: "Your account has been suspended. Contact support if you believe this is a mistake.",

@@ -96,6 +96,17 @@
   line-height: 1.78;
 }
 
+.article .inlineLink {
+  margin: -6px 0 26px;
+  font-size: 15px;
+}
+
+.article .inlineLink a {
+  color: var(--system-blue, #0a84ff);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .article ul {
   margin: 0 0 26px;
   padding: 0;

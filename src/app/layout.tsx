@@ -35,7 +35,10 @@ import type { Metadata, Viewport } from "next";
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,         // Prevent auto-zoom on input focus (iOS)
+  // No maximumScale cap: capping pinch-zoom site-wide to work around iOS's
+  // input-focus auto-zoom fails WCAG 1.4.4 (reflow/zoom). Auto-zoom is
+  // prevented per-input instead — see the 16px+ font-size rule those inputs
+  // carry — so zoom stays available for everyone else.
   viewportFit: "cover",    // Allow content to extend under iPhone notch/home bar
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
@@ -43,9 +46,38 @@ export const viewport: Viewport = {
   ],
 };
 
+const ORGANIZATION_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": "https://veloravault.in/#organization",
+  name: "Velora Vault",
+  url: "https://veloravault.in",
+  logo: {
+    "@type": "ImageObject",
+    url: "https://veloravault.in/brand/velora-mark-light.png",
+    width: 512,
+    height: 512,
+  },
+  description:
+    "A private, encrypted home for passwords, documents, notes and financial essentials.",
+};
+
+const WEBSITE_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": "https://veloravault.in/#website",
+  url: "https://veloravault.in",
+  name: "Velora Vault",
+  publisher: { "@id": "https://veloravault.in/#organization" },
+  inLanguage: "en",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://veloravault.in"),
-  title: "Velora Vault",
+  title: {
+    default: "Velora Vault",
+    template: "%s — Velora Vault",
+  },
   description:
     "A private, encrypted home for passwords, documents, notes and financial essentials.",
   icons: {
@@ -91,6 +123,15 @@ export default async function RootLayout({
           nonce={nonce}
           suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: themeBootstrap }}
+        />
+        <script
+          id="velora-jsonld-organization"
+          type="application/ld+json"
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([ORGANIZATION_JSON_LD, WEBSITE_JSON_LD]),
+          }}
         />
       </head>
       <body className="antialiased bg-background text-foreground selection:bg-primary/20 min-h-full flex flex-col">

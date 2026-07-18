@@ -41,11 +41,18 @@
   line-height: 1.65;
 }
 
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+  margin-top: 28px;
+}
+
 .jumpLink {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-top: 28px;
   color: var(--accent);
   font-size: 14px;
   font-weight: 650;

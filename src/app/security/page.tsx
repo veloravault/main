@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
 import { SecurityPageContent } from "@/components/dreelio/SecurityPageContent";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "How security works — Velora Vault",
+export const metadata: Metadata = pageMetadata({
+  title: "How security works",
   description:
     "The encryption model, access controls, recovery limits, and threat boundaries behind Velora Vault.",
-};
+  path: "/security",
+});
 
 export default function SecurityPage() {
   return (

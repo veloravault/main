@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import rootStyles from "../dreelio/dreelio.module.css";
 import styles from "@/components/legal/Legal.module.css";
 import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Terms of Use — Velora Vault",
+export const metadata: Metadata = pageMetadata({
+  title: "Terms of Use",
   description: "The terms that govern your use of Velora Vault.",
-};
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (

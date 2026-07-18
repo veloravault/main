@@ -332,6 +332,23 @@ test("passwords use sibling master detail and an accessible mobile sheet", () =>
   assert.match(passwords, /CopyIcon/);
 });
 
+test("mobile password creation prevents account-login autofill", () => {
+  const passwords = read("src/components/PasswordVault.tsx");
+  assert.match(passwords, /aria-label="New Password"/);
+  assert.match(passwords, /type="text"[\s\S]*?autoComplete="off"[\s\S]*?placeholder="e\.g\. Netflix, Bank"/);
+  assert.match(passwords, /type=\{showNewSecret \? "text" : "password"\}[\s\S]*?autoComplete="new-password"[\s\S]*?placeholder="••••••••••••"/);
+});
+
+test("master-key unlock submit has an accessible name", () => {
+  const auth = read("src/components/Auth.tsx");
+  assert.match(auth, /type="submit"[\s\S]*?aria-label="Unlock vault"/);
+});
+
+test("document preview close control has an accessible name", () => {
+  const documents = read("src/components/DocumentVault.tsx");
+  assert.match(documents, /aria-label="Close document preview"/);
+});
+
 test("wallet presentation is isolated in an accessible PaymentCard", () => {
   assert.equal(existsSync(new URL("../src/components/PaymentCard.tsx", import.meta.url)), true);
   const card = read("src/components/PaymentCard.tsx");
@@ -412,6 +429,16 @@ test("Bank Vault renders selected account in an accessible sibling detail surfac
   assert.match(bank, /Account Type/);
   assert.match(bank, /aria-label={`Copy/);
   assert.equal(bank.includes("apple-mobile-detail-sheet space-y-4 relative z-10 mt-5"), false);
+});
+
+test("mobile bank detail is not trapped by a perspective containing block", () => {
+  const bank = read("src/components/BankVault.tsx");
+  assert.doesNotMatch(bank, /style=\{\{\s*perspective:/);
+});
+
+test("development indicators do not obstruct the mobile tab bar", () => {
+  const config = read("next.config.ts");
+  assert.match(config, /devIndicators:\s*false/);
 });
 
 test("reset password keeps the server shell above a focused client leaf", () => {

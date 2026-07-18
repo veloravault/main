@@ -276,7 +276,7 @@
 .import-editor > label > span { display: flex; align-items: center; justify-content: space-between; color: var(--muted-foreground); font-size: 11px; font-weight: 650; text-transform: capitalize; }
 .import-editor > label > span i { border-radius: 999px; padding: 3px 6px; background: color-mix(in srgb,#ff9f0a 10%,transparent); color: #c77800; font-size: 9px; font-style: normal; }
 .import-editor > label > div { position: relative; }
-.import-editor input { width: 100%; min-height: 44px; border: 1px solid var(--separator); border-radius: 11px; padding: 0 12px; background: var(--fill-tertiary); color: var(--foreground); font-size: 14px; outline: none; }
+.import-editor input { width: 100%; min-height: 44px; border: 1px solid var(--separator); border-radius: 11px; padding: 0 12px; background: var(--fill-tertiary); color: var(--foreground); font-size: 16px; outline: none; }
 .import-editor label > div input { padding-right: 46px; }
 .import-editor label > div button { position: absolute; top: 0; right: 0; display: grid; width: 44px; height: 44px; place-items: center; color: var(--muted-foreground); }
 .import-editor label > div button svg { width: 16px; height: 16px; }
@@ -520,7 +520,11 @@
 .settings-account-fields { min-width: 0; }
 .settings-value-row { display: grid; min-height: 58px; grid-template-columns: 120px minmax(0, 1fr); align-items: center; gap: 12px; padding: 9px 14px; border-bottom: 1px solid var(--separator); }
 .settings-value-row > span { color: var(--muted-foreground); font-size: 13px; }
-.settings-value-row > strong, .settings-value-row > input { min-width: 0; overflow: hidden; background: transparent; color: var(--foreground); font-size: 15px; font-weight: 560; text-overflow: ellipsis; outline: none; }
+.settings-value-row > strong, .settings-value-row > input { min-width: 0; overflow: hidden; background: transparent; color: var(--foreground); font-weight: 560; text-overflow: ellipsis; outline: none; }
+.settings-value-row > strong { font-size: 15px; }
+/* 16px, not 15px: below 16px, iOS Safari auto-zooms on focus — the page no
+   longer caps pinch-zoom globally to work around that, so inputs opt out individually. */
+.settings-value-row > input { font-size: 16px; }
 .settings-value-row > input:focus { color: var(--primary); }
 .settings-inline-error { margin: 12px 14px 0; color: var(--destructive); font-size: 13px; }
 .settings-form-actions { display: flex; justify-content: flex-end; padding-top: 16px; }

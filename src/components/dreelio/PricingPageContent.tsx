@@ -31,10 +31,15 @@ const priceDigits = {
   exit: { opacity: 0, y: -10, transition: { duration: 0.18, ease: APPLE_EASE } },
 };
 
-export function PricingPageContent() {
+type PricingPageContentProps = {
+  /** Server-resolved signed-in state — see Nav's `initialSignedIn` for why. */
+  initialSignedIn?: boolean;
+};
+
+export function PricingPageContent({ initialSignedIn = false }: PricingPageContentProps) {
   const reduceMotion = useReducedMotion();
   const [billing, setBilling] = useState<Billing>("monthly");
-  const [signedIn, setSignedIn] = useState(false);
+  const [signedIn, setSignedIn] = useState(initialSignedIn);
   const router = useRouter();
 
   useEffect(() => {
@@ -66,7 +71,9 @@ export function PricingPageContent() {
     <main className={styles.page}>
       <motion.div
         className={styles.hero}
-        initial={reduceMotion ? false : "hidden"}
+        // Above-the-fold: skip the hidden→shown entrance so the H1 never
+        // ships as `opacity:0` in the server HTML.
+        initial={false}
         animate="show"
         variants={revealVariants(18)}
       >

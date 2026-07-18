@@ -8,6 +8,10 @@ import styles from "./admin.module.css";
 export const metadata: Metadata = {
   title: "Access Console — Velora Vault",
   description: "Owner access review for Velora Vault.",
+  // Defense-in-depth: this page can render real content (a 200 "Unauthorized"
+  // panel, or the console itself) for authenticated requests, so it must
+  // never be indexed even if the redirect-on-unauthenticated path is missed.
+  robots: { index: false, follow: false },
 };
 
 export default async function AdminPage() {

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import rootStyles from "@/app/dreelio/dreelio.module.css";
+import { getInitialSignedIn } from "@/lib/server/auth";
 import { Footer } from "./Footer";
 import { Nav } from "./Nav";
 
@@ -7,10 +8,12 @@ type PublicPageShellProps = {
   children: ReactNode;
 };
 
-export function PublicPageShell({ children }: PublicPageShellProps) {
+export async function PublicPageShell({ children }: PublicPageShellProps) {
+  const initialSignedIn = await getInitialSignedIn();
+
   return (
     <div className={rootStyles.root}>
-      <Nav />
+      <Nav initialSignedIn={initialSignedIn} />
       {children}
       <Footer />
     </div>

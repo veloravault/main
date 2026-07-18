@@ -590,6 +590,7 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
               )}
               <button
                 onClick={() => setPreviewModal({ isOpen: false, doc: null, url: '', loading: false })}
+                aria-label="Close document preview"
                 className="p-1.5 rounded-full hover:bg-foreground/10 text-foreground transition-colors"
               >
                 <XIcon strokeWidth={2.5} className="w-5 h-5" />

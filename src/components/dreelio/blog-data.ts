@@ -6,7 +6,8 @@ export type BlogCategory = "Security" | "Guides" | "Engineering";
 export type BlogBlock =
   | { type: "p"; text: string }
   | { type: "h2"; text: string }
-  | { type: "list"; items: string[] };
+  | { type: "list"; items: string[] }
+  | { type: "link"; text: string; href: string };
 
 export interface BlogPost {
   slug: string;
@@ -32,7 +33,7 @@ export const BLOG_POSTS: BlogPost[] = [
       "Length beats complexity. Here's why a four-word passphrase can outlast a twelve-character password with three symbols in it.",
     category: "Security",
     date: "2026-06-02",
-    readTime: "5 min read",
+    readTime: "2 min read",
     body: [
       {
         type: "p",
@@ -76,7 +77,7 @@ export const BLOG_POSTS: BlogPost[] = [
       "Passkeys remove the thing phishing depends on — a secret you can be tricked into typing. Here's what that means day to day.",
     category: "Guides",
     date: "2026-06-16",
-    readTime: "6 min read",
+    readTime: "2 min read",
     body: [
       {
         type: "p",
@@ -110,6 +111,11 @@ export const BLOG_POSTS: BlogPost[] = [
         type: "p",
         text: "The practical move isn't picking a side. It's adopting a passkey wherever a service offers one, keeping a strong unique password everywhere else, and having one place that tracks both without asking you to remember which is which.",
       },
+      {
+        type: "link",
+        text: "Related: how to choose a master key that actually holds",
+        href: "/blog/master-key-that-actually-holds",
+      },
     ],
   },
   {
@@ -119,7 +125,7 @@ export const BLOG_POSTS: BlogPost[] = [
       "A single hash is fast — which is exactly the problem. Key stretching trades speed for cost, on purpose.",
     category: "Engineering",
     date: "2026-06-24",
-    readTime: "7 min read",
+    readTime: "2 min read",
     body: [
       {
         type: "p",
@@ -138,6 +144,11 @@ export const BLOG_POSTS: BlogPost[] = [
         text: "OWASP's current guidance for PBKDF2-SHA-256 recommends a minimum of 600,000 iterations, calibrated against the hardware attackers realistically have access to today. We didn't pick a round number for the sake of it — it's the floor a credible security review holds this kind of key derivation to right now. As commodity hardware gets faster, that number is expected to climb, and ours will move with it.",
       },
       {
+        type: "link",
+        text: "OWASP Password Storage Cheat Sheet — PBKDF2 recommendations",
+        href: "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html",
+      },
+      {
         type: "h2",
         text: "The salt and IV do a different job",
       },
@@ -149,6 +160,11 @@ export const BLOG_POSTS: BlogPost[] = [
         type: "p",
         text: "None of these three mechanisms — iteration count, salt, IV — substitute for the others. They defend against different attacks, which is why all three run on every single encryption operation in the vault, not just once at setup.",
       },
+      {
+        type: "link",
+        text: "Related: what “encryption at rest” does — and doesn't — protect you from",
+        href: "/blog/what-encryption-at-rest-doesnt-protect",
+      },
     ],
   },
   {
@@ -158,7 +174,7 @@ export const BLOG_POSTS: BlogPost[] = [
       "The tell is almost never the design. It's the three things a copy can't fake without breaking itself.",
     category: "Guides",
     date: "2026-07-01",
-    readTime: "5 min read",
+    readTime: "2 min read",
     body: [
       {
         type: "p",
@@ -188,6 +204,11 @@ export const BLOG_POSTS: BlogPost[] = [
         type: "p",
         text: "Change that password immediately, on the real site, from a device you trust. If you reused it anywhere else — which is its own separate problem — change it there too. This is also where a vault's reused-password detection earns its keep: a single phished credential only exposes one account when nothing else shares it.",
       },
+      {
+        type: "link",
+        text: "Related: the case for a quarterly reused-password audit",
+        href: "/blog/quarterly-reused-password-audit",
+      },
     ],
   },
   {
@@ -197,7 +218,7 @@ export const BLOG_POSTS: BlogPost[] = [
       "One leaked account rarely stays contained to one account. Here's why the audit matters more than the strength score.",
     category: "Security",
     date: "2026-07-09",
-    readTime: "4 min read",
+    readTime: "2 min read",
     body: [
       {
         type: "p",
@@ -233,7 +254,7 @@ export const BLOG_POSTS: BlogPost[] = [
       "Encrypted storage is real protection against one attacker and no protection at all against a different one. Knowing which is which matters.",
     category: "Security",
     date: "2026-07-15",
-    readTime: "6 min read",
+    readTime: "2 min read",
     body: [
       {
         type: "p",
@@ -268,6 +289,11 @@ export const BLOG_POSTS: BlogPost[] = [
       {
         type: "p",
         text: "The practical takeaway is that encryption at rest and device hygiene are two separate layers, and skipping the second one because the first sounds strong is where most real-world vault compromises actually happen — not through a broken cipher.",
+      },
+      {
+        type: "link",
+        text: "Related: why your master key gets hashed 600,000 times before it touches a database",
+        href: "/blog/why-600000-iterations",
       },
     ],
   },
