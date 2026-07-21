@@ -57,3 +57,45 @@ test("utility page establishes the Geist Sans content role", () => {
     /\.page\s*\{[^}]*font-family:\s*var\(--font-geist-sans\),\s*sans-serif;/,
   );
 });
+
+test("password and passphrase clients use shared local-only primitives", () => {
+  for (const path of [
+    "src/app/utilities/password-generator/PasswordGeneratorClient.tsx",
+    "src/app/utilities/passphrase-generator/PassphraseGeneratorClient.tsx",
+  ]) {
+    const source = read(path);
+    assert.match(source, /UtilityPageLayout/);
+    assert.match(source, /UtilityWorkbench/);
+    assert.match(source, /useUtilityClipboard/);
+    assert.match(source, /secureRandomInt/);
+    assert.doesNotMatch(
+      source,
+      /console\.|fetch\(|localStorage|sessionStorage|Math\.random/,
+    );
+  }
+});
+
+test("generator clients defer randomness and expose their required controls", () => {
+  const password = read(
+    "src/app/utilities/password-generator/PasswordGeneratorClient.tsx",
+  );
+  const passphrase = read(
+    "src/app/utilities/passphrase-generator/PassphraseGeneratorClient.tsx",
+  );
+
+  for (const source of [password, passphrase]) {
+    assert.match(source, /useState\(""\)/);
+    assert.match(source, /useCallback/);
+    assert.match(source, /useEffect/);
+    assert.match(source, /queueMicrotask/);
+  }
+
+  assert.match(password, /<UtilityRange[\s\S]*?min=\{5\}[\s\S]*?max=\{128\}/);
+  assert.match(password, /<UtilitySwitch/);
+  assert.match(password, /aria-live="polite"/);
+  assert.match(password, /styles\.strengthMeter/);
+
+  assert.match(passphrase, /<UtilityRange[\s\S]*?min=\{3\}[\s\S]*?max=\{20\}/);
+  assert.match(passphrase, /<UtilitySegments/);
+  assert.match(passphrase, /overflow-wrap|overflowWrap|UtilityOutput/);
+});
