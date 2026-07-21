@@ -34,6 +34,8 @@ const SEPARATORS: readonly { value: Separator; label: string }[] = [
 
 export function PassphraseGeneratorClient() {
   const [passphrase, setPassphrase] = useState("");
+  const [selectedWords, setSelectedWords] = useState<string[]>([]);
+  const [numberSuffix, setNumberSuffix] = useState<number | null>(null);
   const [wordCount, setWordCount] = useState(4);
   const [separator, setSeparator] = useState<Separator>("-");
   const [capitalize, setCapitalize] = useState(false);
@@ -41,31 +43,46 @@ export function PassphraseGeneratorClient() {
   const [generation, setGeneration] = useState(0);
   const clipboard = useUtilityClipboard(passphrase);
 
-  const generatePassphrase = useCallback(() => {
-    const selectedWords = Array.from({ length: wordCount }, () =>
-      secureRandomItem(ALL_WORDS),
+  const selectRandomParts = useCallback(() => {
+    setSelectedWords(
+      Array.from({ length: wordCount }, () => secureRandomItem(ALL_WORDS)),
     );
+    setNumberSuffix(secureRandomInt(10));
+  }, [wordCount]);
+
+  useEffect(() => {
+    let active = true;
+    void generation;
+    queueMicrotask(() => {
+      if (active) selectRandomParts();
+    });
+    return () => {
+      active = false;
+    };
+  }, [generation, selectRandomParts]);
+
+  const formatCurrentPassphrase = useCallback(() => {
+    if (selectedWords.length === 0 || numberSuffix === null) return;
     setPassphrase(
       formatPassphrase(
         selectedWords,
         separator,
         capitalize,
         includeNumber,
-        secureRandomInt,
+        () => numberSuffix,
       ),
     );
-  }, [capitalize, includeNumber, separator, wordCount]);
+  }, [capitalize, includeNumber, numberSuffix, selectedWords, separator]);
 
   useEffect(() => {
     let active = true;
-    void generation;
     queueMicrotask(() => {
-      if (active) generatePassphrase();
+      if (active) formatCurrentPassphrase();
     });
     return () => {
       active = false;
     };
-  }, [generatePassphrase, generation]);
+  }, [formatCurrentPassphrase]);
 
   function changeWordCount(value: number) {
     clipboard.reset();

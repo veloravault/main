@@ -99,3 +99,27 @@ test("generator clients defer randomness and expose their required controls", ()
   assert.match(passphrase, /<UtilitySegments/);
   assert.match(passphrase, /overflow-wrap|overflowWrap|UtilityOutput/);
 });
+
+test("passphrase formatting preserves the current random words and suffix", () => {
+  const source = read(
+    "src/app/utilities/passphrase-generator/PassphraseGeneratorClient.tsx",
+  );
+
+  assert.match(source, /const \[selectedWords, setSelectedWords\] = useState/);
+  assert.match(source, /const \[numberSuffix, setNumberSuffix\] = useState/);
+
+  const selection = source.match(
+    /const selectRandomParts = useCallback\(\(\) => \{([\s\S]*?)\n  \}, \[([^\]]*)\]\);/,
+  );
+  assert.ok(selection, "random-part selection has a dedicated callback");
+  assert.match(selection[1], /secureRandomItem\(ALL_WORDS\)/);
+  assert.match(selection[1], /setSelectedWords/);
+  assert.match(selection[1], /setNumberSuffix\(secureRandomInt\(10\)\)/);
+  assert.equal(selection[2].trim(), "wordCount");
+  assert.doesNotMatch(
+    selection[2],
+    /separator|capitalize|includeNumber/,
+  );
+  assert.match(source, /formatPassphrase\([\s\S]*selectedWords/);
+  assert.match(source, /\(\) => numberSuffix/);
+});
