@@ -49,3 +49,11 @@ test("utility styles define responsive, focus, overflow, and reduced-motion safe
     assert.match(css, new RegExp(`\\.${className}\\b`));
   }
 });
+
+test("utility page establishes the Geist Sans content role", () => {
+  const css = read("src/app/utilities/utilities.module.css");
+  assert.match(
+    css,
+    /\.page\s*\{[^}]*font-family:\s*var\(--font-geist-sans\),\s*sans-serif;/,
+  );
+});
