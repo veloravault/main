@@ -4,7 +4,7 @@ import { PasswordStrengthClient } from "./PasswordStrengthClient";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Password Strength Tester — Velora Vault",
+  title: "Password Strength Tester",
   description: "Test the strength of your passwords locally to ensure they are secure.",
   path: "/utilities/password-strength",
 });

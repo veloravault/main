@@ -4,7 +4,7 @@ import { PasswordGeneratorClient } from "./PasswordGeneratorClient";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Password Generator — Velora Vault",
+  title: "Password Generator",
   description: "Generate highly secure, unpredictable passwords to keep your data safe.",
   path: "/utilities/password-generator",
 });

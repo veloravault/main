@@ -4,6 +4,48 @@ import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
+test("utility pages stay server-rendered metadata boundaries", () => {
+  for (const route of [
+    "password-generator",
+    "passphrase-generator",
+    "username-generator",
+    "password-strength",
+  ]) {
+    const source = read(`src/app/utilities/${route}/page.tsx`);
+    assert.doesNotMatch(source, /^"use client"/);
+    assert.match(source, /export const metadata: Metadata = pageMetadata/);
+    assert.match(source, /<PublicPageShell>/);
+    assert.match(source, new RegExp(`path: ["']/utilities/${route}["']`));
+  }
+});
+
+test("utility clients contain no network or persistence path for secrets", () => {
+  const clientPaths = [
+    "src/app/utilities/password-generator/PasswordGeneratorClient.tsx",
+    "src/app/utilities/passphrase-generator/PassphraseGeneratorClient.tsx",
+    "src/app/utilities/username-generator/UsernameGeneratorClient.tsx",
+    "src/app/utilities/password-strength/PasswordStrengthClient.tsx",
+  ];
+  const sources = clientPaths.map(read).join("\n");
+
+  assert.doesNotMatch(
+    sources,
+    /fetch\(|axios|server action|localStorage|sessionStorage|document\.cookie|URLSearchParams|console\./i,
+  );
+});
+
+test("utility metadata delegates the site-name suffix to the root template", () => {
+  for (const route of [
+    "password-generator",
+    "passphrase-generator",
+    "username-generator",
+    "password-strength",
+  ]) {
+    const source = read(`src/app/utilities/${route}/page.tsx`);
+    assert.doesNotMatch(source, /title: ["'][^"']*— Velora Vault["']/);
+  }
+});
+
 test("shared workbench primitives expose accessible control semantics", () => {
   const source = read("src/app/utilities/UtilityWorkbench.tsx");
   assert.match(source, /type="range"/);
