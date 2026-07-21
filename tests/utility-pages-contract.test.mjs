@@ -26,3 +26,26 @@ test("related utility links exclude the current route", async () => {
   assert.equal(links.length, 3);
   assert.equal(links.some((link) => link.slug === "password-generator"), false);
 });
+
+test("utility styles define responsive, focus, overflow, and reduced-motion safeguards", () => {
+  const css = read("src/app/utilities/utilities.module.css");
+  assert.match(css, /@media \(max-width: 767px\)/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
+  assert.match(css, /:focus-visible/);
+  assert.match(css, /overflow-wrap:\s*anywhere/);
+  assert.match(css, /min-height:\s*44px/);
+  assert.doesNotMatch(css, /\.hero[\s\S]{0,300}min-height:\s*650px/);
+
+  for (const className of [
+    "workbenchBody",
+    "controlsPanel",
+    "strengthMeter",
+    "analysisPanel",
+    "passwordField",
+    "feedbackPanel",
+    "exampleStack",
+    "bestPracticeList",
+  ]) {
+    assert.match(css, new RegExp(`\\.${className}\\b`));
+  }
+});
