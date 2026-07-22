@@ -83,8 +83,16 @@ export function AdminOverview({ onNavigate }: { onNavigate: (view: AdminView, pa
   }> = [
     { label: "Active members", value: overview.members.active, detail: `${overview.members.total} total · ${overview.members.invited} invited`, icon: UsersIcon, view: "members" as const, params: { status: "active" } },
     { label: "Needs reply", value: overview.support.needsReply, detail: `${overview.support.open} open · ${overview.support.resolved} resolved`, icon: LifeBuoyIcon, view: "support" as const, params: { ticket: "needs_reply" } },
-    { label: "Document storage", value: formatBytes(overview.usage.documentBytes), detail: "Encrypted files only", icon: DatabaseIcon, view: "members" as const },
-    { label: "AI events this month", value: overview.usage.aiEvents, detail: "Across active accounts", icon: BotIcon, view: "activity" as const },
+  ];
+
+  // Unlike the cards above, these two stats have no corresponding filtered
+  // view to drill into (the members list only filters by status/search, and
+  // activity categories don't include an "AI events" bucket) - rendered as
+  // plain stat tiles rather than buttons so the UI doesn't promise a
+  // drill-down that doesn't exist.
+  const staticStats: Array<{ label: string; value: string | number; detail: string; icon: typeof UsersIcon }> = [
+    { label: "Document storage", value: formatBytes(overview.usage.documentBytes), detail: "Encrypted files only", icon: DatabaseIcon },
+    { label: "AI events this month", value: overview.usage.aiEvents, detail: "Across active accounts", icon: BotIcon },
   ];
 
   return (
@@ -100,6 +108,17 @@ export function AdminOverview({ onNavigate }: { onNavigate: (view: AdminView, pa
               <small>{card.detail}</small>
               <ArrowRightIcon className={styles.overviewCardArrow} aria-hidden="true" />
             </button>
+          );
+        })}
+        {staticStats.map((card) => {
+          const Icon = card.icon;
+          return (
+            <div className={styles.overviewCard} data-static="true" key={card.label}>
+              <span className={styles.overviewCardIcon}><Icon aria-hidden="true" /></span>
+              <span className={styles.overviewCardValue}>{card.value}</span>
+              <strong>{card.label}</strong>
+              <small>{card.detail}</small>
+            </div>
           );
         })}
       </div>

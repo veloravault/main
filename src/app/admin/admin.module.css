@@ -101,6 +101,8 @@
 .overviewCard { position: relative; display: grid; min-height: 178px; align-content: start; gap: 5px; overflow: hidden; border: 1px solid var(--admin-line); border-radius: 20px; padding: 18px; background: var(--admin-surface); box-shadow: 0 14px 42px rgba(0, 0, 0, .055), inset 0 1px 0 color-mix(in srgb, white 55%, transparent); color: var(--admin-ink); text-align: left; outline: none; }
 .overviewCard:hover { border-color: color-mix(in srgb, var(--admin-blue) 28%, var(--admin-line)); transform: translateY(-1px); }
 .overviewCard:focus-visible { box-shadow: 0 0 0 3px var(--admin-bg), 0 0 0 6px var(--admin-blue); }
+.overviewCard[data-static="true"] { cursor: default; }
+.overviewCard[data-static="true"]:hover { border-color: var(--admin-line); transform: none; }
 .overviewCardIcon { display: grid; width: 34px; height: 34px; place-items: center; margin-bottom: 10px; border-radius: 11px; background: var(--admin-soft-blue); color: var(--admin-blue); }
 .overviewCardIcon svg { width: 16px; height: 16px; }
 .overviewCardValue { overflow: hidden; font-size: clamp(25px, 2.4vw, 35px); font-variant-numeric: tabular-nums; font-weight: 580; letter-spacing: -.045em; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }

@@ -55,7 +55,7 @@ export function LegalSettings() {
                 <ul className="list-disc pl-5 space-y-2 mt-2">
                   <li><strong>Right to Access & Portability:</strong> You can export your entire vault data at any time from the &ldquo;Data &amp; Backup&rdquo; settings.</li>
                   <li><strong>Right to Erasure (Right to be Forgotten):</strong> You can permanently delete your account and all associated encrypted data from the &ldquo;Danger Zone&rdquo; settings. Once deleted, this data cannot be recovered.</li>
-                  <li><strong>Right to Correction:</strong> You can update your account information (like your email address) directly within the app.</li>
+                  <li><strong>Right to Correction:</strong> Your name and avatar can be updated directly within the app. For other account information, such as your email address, contact support and we will correct it manually.</li>
                   <li><strong>Right of Nomination (DPDP):</strong> You have the right to nominate an individual to act on your behalf in the event of death or incapacity (handled via external support request).</li>
                 </ul>
 
