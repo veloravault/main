@@ -28,7 +28,7 @@ export function FinalCTA() {
       >
         <motion.h2 className={styles.title} variants={staggerItem}>Create your Velora Vault account</motion.h2>
         <motion.p className={styles.subtitle} variants={staggerItem}>
-          Sign up in a minute. Confirm your email, set a master key, and your vault is ready.
+          Start in a minute. Confirm your email, set a master key, and your vault is ready.
         </motion.p>
         <motion.a
           href="/signup"
@@ -37,7 +37,7 @@ export function FinalCTA() {
           whileHover={reduceMotion ? undefined : HOVER_LIFT}
           whileTap={reduceMotion ? undefined : TAP_PRESS}
         >
-          Sign up free
+          Get started free
         </motion.a>
       </motion.div>
     </motion.section>

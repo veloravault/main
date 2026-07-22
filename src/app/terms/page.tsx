@@ -34,7 +34,7 @@ export default function TermsPage() {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Your account</h2>
             <p>
-              When you sign up, you set a sign-in password. Afterward, you set
+              When you create an account, you set a sign-in password. Afterward, you set
               a separate master key that encrypts your vault. You&rsquo;re
               responsible for keeping both confidential and for all activity
               that happens under your account.

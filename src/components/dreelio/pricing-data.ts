@@ -21,7 +21,7 @@ export const PRICING_TIERS: PricingTier[] = [
     tagline: "Everything you need to stop reusing passwords.",
     monthlyPrice: 0,
     annualPrice: 0,
-    cta: "Sign up free",
+    cta: "Get started free",
     features: [
       "Unlimited passwords & secure notes",
       "Up to 3 wallet & bank records",
@@ -37,7 +37,7 @@ export const PRICING_TIERS: PricingTier[] = [
     monthlyPrice: 49,
     annualPrice: 499,
     featured: true,
-    cta: "Sign up",
+    cta: "Get started free",
     features: [
       "Everything in Free",
       "Documents up to 5 GB storage",

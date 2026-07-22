@@ -52,7 +52,7 @@ export function SecurityPageContent() {
             recovery and device-level risks they do not solve.
           </p>
           <div className={styles.heroActions}>
-            <Link href="/signup" className={styles.primaryAction}>Sign up free</Link>
+            <Link href="/signup" className={styles.primaryAction}>Get started free</Link>
             <a className={styles.jumpLink} href="#security-model">
               Follow the security model <ArrowRightIcon aria-hidden="true" />
             </a>
@@ -307,12 +307,12 @@ export function SecurityPageContent() {
       >
         <div>
           <p className={styles.eyebrow}>Get started</p>
-          <h2>Review the boundaries before you sign up.</h2>
+          <h2>Review the boundaries before creating your account.</h2>
           <p>Security is strongest when the product and the user each know their part.</p>
         </div>
         <div className={styles.actions}>
           <motion.div whileHover={reduceMotion ? undefined : HOVER_LIFT} whileTap={reduceMotion ? undefined : TAP_PRESS}>
-            <Link href="/signup" className={styles.primaryAction}>Sign up free</Link>
+            <Link href="/signup" className={styles.primaryAction}>Get started free</Link>
           </motion.div>
           <Link href="/privacy" className={styles.secondaryAction}>Read the privacy policy</Link>
         </div>

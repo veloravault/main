@@ -43,7 +43,7 @@ export function Hero() {
             whileHover={reduceMotion ? undefined : HOVER_LIFT}
             whileTap={reduceMotion ? undefined : TAP_PRESS}
           >
-            Sign up free
+            Get started free
           </motion.a>
           <motion.a
             href="#features"

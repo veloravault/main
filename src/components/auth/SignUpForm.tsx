@@ -118,7 +118,7 @@ export function SignUpForm() {
       {error && <p className={styles.alert} role="alert">{error}</p>}
 
       <button className={styles.primaryAction} type="submit" disabled={submitting}>
-        <span>{submitting ? "Creating account…" : "Sign up"}</span>
+        <span>{submitting ? "Creating account…" : "Get started free"}</span>
         <ArrowRightIcon width={17} height={17} aria-hidden="true" />
       </button>
       <p className={styles.securityNote}>Your vault master key is set separately, after your email is confirmed.</p>

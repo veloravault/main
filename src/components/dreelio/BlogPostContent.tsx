@@ -120,10 +120,10 @@ export function BlogPostContent({
       >
         <div>
           <h2>Put this into practice in your own vault</h2>
-          <p>Sign up free - no credit card required.</p>
+          <p>Start free. No credit card required.</p>
         </div>
         <motion.div whileHover={reduceMotion ? undefined : HOVER_LIFT} whileTap={reduceMotion ? undefined : TAP_PRESS}>
-          <Link href="/signup" className={styles.primaryAction}>Sign up free</Link>
+          <Link href="/signup" className={styles.primaryAction}>Get started free</Link>
         </motion.div>
       </motion.div>
     </main>

@@ -133,7 +133,7 @@ export function UtilityPageLayout(props: {
           <p>{props.ctaDescription}</p>
         </div>
         <Link href="/signup" className={styles.primaryAction}>
-          Create your vault <ArrowRightIcon aria-hidden="true" />
+          Get started free <ArrowRightIcon aria-hidden="true" />
         </Link>
       </section>
     </main>

@@ -45,7 +45,7 @@ export function BlogListContent() {
           look at how the vault itself is built.
         </p>
         <Link href="/signup" className={`${shared.btn} ${shared.btnDark} ${styles.heroCta}`}>
-          Sign up free
+          Get started free
         </Link>
       </motion.div>
 
@@ -129,7 +129,7 @@ export function BlogListContent() {
         </div>
         <div className={styles.actions}>
           <motion.div whileHover={reduceMotion ? undefined : HOVER_LIFT} whileTap={reduceMotion ? undefined : TAP_PRESS}>
-            <Link href="/signup" className={styles.primaryAction}>Sign up free</Link>
+            <Link href="/signup" className={styles.primaryAction}>Get started free</Link>
           </motion.div>
           <Link href="/security" className={styles.secondaryAction}>How security works</Link>
         </div>

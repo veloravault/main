@@ -84,7 +84,7 @@ export function PricingPageContent({ initialSignedIn = false }: PricingPageConte
           whenever you need more storage or AI-assisted imports.
         </p>
         <div className={styles.betaNote}>
-          <i aria-hidden="true" /> No credit card required to sign up
+          <i aria-hidden="true" /> No credit card required
         </div>
       </motion.div>
 
@@ -258,7 +258,7 @@ export function PricingPageContent({ initialSignedIn = false }: PricingPageConte
             onClick={() => router.push(signedIn ? "/vault" : "/signup")}
             className={styles.primaryAction}
           >
-            {signedIn ? "Open vault" : "Sign up free"}
+            {signedIn ? "Open vault" : "Get started free"}
           </button>
         </motion.div>
       </motion.div>

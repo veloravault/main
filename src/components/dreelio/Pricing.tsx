@@ -31,7 +31,7 @@ export function Pricing() {
           <p className={shared.eyebrow}>Pricing</p>
           <h2 className={shared.h2}>Start free. Upgrade when you need to.</h2>
           <p className={styles.intro}>
-            No credit card to sign up. Create your account, set your master key, and your vault is ready.
+            No credit card required. Create your account, set your master key, and your vault is ready.
           </p>
         </motion.div>
 
@@ -51,7 +51,7 @@ export function Pricing() {
             <span className={styles.status}><i aria-hidden="true" /> Free tier, no card required</span>
             <h3>Ready when you are.</h3>
             <p>
-              Sign up with an email and password. Your vault master key is set
+              Start with an email and password. Your vault master key is set
               separately and never touches our servers.
             </p>
             <motion.a
@@ -60,7 +60,7 @@ export function Pricing() {
               whileHover={reduceMotion ? undefined : HOVER_LIFT}
               whileTap={reduceMotion ? undefined : TAP_PRESS}
             >
-              Sign up free
+              Get started free
             </motion.a>
             <a href="/pricing" className={styles.compareLink}>Compare all plans</a>
           </motion.div>

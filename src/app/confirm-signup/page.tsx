@@ -32,8 +32,8 @@ export default async function ConfirmSignupPage({
   const description = canConfirm
     ? "Your confirmation is ready to be verified. Continue explicitly to finish creating your account."
     : expired
-      ? "This confirmation link is no longer valid. Sign up again to get a fresh one."
-      : "This link is incomplete or invalid. Return to sign up for help.";
+      ? "This confirmation link is no longer valid. Start again to get a fresh one."
+      : "This link is incomplete or invalid. Return to account setup for help.";
 
   return (
     <PublicPageShell>
@@ -54,7 +54,7 @@ export default async function ConfirmSignupPage({
           </form>
         ) : (
           <Link className={styles.actionLink} href="/signup">
-            <span>Return to sign up</span><ArrowRightIcon width={17} height={17} aria-hidden="true" />
+            <span>Get started free</span><ArrowRightIcon width={17} height={17} aria-hidden="true" />
           </Link>
         )}
       </AuthShell>

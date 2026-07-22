@@ -5,7 +5,7 @@ import { test } from "node:test";
 const exists = (path) => existsSync(new URL(`../${path}`, import.meta.url));
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
-test("landing tells one open-signup story with no private-beta framing", () => {
+test("landing tells one open-account story with consistent free-start CTAs", () => {
   const pricing = read("src/components/dreelio/Pricing.tsx");
   const hero = read("src/components/dreelio/Hero.tsx");
   const finalCta = read("src/components/dreelio/FinalCTA.tsx");
@@ -19,7 +19,27 @@ test("landing tells one open-signup story with no private-beta framing", () => {
   assert.doesNotMatch(combined, /invitation email/i);
   assert.doesNotMatch(combined, /request access/i);
   assert.doesNotMatch(combined, /BETA_STEPS/);
-  assert.match(combined, /sign up/i);
+  assert.match(combined, /Get started free/);
+  assert.doesNotMatch(combined, />\s*Sign up(?: free)?\s*</i);
+});
+
+test("public account CTAs consistently say Get started free", () => {
+  const sources = [
+    "src/components/dreelio/Nav.tsx",
+    "src/components/dreelio/Hero.tsx",
+    "src/components/dreelio/Pricing.tsx",
+    "src/components/dreelio/PricingPageContent.tsx",
+    "src/components/dreelio/FinalCTA.tsx",
+    "src/components/dreelio/SecurityPageContent.tsx",
+    "src/components/dreelio/BlogListContent.tsx",
+    "src/components/dreelio/BlogPostContent.tsx",
+    "src/app/utilities/UtilityPageLayout.tsx",
+    "src/components/auth/AuthGateway.tsx",
+    "src/components/auth/SignUpForm.tsx",
+  ].map(read).join("\n");
+
+  assert.match(sources, /Get started free/);
+  assert.doesNotMatch(sources, />\s*Sign up(?: free)?\s*</i);
 });
 
 test("landing removes unfinished editorial content and unsupported availability claims", () => {

@@ -92,7 +92,7 @@ export default function PrivacyPage() {
             <h2 className={styles.sectionTitle}>How we use your information</h2>
             <p>We use the information above only to:</p>
             <ul>
-              <li>Create and confirm your account when you sign up</li>
+              <li>Create and confirm your account when you get started</li>
               <li>Authenticate you and maintain your session</li>
               <li>Enforce that only your own active account can access your data</li>
               <li>Detect and prevent abuse or unauthorized access</li>

@@ -4,13 +4,13 @@ import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Sign up",
+  title: "Get started free",
   description: "Create your Velora Vault account.",
   path: "/signup",
 });
 
 const STATE_NOTICES: Record<string, string> = {
-  "setup-incomplete": "We couldn't find an account to finish setting up. Sign up again to get a fresh confirmation email.",
+  "setup-incomplete": "We couldn't find an account to finish setting up. Start again to get a fresh confirmation email.",
 };
 
 export default async function SignUpPage({

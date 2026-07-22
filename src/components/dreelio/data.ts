@@ -19,7 +19,7 @@ export const UTILITY_LINKS = [
 export const SEARCH_ITEMS = [
   { label: "Home", href: "/", keywords: "velora vault password manager", popular: true },
   { label: "Sign in", href: "/login", keywords: "login account access", popular: true },
-  { label: "Create an account", href: "/signup", keywords: "signup register free", popular: true },
+  { label: "Get started free", href: "/signup", keywords: "signup register free", popular: true },
   { label: "Features", href: "/#features", keywords: "passwords documents wallet autofill", popular: true },
   { label: "Security", href: "/security", keywords: "encryption privacy master key", popular: true },
   { label: "Pricing", href: "/pricing", keywords: "free plus plans cost", popular: true },

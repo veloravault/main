@@ -35,7 +35,7 @@ export function AuthGateway({ initialMode: mode, nextPath, notice }: AuthGateway
         <>
           <span>{mode === "sign-in" ? "New to Velora Vault?" : "Already have an account?"}</span>{" "}
           <Link href={mode === "sign-in" ? "/signup" : "/login"}>
-            {mode === "sign-in" ? "Create an account" : "Sign in"}
+            {mode === "sign-in" ? "Get started free" : "Sign in"}
           </Link>
           <small>Your master key never belongs in your sign-in credentials.</small>
         </>

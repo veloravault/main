@@ -261,7 +261,7 @@ export function Nav({ initialSignedIn = false }: NavProps) {
                 whileHover={reduceMotion ? undefined : HOVER_LIFT}
                 whileTap={reduceMotion ? undefined : TAP_PRESS}
               >
-                Sign up
+                Get started free
               </motion.a>
             </>
           )}
@@ -373,7 +373,7 @@ export function Nav({ initialSignedIn = false }: NavProps) {
                 className={`${shared.btn} ${shared.btnDark}`}
                 onClick={closeMobileMenu}
               >
-                Sign up
+                Get started free
               </a>
             </>
           )}
