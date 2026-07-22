@@ -1,5 +1,5 @@
 .page {
-  --auth-paper: #f5f5f7;
+  --auth-paper: #ffffff;
   --auth-surface: rgba(255, 255, 255, 0.86);
   --auth-field: #ffffff;
   --auth-ink: #1d1d1f;
@@ -22,9 +22,7 @@
   place-items: center;
   overflow-x: hidden;
   padding: max(132px, calc(env(safe-area-inset-top) + 112px)) 20px max(64px, env(safe-area-inset-bottom));
-  background:
-    radial-gradient(circle at 50% 24%, rgba(0, 122, 255, 0.055), transparent 27rem),
-    var(--auth-paper);
+  background: var(--auth-paper);
 }
 
 :global(.dark) .page {
