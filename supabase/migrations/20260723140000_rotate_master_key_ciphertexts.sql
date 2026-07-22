@@ -86,5 +86,5 @@ begin
 end;
 $$;
 
-revoke all on function public.rotate_master_key_ciphertexts(jsonb, jsonb, jsonb, jsonb) from public, anon;
+revoke all on function public.rotate_master_key_ciphertexts(jsonb, jsonb, jsonb, jsonb) from public, anon, authenticated;
 grant execute on function public.rotate_master_key_ciphertexts(jsonb, jsonb, jsonb, jsonb) to authenticated;

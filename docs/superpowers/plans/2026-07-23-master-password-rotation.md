@@ -78,7 +78,7 @@ test("rotate_master_key_ciphertexts migration is atomic and properly scoped", ()
   assert.match(sql, /update public\.vault_documents as t/);
 
   // Grants: authenticated only, never anon/public.
-  assert.match(sql, /revoke all on function public\.rotate_master_key_ciphertexts\(jsonb, jsonb, jsonb, jsonb\) from public, anon;/);
+  assert.match(sql, /revoke all on function public\.rotate_master_key_ciphertexts\(jsonb, jsonb, jsonb, jsonb\) from public, anon, authenticated;/);
   assert.match(sql, /grant execute on function public\.rotate_master_key_ciphertexts\(jsonb, jsonb, jsonb, jsonb\) to authenticated;/);
   assert.doesNotMatch(sql, /grant execute[^;]*to[^;]*anon/);
 });
@@ -182,7 +182,7 @@ begin
 end;
 $$;
 
-revoke all on function public.rotate_master_key_ciphertexts(jsonb, jsonb, jsonb, jsonb) from public, anon;
+revoke all on function public.rotate_master_key_ciphertexts(jsonb, jsonb, jsonb, jsonb) from public, anon, authenticated;
 grant execute on function public.rotate_master_key_ciphertexts(jsonb, jsonb, jsonb, jsonb) to authenticated;
 ```
 
