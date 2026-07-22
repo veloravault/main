@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   CheckCircle2Icon,
@@ -52,7 +52,6 @@ function activityCopy(item: AdminActivityItem) {
   if (item.action === "support_reopen") return { label: "Ticket reopened", detail: "A support ticket was reopened", tone: "neutral", Icon: CheckCircle2Icon };
   if (item.action === "setup_email_resent") return { label: "Setup link sent", detail: "A secure account setup link was sent", tone: "success", Icon: ShieldCheckIcon };
   if (item.action === "billing_reconciliation_resolve") return { label: "Billing reconciled", detail: "A billing reconciliation issue was resolved", tone: "success", Icon: CreditCardIcon };
-  if (item.action.includes("approve") || item.action.includes("invite")) return { label: "Member approved", detail: "Account access was approved", tone: "success", Icon: ShieldCheckIcon };
   return { label: item.action.replaceAll("_", " "), detail: item.resultCode.replaceAll("_", " "), tone: "neutral", Icon: CheckCircle2Icon };
 }
 
@@ -76,8 +75,13 @@ export function AdminActivity() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Guards against a stale in-flight request (e.g. a slow "load more")
+  // resolving after the category/result filter has already changed and
+  // splicing old-filter rows onto the current view.
+  const requestIdRef = useRef(0);
 
   const load = useCallback(async (cursor: string | null, append: boolean) => {
+    const requestId = ++requestIdRef.current;
     if (append) setLoadingMore(true);
     else setLoading(true);
     setError(null);
@@ -85,6 +89,7 @@ export function AdminActivity() {
       const params = new URLSearchParams({ category, result });
       if (cursor) params.set("cursor", cursor);
       const response = await fetch(`/api/admin/activity?${params.toString()}`, { headers: { accept: "application/json" } });
+      if (requestId !== requestIdRef.current) return;
       if (response.status === 401) {
         router.replace("/login?next=/admin");
         return;
@@ -98,14 +103,18 @@ export function AdminActivity() {
       }
       if (!response.ok) throw new Error("ACTIVITY_LOAD_FAILED");
       const page = safeActivityPage(await response.json());
+      if (requestId !== requestIdRef.current) return;
       setItems((current) => append ? [...current, ...page.items] : page.items);
       setNextCursor(page.nextCursor);
     } catch {
+      if (requestId !== requestIdRef.current) return;
       setError("The audit record could not be loaded. Check the connection and try again.");
       if (!append) setItems([]);
     } finally {
-      if (append) setLoadingMore(false);
-      else setLoading(false);
+      if (requestId === requestIdRef.current) {
+        if (append) setLoadingMore(false);
+        else setLoading(false);
+      }
     }
   }, [category, result, router]);
 

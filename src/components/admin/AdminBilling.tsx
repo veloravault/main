@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { CreditCardIcon, Loader2Icon } from "lucide-react";
+import { ChevronDownIcon, CreditCardIcon, Loader2Icon } from "lucide-react";
 import { StateView } from "@/components/ui/state-view";
 import { AdminSkeleton } from "./AdminSkeleton";
 import { useToast } from "@/components/Toast";
@@ -27,6 +27,16 @@ function updateSummary(update: Record<string, unknown>) {
   return Object.entries(update).map(([key, value]) => `${key} → ${JSON.stringify(value)}`).join(", ");
 }
 
+function safeBillingPage(value: unknown): { items: AdminBillingReconciliationIssue[]; nextCursor: string | null } {
+  if (!value || typeof value !== "object" || !("items" in value) || !Array.isArray(value.items)) {
+    throw new Error("INVALID_BILLING_RESPONSE");
+  }
+  return {
+    items: value.items as AdminBillingReconciliationIssue[],
+    nextCursor: "nextCursor" in value && typeof value.nextCursor === "string" ? value.nextCursor : null,
+  };
+}
+
 export function AdminBilling() {
   const router = useRouter();
   const pathname = usePathname();
@@ -34,9 +44,16 @@ export function AdminBilling() {
   const toast = useToast();
   const filter = isFilter(searchParams.get("billing")) ? searchParams.get("billing") as BillingReconciliationFilter : "pending";
   const [items, setItems] = useState<AdminBillingReconciliationIssue[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [appendError, setAppendError] = useState<string | null>(null);
   const [resolvingId, setResolvingId] = useState<string | null>(null);
+  // Guards against a stale in-flight request (e.g. a slow "load more")
+  // resolving after the filter has already changed and clobbering the
+  // current view with results from the old filter.
+  const requestIdRef = useRef(0);
 
   const selectFilter = (value: BillingReconciliationFilter) => {
     const next = new URLSearchParams(searchParams.toString());
@@ -45,31 +62,52 @@ export function AdminBilling() {
     router.push(`${pathname}?${next.toString()}`, { scroll: false });
   };
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const load = useCallback(async (cursor: string | null, append: boolean) => {
+    const requestId = ++requestIdRef.current;
+    if (append) {
+      setLoadingMore(true);
+      setAppendError(null);
+    } else {
+      setLoading(true);
+      setError(null);
+      setAppendError(null);
+    }
     try {
-      const response = await fetch(`/api/admin/billing-reconciliation?filter=${filter}`, { headers: { accept: "application/json" } });
+      const params = new URLSearchParams({ filter });
+      if (cursor) params.set("cursor", cursor);
+      const response = await fetch(`/api/admin/billing-reconciliation?${params}`, { headers: { accept: "application/json" } });
+      if (requestId !== requestIdRef.current) return;
       if (response.status === 401) { router.replace("/login?next=/admin"); return; }
       if (response.status === 403) {
         setItems([]);
+        setNextCursor(null);
         setError("This account no longer has access to the owner console.");
         router.refresh();
         return;
       }
       if (!response.ok) throw new Error("BILLING_LIST_FAILED");
-      const body = await response.json() as { items?: AdminBillingReconciliationIssue[] };
-      setItems(body.items ?? []);
+      const page = safeBillingPage(await response.json());
+      if (requestId !== requestIdRef.current) return;
+      setItems((current) => append ? [...current, ...page.items] : page.items);
+      setNextCursor(page.nextCursor);
     } catch {
-      setError("Reconciliation issues could not be loaded. Check the connection and try again.");
-      setItems([]);
+      if (requestId !== requestIdRef.current) return;
+      const message = "Reconciliation issues could not be loaded. Check the connection and try again.";
+      if (append) setAppendError(message);
+      else {
+        setError(message);
+        setItems([]);
+      }
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) {
+        if (append) setLoadingMore(false);
+        else setLoading(false);
+      }
     }
   }, [filter, router]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => { void load(); }, 0);
+    const timer = window.setTimeout(() => { void load(null, false); }, 0);
     return () => window.clearTimeout(timer);
   }, [load]);
 
@@ -80,10 +118,18 @@ export function AdminBilling() {
       const response = await fetch(`/api/admin/billing-reconciliation/${encodeURIComponent(issue.id)}`, { method: "PATCH" });
       if (response.ok) {
         toast({ message: `Reconciled ${issue.razorpaySubscriptionId}.`, type: "success" });
-        await load();
+        await load(null, false);
       } else if (response.status === 404) {
         toast({ message: "This issue is no longer available. The list was refreshed.", type: "info" });
-        await load();
+        await load(null, false);
+      } else if (response.status === 409) {
+        const body = await response.json().catch(() => null) as { error?: string } | null;
+        if (body?.error === "ISSUE_ALREADY_RESOLVED") {
+          toast({ message: "Someone else already resolved this. The list was refreshed.", type: "info" });
+        } else {
+          toast({ message: "The target subscription could not be found - nothing was changed.", type: "error" });
+        }
+        await load(null, false);
       } else if (response.status === 401) {
         toast({ message: "Your owner session expired. Sign in again.", type: "error" });
         router.replace("/login?next=/admin");
@@ -99,7 +145,7 @@ export function AdminBilling() {
 
   if (loading && items.length === 0) return <AdminSkeleton />;
   if (error && items.length === 0) {
-    return <StateView kind="error" title="Reconciliation issues unavailable" description={error} action={{ label: "Try again", onClick: () => void load() }} />;
+    return <StateView kind="error" title="Reconciliation issues unavailable" description={error} action={{ label: "Try again", onClick: () => void load(null, false) }} />;
   }
 
   return (
@@ -130,7 +176,7 @@ export function AdminBilling() {
                 <span className={styles.memberActions}>
                   <span className={styles.memberStatus} data-status={issue.status === "resolved" ? "active" : undefined}>{issue.status}</span>
                   {issue.status === "pending" && (
-                    <button type="button" disabled={resolving} onClick={() => void resolveIssue(issue)}>
+                    <button type="button" disabled={Boolean(resolvingId)} onClick={() => void resolveIssue(issue)}>
                       {resolving ? <Loader2Icon className="animate-spin" aria-hidden="true" /> : "Retry"}
                     </button>
                   )}
@@ -140,6 +186,9 @@ export function AdminBilling() {
           })}
         </div>
       )}
+
+      {appendError && <div className={styles.supportListError} role="alert"><span>{appendError}</span><button type="button" onClick={() => nextCursor && void load(nextCursor, true)}>Retry</button></div>}
+      {nextCursor && !appendError && <button className={styles.loadMore} type="button" disabled={loadingMore} onClick={() => void load(nextCursor, true)}>{loadingMore ? "Loading more…" : "Load more"}{!loadingMore && <ChevronDownIcon aria-hidden="true" />}</button>}
     </div>
   );
 }

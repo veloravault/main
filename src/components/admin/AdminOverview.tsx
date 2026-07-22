@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIcon,
   ArrowRightIcon,
@@ -29,9 +29,18 @@ export function AdminOverview({ onNavigate }: { onNavigate: (view: AdminView, pa
   const [overview, setOverview] = useState<AdminOverviewDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Shared between the mount fetch and retry() so a rapid double-retry (or
+  // a retry while the initial mount fetch is still in flight) cancels the
+  // older request instead of letting it resolve out of order and clobber a
+  // newer result.
+  const controllerRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    controllerRef.current?.abort();
     const controller = new AbortController();
+    controllerRef.current = controller;
+    setLoading(true);
+    setError(null);
     fetch("/api/admin/overview", { headers: { accept: "application/json" }, signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) throw new Error("OVERVIEW_FAILED");
@@ -48,29 +57,18 @@ export function AdminOverview({ onNavigate }: { onNavigate: (view: AdminView, pa
         setError("The operations summary could not be loaded. Check the connection and try again.");
         setLoading(false);
       });
-    return () => controller.abort();
   }, []);
 
-  const retry = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await fetch("/api/admin/overview", { headers: { accept: "application/json" } });
-      if (!response.ok) throw new Error("OVERVIEW_FAILED");
-      setOverview(await response.json() as AdminOverviewDto);
-    } catch {
-      setOverview(null);
-      setError("The operations summary could not be loaded. Check the connection and try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    load();
+    return () => controllerRef.current?.abort();
+  }, [load]);
 
   if (loading) {
     return <div className={styles.overviewLoading} role="status" aria-label="Loading operations overview"><span /><span /><span /><span /></div>;
   }
   if (error || !overview) {
-    return <StateView kind="error" title="Overview unavailable" description={error ?? "The summary is unavailable."} action={{ label: "Try again", onClick: () => void retry() }} />;
+    return <StateView kind="error" title="Overview unavailable" description={error ?? "The summary is unavailable."} action={{ label: "Try again", onClick: load }} />;
   }
 
   const cards: Array<{

@@ -11,7 +11,7 @@ export const ADMIN_ACTIVITY_PAGE_SIZE = 30;
 export const ADMIN_ACTIVITY_ACTIONS = {
   access: ["suspend", "revoke", "restore", "onboarding_complete"],
   support: ["support_reply", "support_resolve", "support_reopen"],
-  invitation: ["invite", "approve", "setup_email_resent"],
+  invitation: ["setup_email_resent"],
   billing: ["billing_reconciliation_resolve"],
 } as const;
 export const ADMIN_ACTIVITY_FAILURE_RESULTS = [

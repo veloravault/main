@@ -132,7 +132,7 @@ export function AdminSupport() {
         </section>
 
         {activeTicketId ? (
-          <AdminSupportThread ticketId={activeTicketId} onClose={() => setActiveTicketId(null)} onChanged={() => void load(null, false)} />
+          <AdminSupportThread key={activeTicketId} ticketId={activeTicketId} onClose={() => setActiveTicketId(null)} onChanged={() => void load(null, false)} />
         ) : (
           <div className={styles.supportThreadPlaceholder}><LifeBuoyIcon aria-hidden="true" /><strong>Select a conversation</strong><p>Messages and reply controls will appear here.</p></div>
         )}

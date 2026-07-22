@@ -15,6 +15,7 @@ function supportMutationError(status: number, operation: "reply" | "status") {
   if (status === 401) return "Your owner session expired. Sign in again.";
   if (status === 403) return "Owner access could not be verified.";
   if (status === 404) return "This ticket no longer exists.";
+  if (status === 409 && operation === "status") return "The member replied since you opened this conversation - reloaded below. Review it before resolving.";
   return operation === "reply" ? "The reply could not be confirmed. Try again." : "The ticket status could not be confirmed. Try again.";
 }
 
@@ -123,6 +124,9 @@ export function AdminSupportThread(props: { ticketId: string; onClose: () => voi
       const payload = await response.json().catch(() => null) as { ticket?: AdminSupportTicket } | null;
       if (!response.ok || !payload?.ticket) {
         setStatusError(supportMutationError(response.status, "status"));
+        // A new member message arrived since this thread was loaded - reload
+        // it so the admin actually sees what they're about to resolve past.
+        if (response.status === 409) retryLoad();
         return;
       }
       setTicket(payload.ticket);

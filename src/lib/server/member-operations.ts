@@ -139,12 +139,16 @@ export async function sendMemberSetupEmailAdmin(args: { adminId: string; memberI
     return { kind: "unavailable" };
   }
 
+  // The reset email has already been sent at this point - a failure to
+  // record the audit row must never turn into an operation-level failure,
+  // or the admin console tells the admin to retry and a second real email
+  // goes out with no way to know the first one already landed.
   const { error: auditError } = await admin.from("admin_audit_log").insert({
     actor_user_id: args.adminId,
     member_user_id: member.user_id,
     action: "setup_email_resent",
     result_code: "SENT",
   });
-  if (auditError) throw new Error("ADMIN_MEMBER_SETUP_AUDIT_FAILED");
+  if (auditError) console.error("ADMIN_MEMBER_SETUP_AUDIT_FAILED", auditError.message);
   return { kind: "sent" };
 }

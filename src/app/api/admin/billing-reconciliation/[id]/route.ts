@@ -11,9 +11,11 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     const { id } = await context.params;
     if (!UUID.test(id)) return Response.json({ error: "INVALID_ISSUE_ID" }, { status: 400 });
 
-    const issue = await resolveBillingReconciliationIssueAdmin({ id, adminId: admin.id });
-    if (!issue) return Response.json({ error: "ISSUE_NOT_FOUND" }, { status: 404 });
-    return Response.json({ issue });
+    const result = await resolveBillingReconciliationIssueAdmin({ id, adminId: admin.id });
+    if (result.outcome === "not_found") return Response.json({ error: "ISSUE_NOT_FOUND" }, { status: 404 });
+    if (result.outcome === "already_resolved") return Response.json({ error: "ISSUE_ALREADY_RESOLVED" }, { status: 409 });
+    if (result.outcome === "subscription_not_found") return Response.json({ error: "SUBSCRIPTION_NOT_FOUND" }, { status: 409 });
+    return Response.json({ issue: result.issue });
   } catch (error) {
     if (error instanceof AuthorizationError || error instanceof RequestSecurityError) {
       return Response.json({ error: error.code }, { status: error.status });

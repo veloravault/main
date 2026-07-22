@@ -194,20 +194,41 @@ export async function postAdminReply(args: {
   return messageDto(data as MessageRow);
 }
 
+export type SetSupportTicketStatusResult =
+  | { outcome: "updated"; ticket: AdminSupportTicket }
+  | { outcome: "not_found" }
+  // The admin console has no realtime refresh, so the thread an admin is
+  // looking at can go stale while it's open. Resolving is scoped to rows
+  // whose last message is already from the owner - atomically, via the same
+  // update - so a member reply that arrived after the admin last loaded the
+  // thread can never be silently marked resolved without being seen.
+  | { outcome: "unseen_member_reply" };
+
 export async function setSupportTicketStatusAdmin(args: {
   ticketId: string;
   status: TicketStatus;
   adminId: string;
-}): Promise<AdminSupportTicket | null> {
+}): Promise<SetSupportTicketStatusResult> {
   const admin = createSupabaseAdminClient();
-  const { data, error } = await admin
+  let query = admin
     .from("support_tickets")
     .update({ status: args.status, updated_at: new Date().toISOString() })
-    .eq("id", args.ticketId)
+    .eq("id", args.ticketId);
+  if (args.status === "resolved") query = query.eq("last_message_by", "owner");
+
+  const { data, error } = await query
     .select("id,user_id,subject,status,last_message_at,last_message_by,created_at")
     .maybeSingle();
   if (error) throw new Error("SUPPORT_STATUS_UPDATE_FAILED");
-  if (!data) return null;
+
+  if (!data) {
+    if (args.status !== "resolved") return { outcome: "not_found" };
+    // The compare-and-swap above matched nothing - either the ticket
+    // doesn't exist, or it does but a member reply arrived since the admin
+    // last saw it (last_message_by is "member", not "owner").
+    const { data: exists } = await admin.from("support_tickets").select("id").eq("id", args.ticketId).maybeSingle();
+    return exists ? { outcome: "unseen_member_reply" } : { outcome: "not_found" };
+  }
 
   await recordSupportAudit({
     adminId: args.adminId,
@@ -217,5 +238,5 @@ export async function setSupportTicketStatusAdmin(args: {
   });
 
   const { data: memberRow } = await admin.from("app_members").select("email").eq("user_id", data.user_id).maybeSingle();
-  return ticketDto(data as TicketRow, memberRow?.email ?? null);
+  return { outcome: "updated", ticket: ticketDto(data as TicketRow, memberRow?.email ?? null) };
 }

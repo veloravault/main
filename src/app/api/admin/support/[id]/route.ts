@@ -41,9 +41,10 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
       return Response.json({ error: "INVALID_STATUS_UPDATE" }, { status: 400 });
     }
 
-    const ticket = await setSupportTicketStatusAdmin({ ticketId: id, status: status as TicketStatus, adminId: admin.id });
-    if (!ticket) return Response.json({ error: "TICKET_NOT_FOUND" }, { status: 404 });
-    return Response.json({ ticket });
+    const result = await setSupportTicketStatusAdmin({ ticketId: id, status: status as TicketStatus, adminId: admin.id });
+    if (result.outcome === "not_found") return Response.json({ error: "TICKET_NOT_FOUND" }, { status: 404 });
+    if (result.outcome === "unseen_member_reply") return Response.json({ error: "SUPPORT_UNSEEN_MEMBER_REPLY" }, { status: 409 });
+    return Response.json({ ticket: result.ticket });
   } catch (error) {
     return failureResponse(error);
   }

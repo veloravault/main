@@ -33,6 +33,32 @@ type IssueRow = {
   resolved_at: string | null;
 };
 
+export type BillingReconciliationCursor = { createdAt: string; id: string };
+const BILLING_CURSOR_PATTERN = /^[A-Za-z0-9_-]+$/;
+const ISO_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export function encodeBillingReconciliationCursor(cursor: BillingReconciliationCursor) {
+  return Buffer.from(JSON.stringify(cursor), "utf8").toString("base64url");
+}
+
+export function parseBillingReconciliationCursor(value: string | null): BillingReconciliationCursor | null {
+  if (!value || value.length > 400 || !BILLING_CURSOR_PATTERN.test(value)) return null;
+  try {
+    const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8")) as Partial<BillingReconciliationCursor>;
+    if (
+      typeof parsed.createdAt !== "string"
+      || !ISO_TIMESTAMP.test(parsed.createdAt)
+      || !Number.isFinite(Date.parse(parsed.createdAt))
+      || typeof parsed.id !== "string"
+      || !UUID.test(parsed.id)
+    ) return null;
+    return { createdAt: parsed.createdAt, id: parsed.id };
+  } catch {
+    return null;
+  }
+}
+
 function issueDto(row: IssueRow, memberEmail: string | null): AdminBillingReconciliationIssue {
   return {
     id: row.id,
@@ -74,15 +100,22 @@ export async function recordBillingReconciliationIssue(args: {
 
 export async function listBillingReconciliationIssuesAdmin(args: {
   filter: BillingReconciliationFilter;
-}): Promise<{ items: AdminBillingReconciliationIssue[] }> {
+  cursor: BillingReconciliationCursor | null;
+}): Promise<{ items: AdminBillingReconciliationIssue[]; nextCursor: string | null }> {
   const admin = createSupabaseAdminClient();
   let query = admin
     .from("billing_reconciliation_issues")
     .select("id,user_id,razorpay_subscription_id,action,intended_update,error_message,status,created_at,resolved_at")
     .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
     .limit(BILLING_RECONCILIATION_PAGE_SIZE);
 
   if (args.filter !== "all") query = query.eq("status", args.filter);
+  if (args.cursor) {
+    query = query.or(
+      `created_at.lt.${args.cursor.createdAt},and(created_at.eq.${args.cursor.createdAt},id.lt.${args.cursor.id})`,
+    );
+  }
 
   const { data, error } = await query;
   if (error) throw new Error("BILLING_RECONCILIATION_LIST_FAILED");
@@ -99,52 +132,51 @@ export async function listBillingReconciliationIssuesAdmin(args: {
     for (const member of members ?? []) emailById.set(member.user_id, member.email);
   }
 
-  return { items: rows.map((row) => issueDto(row, row.user_id ? emailById.get(row.user_id) ?? null : null)) };
+  const lastRow = rows[rows.length - 1];
+  const nextCursor = rows.length === BILLING_RECONCILIATION_PAGE_SIZE && lastRow
+    ? encodeBillingReconciliationCursor({ createdAt: lastRow.created_at, id: lastRow.id })
+    : null;
+
+  return {
+    items: rows.map((row) => issueDto(row, row.user_id ? emailById.get(row.user_id) ?? null : null)),
+    nextCursor,
+  };
 }
 
+export type ResolveBillingReconciliationResult =
+  | { outcome: "resolved"; issue: AdminBillingReconciliationIssue }
+  | { outcome: "not_found" }
+  | { outcome: "already_resolved" }
+  | { outcome: "subscription_not_found" };
+
+// Delegates the whole read-check-apply-mark-audit sequence to a single
+// Postgres function (resolve_billing_reconciliation_issue) that row-locks
+// the issue and runs it all in one transaction - see the migration for why:
+// two concurrent resolves could otherwise both pass a pending check and
+// both apply the fix/write an audit row, and a corrective update that
+// silently matched zero rows could still get marked "resolved".
 export async function resolveBillingReconciliationIssueAdmin(args: {
   id: string;
   adminId: string;
-}): Promise<AdminBillingReconciliationIssue | null> {
+}): Promise<ResolveBillingReconciliationResult> {
   const admin = createSupabaseAdminClient();
-  const { data: issueRow, error: issueError } = await admin
-    .from("billing_reconciliation_issues")
-    .select("id,user_id,razorpay_subscription_id,action,intended_update,error_message,status,created_at,resolved_at")
-    .eq("id", args.id)
-    .maybeSingle();
-  if (issueError) throw new Error("BILLING_RECONCILIATION_LOAD_FAILED");
-  if (!issueRow) return null;
-  const issue = issueRow as IssueRow;
-  if (issue.status === "resolved") return issueDto(issue, null);
-
-  const { error: applyError } = await admin
-    .from("subscriptions")
-    .update({ ...issue.intended_update, updated_at: new Date().toISOString() })
-    .eq("razorpay_subscription_id", issue.razorpay_subscription_id);
-  if (applyError) throw new Error("BILLING_RECONCILIATION_APPLY_FAILED");
-
-  const resolvedAt = new Date().toISOString();
   const { data, error } = await admin
-    .from("billing_reconciliation_issues")
-    .update({ status: "resolved", resolved_at: resolvedAt, resolved_by: args.adminId })
-    .eq("id", args.id)
-    .select("id,user_id,razorpay_subscription_id,action,intended_update,error_message,status,created_at,resolved_at")
+    .rpc("resolve_billing_reconciliation_issue", { p_issue_id: args.id, p_admin_id: args.adminId })
     .maybeSingle();
-  if (error) throw new Error("BILLING_RECONCILIATION_RESOLVE_FAILED");
-  if (!data) return null;
 
-  const { error: auditError } = await admin.from("admin_audit_log").insert({
-    actor_user_id: args.adminId,
-    member_user_id: issue.user_id,
-    action: "billing_reconciliation_resolve",
-    result_code: "RESOLVED",
-  });
-  if (auditError) console.error("ADMIN_BILLING_AUDIT_FAILED");
+  if (error) {
+    if (error.code === "P0001") return { outcome: "not_found" };
+    if (error.code === "P0002") return { outcome: "already_resolved" };
+    if (error.code === "P0003") return { outcome: "subscription_not_found" };
+    throw new Error("BILLING_RECONCILIATION_RESOLVE_FAILED");
+  }
+  if (!data) return { outcome: "not_found" };
 
+  const row = data as IssueRow;
   let memberEmail: string | null = null;
-  if (issue.user_id) {
-    const { data: memberRow } = await admin.from("app_members").select("email").eq("user_id", issue.user_id).maybeSingle();
+  if (row.user_id) {
+    const { data: memberRow } = await admin.from("app_members").select("email").eq("user_id", row.user_id).maybeSingle();
     memberEmail = memberRow?.email ?? null;
   }
-  return issueDto(data as IssueRow, memberEmail);
+  return { outcome: "resolved", issue: issueDto(row, memberEmail) };
 }

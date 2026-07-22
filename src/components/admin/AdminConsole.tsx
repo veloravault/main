@@ -339,7 +339,13 @@ export function AdminConsole({ adminEmail }: { adminEmail: string }) {
 
       if (response.ok) {
         const body = await response.json().catch(() => null) as { member?: AdminMember } | null;
-        setItems((current) => current.map((item) => item.id === member.id && body?.member ? body.member : item));
+        // A row whose new status no longer matches the active filter (e.g.
+        // suspending someone while filtered to "Active") is removed rather
+        // than updated in place - otherwise it lingers under a filter its
+        // own status badge contradicts until the next full reload.
+        setItems((current) => current
+          .map((item) => item.id === member.id && body?.member ? body.member : item)
+          .filter((item) => item.id !== member.id || memberFilter === "all" || item.status === memberFilter));
         if (body?.member) setSelectedMember((current) => current?.id === member.id ? body.member as AdminMember : current);
         const verb = status === "active" ? "restored" : status;
         setAnnouncement(`${member.email} ${verb}.`);
