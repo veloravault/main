@@ -75,9 +75,13 @@ export default async function BlogPostPage({
 
   return (
     <PublicPageShell>
+      {/* suppressHydrationWarning: the browser blanks a script's nonce
+          attribute once inserted (so page JS can't read/reuse it) - see the
+          fuller explanation on the JSON-LD script in src/app/layout.tsx. */}
       <script
         type="application/ld+json"
         nonce={nonce}
+        suppressHydrationWarning
         dangerouslySetInnerHTML={{
           __html: JSON.stringify([articleJsonLd(post), breadcrumbJsonLd(post)]),
         }}
