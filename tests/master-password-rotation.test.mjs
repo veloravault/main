@@ -121,3 +121,9 @@ test("ChangeMasterPasswordSheet verifies the current password locally, and only 
   // explicit length check is required in code, not just the strength meter.
   assert.match(source, /newPassword\.length < 8/);
 });
+
+test("SecuritySettings renders an entry point for changing the master password", () => {
+  const source = read("src/components/settings/SecuritySettings.tsx");
+  assert.match(source, /import \{ ChangeMasterPasswordSheet \} from "@\/components\/settings\/ChangeMasterPasswordSheet";/);
+  assert.match(source, /<ChangeMasterPasswordSheet open=\{isChangingMasterPassword\} onOpenChange=\{setIsChangingMasterPassword\} \/>/);
+});

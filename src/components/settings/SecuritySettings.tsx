@@ -10,6 +10,7 @@ import { loadVaultPreferences, saveVaultPreferences, subscribeVaultPreferences, 
 import { useToast } from "@/components/Toast";
 import { useVaultKey } from "@/components/auth/VaultKeyProvider";
 import { AdaptiveSheet, AdaptiveSheetBody } from "@/components/ui/adaptive-sheet";
+import { ChangeMasterPasswordSheet } from "@/components/settings/ChangeMasterPasswordSheet";
 
 const AUTO_LOCK: Array<{ value: AutoLockMinutes; label: string }> = [
   { value: 0, label: "Immediately" }, { value: 1, label: "1 minute" }, { value: 5, label: "5 minutes" }, { value: 15, label: "15 minutes" }, { value: 30, label: "30 minutes" },
@@ -55,6 +56,7 @@ export function SecuritySettings({ masterPassword, onLock }: { masterPassword: s
   const [pinSetupError, setPinSetupError] = useState<string | null>(null);
   const [savingPinSetup, setSavingPinSetup] = useState(false);
   const [pinShake, setPinShake] = useState(false);
+  const [isChangingMasterPassword, setIsChangingMasterPassword] = useState(false);
   const [sessionWorking, setSessionWorking] = useState(false);
   const [sessions, setSessions] = useState<VaultSessionRow[] | null>(null);
   const [sessionsError, setSessionsError] = useState<string | null>(null);
@@ -254,6 +256,12 @@ export function SecuritySettings({ masterPassword, onLock }: { masterPassword: s
         </SettingsControl>
       </div>
 
+      <div className="settings-section-label">Master password</div>
+      <button type="button" className="settings-action-row system-interactive" onClick={() => setIsChangingMasterPassword(true)}>
+        <LockIcon aria-hidden="true" />
+        <span><strong>Change master password</strong><small>Re-encrypts your entire vault with a new key.</small></span>
+      </button>
+
       <div className="settings-section-label">Sessions</div>
       <div className="settings-group">
         {sessionsError && <p className="settings-inline-error" role="alert">{sessionsError}</p>}
@@ -376,6 +384,8 @@ export function SecuritySettings({ masterPassword, onLock }: { masterPassword: s
           </div>
         </AdaptiveSheetBody>
       </AdaptiveSheet>
+
+      <ChangeMasterPasswordSheet open={isChangingMasterPassword} onOpenChange={setIsChangingMasterPassword} />
     </section>
   );
 }
