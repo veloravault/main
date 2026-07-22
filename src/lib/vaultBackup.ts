@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { downloadFromPresignedUrl, requestDownloadUrl } from "@/lib/r2Client";
 
 export interface BackupManifest {
-  format: "telkarvault";
+  format: "veloravault";
   version: 1;
   exportedAt: string;
   appVersion: string;
@@ -78,7 +78,7 @@ export async function exportEncryptedVaultBackup(onProgress?: (completed: number
   const exportedAt = new Date().toISOString();
   const unsigned: EncryptedVaultBackup = {
     manifest: {
-      format: "telkarvault",
+      format: "veloravault",
       version: 1,
       exportedAt,
       appVersion: "0.1.0",
@@ -95,7 +95,7 @@ export async function exportEncryptedVaultBackup(onProgress?: (completed: number
   };
   const digest = await sha256(JSON.stringify(unsigned));
   const backup = { ...unsigned, manifest: { ...unsigned.manifest, sha256: digest } };
-  return { backup, filename: `velora-vault-${exportedAt.slice(0, 10)}.telkarvault` };
+  return { backup, filename: `velora-vault-${exportedAt.slice(0, 10)}.veloravault` };
 }
 
 export function downloadEncryptedVaultBackup(backup: EncryptedVaultBackup, filename: string) {

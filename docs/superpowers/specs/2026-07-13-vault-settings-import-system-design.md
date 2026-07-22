@@ -121,14 +121,14 @@ Settings uses a secondary two-column layout inside the existing app content area
 
 ### 4.6 Data & Backup
 
-- Export a versioned `.telkarvault` JSON backup generated entirely in the browser.
+- Export a versioned `.veloravault` JSON backup generated entirely in the browser.
 - The backup contains ciphertext, IVs, salts, non-secret metadata required for reconstruction, and every encrypted document blob referenced by the user's document records.
 - Document blobs are downloaded in their already-encrypted form from the existing `vault_documents` bucket and encoded into the export without local decryption.
 - If any referenced encrypted document blob cannot be retrieved, the export stops and identifies the affected document instead of producing a silently incomplete backup.
 - The backup contains a manifest with format version, export time, source app version, table counts, and a SHA-256 integrity digest.
 - Plaintext passwords, notes, account numbers, PINs, document contents, the master key, PIN wrapper, and biometric wrapper must never be written into the export.
 - The UI explicitly states that the existing master key is required to read the encrypted data.
-- This phase provides secure export only. Restore/import of `.telkarvault` backups is deferred until a separately reviewed recovery design exists.
+- This phase provides secure export only. Restore/import of `.veloravault` backups is deferred until a separately reviewed recovery design exists.
 
 ### 4.7 Danger Zone
 
@@ -404,7 +404,7 @@ Verify at minimum:
 - No master-key change, reset, recovery, rotation, or migration.
 - No account-password change.
 - No fabricated trusted-device list.
-- No `.telkarvault` restore flow in this phase.
+- No `.veloravault` restore flow in this phase.
 - No durable offline editing or background synchronization.
 - No server-side import-history schema.
 - No browser extension or native mobile application.

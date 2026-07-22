@@ -23,7 +23,7 @@ export interface ImportHistoryEntry {
   undoneAt?: string;
 }
 
-const STORAGE_KEY = "telkar_import_history_v1";
+const STORAGE_KEY = "velora_import_history_v1";
 const MAX_ENTRIES = 10;
 const UNDO_MS = 10 * 60 * 1000;
 

@@ -128,11 +128,11 @@ export function BackupSettings({ masterPassword }: { masterPassword: string }) {
       <div className="apple-grouped-list" style={{ marginTop: 20 }}>
         <div className="settings-backup-hero">
           <span><UploadIcon aria-hidden="true" /></span>
-          <div><h3>Restore from backup</h3><p>Add the items from a previously exported .telkarvault file back into this vault. This adds to your vault - it doesn&apos;t replace or deduplicate existing items.</p></div>
+          <div><h3>Restore from backup</h3><p>Add the items from a previously exported .veloravault file back into this vault. This adds to your vault - it doesn&apos;t replace or deduplicate existing items.</p></div>
           <Button onClick={pickRestoreFile} variant="outline" className="settings-primary-button"><UploadIcon />Choose backup file</Button>
         </div>
       </div>
-      <input ref={restoreInputRef} type="file" accept=".telkarvault,application/json" hidden onChange={(event) => void onRestoreFileSelected(event.target.files?.[0])} />
+      <input ref={restoreInputRef} type="file" accept=".veloravault,application/json" hidden onChange={(event) => void onRestoreFileSelected(event.target.files?.[0])} />
 
       <AdaptiveSheet open={confirmOpen} onOpenChange={(open) => { if (!exporting) setConfirmOpen(open); }} title="Export encrypted backup" description="The file can be large when your vault contains documents." size="sm">
         <AdaptiveSheetBody>

@@ -496,7 +496,7 @@ Verify 390px menu navigation, theme choice, Lock Vault return path, 1-minute aut
 
 ```ts
 export interface BackupManifest {
-  format: "telkarvault";
+  format: "veloravault";
   version: 1;
   exportedAt: string;
   appVersion: string;
@@ -516,9 +516,9 @@ The digest is computed over canonical JSON with `sha256` temporarily empty, then
 
 Select ciphertext rows from `vault_items`, `vault_documents`, `secure_notes`, and `secure_wallet`. Download each referenced `vault_documents.storage_path` without decrypting. Stop on the first missing blob and return a typed error naming the document title.
 
-- [ ] **Step 3: Download `.telkarvault` safely**
+- [ ] **Step 3: Download `.veloravault` safely**
 
-Serialize, create an `application/json` Blob, use an object URL, click a temporary anchor, revoke the URL, and name the file `telkar-vault-YYYY-MM-DD.telkarvault`. Never pass `masterPassword` into this module.
+Serialize, create an `application/json` Blob, use an object URL, click a temporary anchor, revoke the URL, and name the file `velora-vault-YYYY-MM-DD.veloravault`. Never pass `masterPassword` into this module.
 
 - [ ] **Step 4: Build Backup Settings**
 

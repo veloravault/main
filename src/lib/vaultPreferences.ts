@@ -13,8 +13,8 @@ export const DEFAULT_VAULT_PREFERENCES: VaultPreferences = {
   clipboardClearSeconds: 30,
 };
 
-const STORAGE_KEY = "telkar_vault_preferences_v1";
-const CHANGE_EVENT = "telkar:vault-preferences-change";
+const STORAGE_KEY = "velora_vault_preferences_v1";
+const CHANGE_EVENT = "velora:vault-preferences-change";
 const AUTO_LOCK_VALUES = new Set<AutoLockMinutes>([0, 1, 5, 15, 30]);
 const CLIPBOARD_VALUES = new Set<ClipboardClearSeconds>([0, 15, 30, 60]);
 

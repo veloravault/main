@@ -29,7 +29,7 @@ export interface ParsedBackup {
   manifest: BackupManifest;
 }
 
-/** Parses and validates a .telkarvault file: JSON shape, format/version, and integrity digest. */
+/** Parses and validates a .veloravault file: JSON shape, format/version, and integrity digest. */
 export async function parseVaultBackupFile(file: File): Promise<ParsedBackup> {
   let text: string;
   try {
@@ -46,7 +46,7 @@ export async function parseVaultBackupFile(file: File): Promise<ParsedBackup> {
   }
 
   const manifest = parsed?.manifest;
-  if (!manifest || manifest.format !== "telkarvault" || manifest.version !== 1) {
+  if (!manifest || manifest.format !== "veloravault" || manifest.version !== 1) {
     throw new BackupRestoreError("This file is not a Velora Vault backup.");
   }
   if (!parsed.records || typeof parsed.records !== "object" || !Array.isArray(parsed.documentBlobs)) {
