@@ -86,3 +86,30 @@ test("masterPasswordRotation touches all four tables, in old-then-new password o
   // established pattern from resolveBillingReconciliationIssueAdmin).
   assert.match(source, /rpcError\.code === "P0001"/);
 });
+
+test("ChangeMasterPasswordSheet verifies the current password locally, and only clears PIN/biometrics and updates the in-memory key after rotation succeeds", () => {
+  const source = read("src/components/settings/ChangeMasterPasswordSheet.tsx");
+
+  assert.match(source, /export function ChangeMasterPasswordSheet\(\{ open, onOpenChange \}/);
+
+  // Current-password re-entry is checked against the already-trusted
+  // in-memory masterKey - no separate decrypt-based verification needed.
+  assert.match(source, /currentPassword !== masterKey/);
+
+  // rotateMasterPassword is awaited before any local state is cleared/updated.
+  const rotateIndex = source.indexOf("await rotateMasterPassword(");
+  const clearPinIndex = source.indexOf("clearPinLock()");
+  const disableBioIndex = source.indexOf("disableBiometrics(");
+  const setMasterKeyIndex = source.indexOf("setMasterKey(newPassword");
+  assert.ok(rotateIndex > -1, "must call rotateMasterPassword");
+  assert.ok(clearPinIndex > rotateIndex, "PIN must only be cleared after rotation");
+  assert.ok(disableBioIndex > rotateIndex, "biometrics must only be disabled after rotation");
+  assert.ok(setMasterKeyIndex > rotateIndex, "in-memory master key must only update after rotation");
+
+  // Errors from rotation are caught and surfaced, not left to crash the form.
+  assert.match(source, /catch \(err\)/);
+  assert.match(source, /MasterPasswordRotationError/);
+
+  // Double-submit guard while a rotation is in flight.
+  assert.match(source, /if \(isRotating\) return;/);
+});
