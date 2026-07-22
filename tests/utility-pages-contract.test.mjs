@@ -98,6 +98,7 @@ test("utility styles define responsive, focus, overflow, and reduced-motion safe
   assert.match(css, /\.heroVisualInset\b/);
   assert.match(css, /\.heroVisualResult\b/);
   assert.match(css, /\.workbenchSection\s*\{[^}]*scroll-margin-top:/);
+  assert.match(css, /\.workbenchHeader h2\s*\{[^}]*scroll-margin-top:\s*124px/);
   assert.match(
     css,
     /@media \(max-width: 767px\)[\s\S]*?\.hero\s*\{[^}]*min-height:\s*auto/,

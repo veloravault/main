@@ -155,6 +155,7 @@
 }
 
 .workbenchHeader h2 {
+  scroll-margin-top: 124px;
   margin: 8px 0 0;
   color: var(--ink);
   font-size: clamp(24px, 3vw, 34px);
