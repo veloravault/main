@@ -52,3 +52,37 @@ test("chunkKeys batches values into bounded groups, including exact multiples an
   assert.equal(defaultChunks[0].length, 1000);
   assert.equal(defaultChunks[1].length, 1);
 });
+
+test("masterPasswordRotation touches all four tables, in old-then-new password order, and only cleans up after the RPC commits", () => {
+  const source = read("src/lib/masterPasswordRotation.ts");
+
+  // Fetches all four tables before doing anything else.
+  assert.match(source, /from\("vault_items"\)/);
+  assert.match(source, /from\("secure_notes"\)/);
+  assert.match(source, /from\("secure_wallet"\)/);
+  assert.match(source, /from\("vault_documents"\)/);
+
+  // Decrypts with the OLD password, re-encrypts with the NEW one - not the reverse.
+  assert.match(source, /decryptText\([^)]*oldPassword\)/);
+  assert.match(source, /encryptText\([^)]*newPassword\)/);
+  assert.match(source, /decryptFile\([^)]*oldPassword\)/);
+  assert.match(source, /encryptFile\([^)]*newPassword\)/);
+
+  // Calls the exact RPC from Task 1, with all four payload keys.
+  assert.match(source, /supabase\.rpc\("rotate_master_key_ciphertexts",/);
+  assert.match(source, /p_items:/);
+  assert.match(source, /p_notes:/);
+  assert.match(source, /p_wallet:/);
+  assert.match(source, /p_documents:/);
+
+  // Old R2 document objects are only deleted AFTER the rpc call in source
+  // order, and via the bounded chunkKeys helper, not a single unbounded call.
+  const rpcIndex = source.indexOf("supabase.rpc(\"rotate_master_key_ciphertexts\"");
+  const cleanupIndex = source.indexOf("deleteObjects(");
+  assert.ok(rpcIndex > -1 && cleanupIndex > -1 && cleanupIndex > rpcIndex, "cleanup must happen after the rpc call, in source order");
+  assert.match(source, /chunkKeys\(oldDocumentKeys\)/);
+
+  // Error codes checked by code, not by matching message text (matches the
+  // established pattern from resolveBillingReconciliationIssueAdmin).
+  assert.match(source, /rpcError\.code === "P0001"/);
+});
