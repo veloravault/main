@@ -37,6 +37,7 @@ import {
   MoonIcon,
   Wand2Icon,
   BuildingIcon,
+  ChevronLeftIcon,
 } from "lucide-react";
 import { VeloraMark } from "@/components/VeloraMark";
 import { PresetAvatar, isAvatarKind } from "@/components/PresetAvatar";
@@ -71,6 +72,10 @@ const ALL_TABS_WITH_PROFILE = [
   { tab: "profile" as Tab, icon: UserCircleIcon, label: "Settings" },
 ];
 
+const SIDEBAR_COLLAPSED_KEY = "velora_vault_sidebar_collapsed_v1";
+const SIDEBAR_EXPANDED_WIDTH = 240;
+const SIDEBAR_COLLAPSED_WIDTH = 72;
+
 export default function VaultApp() {
   const router = useRouter();
   const prefersReducedMotion = useReducedMotion();
@@ -81,6 +86,33 @@ export default function VaultApp() {
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
   const [showPinLock, setShowPinLock] = useState(false);
   const [showFullAuth, setShowFullAuth] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Reads the persisted collapse preference after mount (not in the useState
+  // initializer) so the client's first render matches the server's - avoids
+  // a hydration mismatch, at the cost of a brief expand->collapse animation
+  // on load for a returning user who last left it collapsed.
+  useEffect(() => {
+    queueMicrotask(() => {
+      try {
+        setSidebarCollapsed(window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1");
+      } catch {
+        // localStorage unavailable (private mode, disabled) - keep default
+      }
+    });
+  }, []);
+
+  const toggleSidebarCollapsed = useCallback(() => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
+      } catch {
+        // localStorage unavailable - collapse still works for this session
+      }
+      return next;
+    });
+  }, []);
 
   // Theme
   const { theme, setTheme, resolvedTheme } = useTheme();
@@ -251,33 +283,67 @@ export default function VaultApp() {
 
   const avatarKind = isAvatarKind(sessionUser.user_metadata?.avatar_kind) ? sessionUser.user_metadata.avatar_kind : null;
   const displayName = (sessionUser.user_metadata?.full_name as string | undefined) ?? sessionUser.email?.split("@")[0] ?? "";
-  const activeTitle = ALL_TABS_WITH_PROFILE.find((item) => item.tab === activeTab)?.label ?? "Dashboard";
 
   return (
     <div className="ios-app-shell apple-app flex h-dvh w-full overflow-hidden">
       <ConnectivityBanner isOnline={connectivity.isOnline} />
 
       {/* ── Sidebar ─────────────────────────────────────────── */}
-      <aside className="apple-sidebar w-60 hidden md:flex flex-col shrink-0 sidebar-vibrancy border-r"
-        style={{ borderColor: "var(--sidebar-border)" }}>
+      <motion.aside
+        className="apple-sidebar hidden md:flex flex-col shrink-0 sidebar-vibrancy border-r relative"
+        style={{ borderColor: "var(--sidebar-border)" }}
+        initial={false}
+        animate={{ width: sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH }}
+        transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 260, damping: 32 }}
+      >
+        <button
+          type="button"
+          onClick={toggleSidebarCollapsed}
+          className="sidebar-collapse-toggle"
+          aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-pressed={sidebarCollapsed}
+        >
+          <motion.span
+            className="flex"
+            animate={{ rotate: sidebarCollapsed ? 180 : 0 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { type: "spring", stiffness: 300, damping: 24 }}
+          >
+            <ChevronLeftIcon className="w-4 h-4" strokeWidth={2.5} />
+          </motion.span>
+        </button>
 
         {/* App identity */}
-        <div className="px-4 pt-5 pb-3">
-          <div className="flex items-center gap-2.5">
-            <VeloraMark className="velora-brand-mark h-8 w-8 shrink-0" aria-hidden="true" />
-            <span className="text-[15px] font-semibold tracking-tight text-foreground">Velora Vault</span>
+        <div className={`flex items-center pt-5 pb-3 overflow-hidden ${sidebarCollapsed ? "justify-center px-2" : "px-4"}`}>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <VeloraMark tone="dark" className="velora-brand-mark h-8 w-8 shrink-0" aria-hidden="true" />
+            <AnimatePresence initial={false}>
+              {!sidebarCollapsed && (
+                <motion.span
+                  key="brand-text"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="text-[15px] font-semibold tracking-tight sidebar-brand-text whitespace-nowrap"
+                >
+                  Velora Vault
+                </motion.span>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto px-2 pb-2 pt-2 space-y-5">
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 pb-2 pt-2 space-y-5">
           {NAV_SECTIONS.map(section => (
             <div key={section.label}>
-              <div className="px-2 pb-1 pt-1">
-                <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.06em]">
-                  {section.label}
-                </span>
-              </div>
+              {!sidebarCollapsed && (
+                <div className="px-2 pb-1 pt-1">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.06em] sidebar-section-label">
+                    {section.label}
+                  </span>
+                </div>
+              )}
               <div className="space-y-0.5">
                 {section.items.map(({ tab, icon: Icon, label }) => {
                   const isActive = activeTab === tab;
@@ -285,26 +351,39 @@ export default function VaultApp() {
                     <button
                       key={tab}
                       onClick={() => handleNavigate(tab)}
-                      className={`relative w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-[8px] text-[14px] transition-colors ${
-                        isActive
-                          ? "text-primary font-semibold"
-                          : "text-foreground/80 font-normal hover:bg-black/5 dark:hover:bg-white/6"
-                      }`}
+                      aria-label={label}
+                      title={sidebarCollapsed ? label : undefined}
+                      className={`relative w-full flex items-center gap-2.5 py-[7px] rounded-[8px] text-[14px] transition-colors sidebar-nav-item ${
+                        isActive ? "is-active font-semibold" : "font-normal"
+                      } ${sidebarCollapsed ? "justify-center px-0" : "px-2.5"}`}
                     >
                       {isActive && (
                         <motion.div
                           layoutId="sidebar-pill"
-                          className="absolute inset-0 rounded-[8px] bg-primary/10 dark:bg-primary/15"
+                          className="absolute inset-0 rounded-[8px] sidebar-active-pill"
                           transition={{ type: "spring", bounce: 0.15, duration: 0.38 }}
                         />
                       )}
                       <Icon
-                        className={`relative z-10 w-[18px] h-[18px] shrink-0 transition-colors ${
-                          isActive ? "text-primary" : "text-muted-foreground"
+                        className={`relative z-10 w-[18px] h-[18px] shrink-0 transition-colors sidebar-nav-icon ${
+                          isActive ? "is-active" : ""
                         }`}
                         strokeWidth={isActive ? 2.25 : 1.75}
                       />
-                      <span className="relative z-10">{label}</span>
+                      <AnimatePresence initial={false}>
+                        {!sidebarCollapsed && (
+                          <motion.span
+                            key="label"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.15 }}
+                            className="relative z-10 whitespace-nowrap"
+                          >
+                            {label}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
                     </button>
                   );
                 })}
@@ -314,32 +393,59 @@ export default function VaultApp() {
         </nav>
 
         {/* User + Sign out */}
-        <div className="border-t px-3 py-3 space-y-1" style={{ borderColor: "var(--sidebar-border)" }}>
-          <div className="flex items-center gap-2.5 px-1.5 py-1">
+        <div className="border-t px-3 py-3 space-y-1 overflow-hidden" style={{ borderColor: "var(--sidebar-border)" }}>
+          <div className={`flex items-center gap-2.5 px-1.5 py-1 ${sidebarCollapsed ? "justify-center" : ""}`}>
             <div className="w-7 h-7 rounded-full shrink-0 overflow-hidden">
               <PresetAvatar kind={avatarKind} name={displayName} email={sessionUser.email} title={displayName} />
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-[12px] font-medium text-foreground truncate leading-tight">{displayName}</div>
-              <div className="text-[11px] text-muted-foreground truncate leading-tight">{sessionUser.email}</div>
-            </div>
+            <AnimatePresence initial={false}>
+              {!sidebarCollapsed && (
+                <motion.div
+                  key="user-info"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="flex-1 min-w-0"
+                >
+                  <div className="text-[12px] font-medium truncate leading-tight sidebar-user-name">{displayName}</div>
+                  <div className="text-[11px] truncate leading-tight sidebar-user-email">{sessionUser.email}</div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
           <button
             onClick={() => { requestSettingsSection("plan"); handleNavigate("profile"); }}
-            className="w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-[8px] text-[14px] text-primary hover:bg-primary/8 transition-colors"
+            aria-label="Upgrade plan"
+            title={sidebarCollapsed ? "Upgrade plan" : undefined}
+            className={`relative w-full flex items-center gap-2.5 py-[7px] rounded-[8px] text-[14px] transition-colors sidebar-upgrade-btn ${sidebarCollapsed ? "justify-center px-0" : "px-2.5"}`}
           >
             <SparklesIcon className="w-[16px] h-[16px] shrink-0" strokeWidth={1.75} />
-            Upgrade plan
+            <AnimatePresence initial={false}>
+              {!sidebarCollapsed && (
+                <motion.span key="label" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="whitespace-nowrap">
+                  Upgrade plan
+                </motion.span>
+              )}
+            </AnimatePresence>
           </button>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-[8px] text-[14px] text-muted-foreground hover:text-destructive hover:bg-destructive/8 transition-colors"
+            aria-label="Sign Out"
+            title={sidebarCollapsed ? "Sign Out" : undefined}
+            className={`relative w-full flex items-center gap-2.5 py-[7px] rounded-[8px] text-[14px] transition-colors sidebar-signout-btn ${sidebarCollapsed ? "justify-center px-0" : "px-2.5"}`}
           >
             <LogOutIcon className="w-[16px] h-[16px] shrink-0" strokeWidth={1.75} />
-            Sign Out
+            <AnimatePresence initial={false}>
+              {!sidebarCollapsed && (
+                <motion.span key="label" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="whitespace-nowrap">
+                  Sign Out
+                </motion.span>
+              )}
+            </AnimatePresence>
           </button>
         </div>
-      </aside>
+      </motion.aside>
 
 
       {/* -- Main content -- */}
@@ -348,7 +454,7 @@ export default function VaultApp() {
         {/* -- Header -- */}
         <header className="vault-header">
           <div className="vault-header-leading">
-            <span className="vault-header-title">{activeTitle}</span>
+            <span className="vault-header-title">Hello, {displayName}</span>
           </div>
 
           <button type="button" onClick={() => setSearchOpen(true)} className="vault-header-search" aria-label="Search your vault">
@@ -468,7 +574,7 @@ export default function VaultApp() {
 
       {/* ── Mobile bottom tab bar ────────────────────────── */}
       <nav
-        className="apple-tabbar md:hidden fixed bottom-0 left-0 right-0 z-40 sidebar-vibrancy bg-background/80 backdrop-blur-xl"
+        className="apple-tabbar md:hidden fixed bottom-0 left-0 right-0 z-40 mobile-tabbar-vibrancy"
         style={{ borderColor: "var(--border)" }}
         aria-label="Primary navigation"
       >

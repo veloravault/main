@@ -2,9 +2,15 @@
 
 import { useTheme } from "@/components/ThemeProvider";
 
-export function VeloraMark({ className = "", style, ...props }: React.HTMLAttributes<HTMLSpanElement>) {
+type VeloraMarkProps = React.HTMLAttributes<HTMLSpanElement> & {
+  /** Force a specific mark instead of following the app theme - for surfaces (e.g. a colored sidebar) whose background doesn't flip with light/dark mode. */
+  tone?: "light" | "dark";
+};
+
+export function VeloraMark({ className = "", style, tone, ...props }: VeloraMarkProps) {
   const { resolvedTheme } = useTheme();
-  const logoSrc = resolvedTheme === "dark"
+  const effectiveTone = tone ?? resolvedTheme;
+  const logoSrc = effectiveTone === "dark"
     ? "/brand/velora-mark-dark.png"
     : "/brand/velora-mark-light.png";
 
