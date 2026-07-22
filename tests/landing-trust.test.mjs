@@ -37,6 +37,44 @@ test("landing removes unfinished editorial content and unsupported availability 
   assert.doesNotMatch(combined, /nothing's ever out of date/i);
 });
 
+test("public navigation exposes all utilities through responsive submenus", () => {
+  const nav = read("src/components/dreelio/Nav.tsx");
+  const data = read("src/components/dreelio/data.ts");
+  const css = read("src/components/dreelio/Nav.module.css");
+
+  assert.doesNotMatch(data, /label:\s*["']Benefits["']/);
+  assert.match(data, /export const UTILITY_LINKS/);
+
+  for (const [label, href] of [
+    ["Password Generator", "/utilities/password-generator"],
+    ["Passphrase Generator", "/utilities/passphrase-generator"],
+    ["Username Generator", "/utilities/username-generator"],
+    ["Password Strength Tester", "/utilities/password-strength"],
+  ]) {
+    assert.match(data, new RegExp(`label: ["']${label}["'][\\s\\S]*href: ["']${href}["']`));
+  }
+
+  assert.match(nav, /aria-haspopup="menu"/);
+  assert.match(nav, /aria-controls="utilities-menu"/);
+  assert.match(nav, /id="utilities-menu"/);
+  assert.match(nav, /role="menu"/);
+  assert.match(nav, /event\.key === "Escape"/);
+  assert.match(nav, /pointerdown/);
+  assert.match(nav, /aria-controls="mobile-utilities-menu"/);
+  assert.match(nav, /id="mobile-utilities-menu"/);
+
+  for (const className of [
+    "utilityTrigger",
+    "utilityDropdown",
+    "mobileUtilityTrigger",
+    "mobileUtilityLinks",
+  ]) {
+    assert.match(css, new RegExp(`\\.${className}\\b`));
+  }
+  assert.match(css, /@media \(max-width: 900px\)/);
+  assert.match(css, /:focus-visible/);
+});
+
 test("public footer closes the page with identity, navigation, and payment trust", () => {
   const footer = read("src/components/dreelio/Footer.tsx");
   const css = read("src/components/dreelio/Footer.module.css");
@@ -119,7 +157,7 @@ test("security explainer uses the public shell and an accessible motion story", 
   assert.match(shell, /<Footer\s*\/>/);
   assert.doesNotMatch(page, /LegalHeader/);
   assert.match(navigation, /href: "\/#features"/);
-  assert.match(navigation, /href: "\/#benefits"/);
+  assert.match(navigation, /href: "\/security"/);
   assert.match(navigation, /href: "\/pricing"/);
 
   assert.match(visuals, /export function SecurityFlowVisual/);

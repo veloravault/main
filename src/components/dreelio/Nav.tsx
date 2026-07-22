@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { MoonIcon, SunIcon } from "lucide-react";
+import { ChevronDownIcon, MoonIcon, SunIcon } from "lucide-react";
 import shared from "@/app/dreelio/dreelio.module.css";
 import styles from "./Nav.module.css";
 import { VeloraBrandMark } from "./VeloraBrand";
-import { NAV_LINKS } from "./data";
+import { NAV_LINKS, UTILITY_LINKS } from "./data";
 import {
   HOVER_LIFT,
   LANDING_VIEWPORT,
@@ -62,7 +62,10 @@ type NavProps = {
 
 export function Nav({ initialSignedIn = false }: NavProps) {
   const [open, setOpen] = useState(false);
+  const [utilitiesOpen, setUtilitiesOpen] = useState(false);
+  const [mobileUtilitiesOpen, setMobileUtilitiesOpen] = useState(false);
   const [signedIn, setSignedIn] = useState(initialSignedIn);
+  const utilityMenuRef = useRef<HTMLLIElement>(null);
   const { resolvedTheme, setTheme } = useTheme();
   const reduceMotion = useReducedMotion();
 
@@ -79,6 +82,34 @@ export function Nav({ initialSignedIn = false }: NavProps) {
     });
     return () => { active = false; subscription.unsubscribe(); };
   }, []);
+
+  useEffect(() => {
+    if (!utilitiesOpen) return;
+
+    const closeOnPointerDown = (event: PointerEvent) => {
+      if (!utilityMenuRef.current?.contains(event.target as Node)) {
+        setUtilitiesOpen(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setUtilitiesOpen(false);
+    };
+
+    document.addEventListener("pointerdown", closeOnPointerDown);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnPointerDown);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [utilitiesOpen]);
+
+  const closeMobileMenu = () => {
+    setOpen(false);
+    setMobileUtilitiesOpen(false);
+  };
+
+  const featureLink = NAV_LINKS[0];
+  const remainingLinks = NAV_LINKS.slice(1);
 
   return (
     <motion.header
@@ -102,7 +133,52 @@ export function Nav({ initialSignedIn = false }: NavProps) {
         </motion.a>
 
         <ul className={styles.links}>
-          {NAV_LINKS.map((link) => (
+          <motion.li whileHover={reduceMotion ? undefined : { y: -1 }}>
+            <a href={featureLink.href}>{featureLink.label}</a>
+          </motion.li>
+          <motion.li
+            ref={utilityMenuRef}
+            className={styles.utilityMenu}
+            whileHover={reduceMotion ? undefined : { y: -1 }}
+          >
+            <button
+              type="button"
+              className={styles.utilityTrigger}
+              aria-haspopup="menu"
+              aria-expanded={utilitiesOpen}
+              aria-controls="utilities-menu"
+              onClick={() => setUtilitiesOpen((current) => !current)}
+            >
+              Utilities
+              <ChevronDownIcon data-open={utilitiesOpen} aria-hidden="true" />
+            </button>
+            <AnimatePresence initial={false}>
+              {utilitiesOpen && (
+                <motion.ul
+                  id="utilities-menu"
+                  className={styles.utilityDropdown}
+                  role="menu"
+                  initial={reduceMotion ? false : { opacity: 0, y: -6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={reduceMotion ? undefined : { opacity: 0, y: -4, scale: 0.98 }}
+                  transition={{ duration: 0.16 }}
+                >
+                  {UTILITY_LINKS.map((link) => (
+                    <li key={link.href} role="none">
+                      <a
+                        href={link.href}
+                        role="menuitem"
+                        onClick={() => setUtilitiesOpen(false)}
+                      >
+                        {link.label}
+                      </a>
+                    </li>
+                  ))}
+                </motion.ul>
+              )}
+            </AnimatePresence>
+          </motion.li>
+          {remainingLinks.map((link) => (
             <motion.li
               key={link.label}
               whileHover={reduceMotion ? undefined : { y: -1 }}
@@ -160,7 +236,10 @@ export function Nav({ initialSignedIn = false }: NavProps) {
             className={styles.burger}
             aria-label="Toggle menu"
             aria-expanded={open}
-            onClick={() => setOpen((v) => !v)}
+            onClick={() => {
+              if (open) setMobileUtilitiesOpen(false);
+              setOpen(!open);
+            }}
           >
             <span data-open={open} />
             <span data-open={open} />
@@ -178,8 +257,41 @@ export function Nav({ initialSignedIn = false }: NavProps) {
           transition={{ duration: 0.24 }}
           viewport={LANDING_VIEWPORT}
         >
-          {NAV_LINKS.map((link) => (
-            <a key={link.label} href={link.href} onClick={() => setOpen(false)}>
+          <a href={featureLink.href} onClick={closeMobileMenu}>
+            {featureLink.label}
+          </a>
+          <div className={styles.mobileUtilityGroup}>
+            <button
+              type="button"
+              className={styles.mobileUtilityTrigger}
+              aria-expanded={mobileUtilitiesOpen}
+              aria-controls="mobile-utilities-menu"
+              onClick={() => setMobileUtilitiesOpen((current) => !current)}
+            >
+              Utilities
+              <ChevronDownIcon data-open={mobileUtilitiesOpen} aria-hidden="true" />
+            </button>
+            <AnimatePresence initial={false}>
+              {mobileUtilitiesOpen && (
+                <motion.div
+                  id="mobile-utilities-menu"
+                  className={styles.mobileUtilityLinks}
+                  initial={reduceMotion ? false : { opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={reduceMotion ? undefined : { opacity: 0, height: 0 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  {UTILITY_LINKS.map((link) => (
+                    <a key={link.href} href={link.href} onClick={closeMobileMenu}>
+                      {link.label}
+                    </a>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          {remainingLinks.map((link) => (
+            <a key={link.label} href={link.href} onClick={closeMobileMenu}>
               {link.label}
             </a>
           ))}
@@ -187,7 +299,7 @@ export function Nav({ initialSignedIn = false }: NavProps) {
             <a
               href="/vault"
               className={`${shared.btn} ${shared.btnDark}`}
-              onClick={() => setOpen(false)}
+              onClick={closeMobileMenu}
             >
               Open vault
             </a>
@@ -196,14 +308,14 @@ export function Nav({ initialSignedIn = false }: NavProps) {
               <a
                 href="/login"
                 className={styles.mobileSignIn}
-                onClick={() => setOpen(false)}
+                onClick={closeMobileMenu}
               >
                 Sign in
               </a>
               <a
                 href="/signup"
                 className={`${shared.btn} ${shared.btnDark}`}
-                onClick={() => setOpen(false)}
+                onClick={closeMobileMenu}
               >
                 Sign up
               </a>

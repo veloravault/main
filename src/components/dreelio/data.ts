@@ -3,12 +3,18 @@
 
 export const NAV_LINKS = [
   { label: "Features", href: "/#features" },
-  { label: "Benefits", href: "/#benefits" },
   { label: "Security", href: "/security" },
   { label: "Blog", href: "/blog" },
   { label: "Pricing", href: "/pricing" },
   { label: "Contact", href: "/contact" },
 ];
+
+export const UTILITY_LINKS = [
+  { label: "Password Generator", href: "/utilities/password-generator" },
+  { label: "Passphrase Generator", href: "/utilities/passphrase-generator" },
+  { label: "Username Generator", href: "/utilities/username-generator" },
+  { label: "Password Strength Tester", href: "/utilities/password-strength" },
+] as const;
 
 export const PROJECT_PILLS = ["Saved logins", "Auto-lock timer", "Secure notes", "Password health"] as const;
 export const DOCUMENT_PILLS = ["Identity files", "Protected uploads", "Expiry details", "Fast search"] as const;
