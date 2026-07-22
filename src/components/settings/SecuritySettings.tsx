@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckIcon, FingerprintIcon, LaptopIcon, Loader2Icon, LockIcon, LogOutIcon, TimerResetIcon, ClipboardIcon } from "lucide-react";
+import { CheckIcon, FingerprintIcon, GridIcon, LaptopIcon, Loader2Icon, LockIcon, LogOutIcon, TimerResetIcon, ClipboardIcon } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { disableBiometrics, enableBiometrics, hasBiometricsEnabled, isBiometricsSupported } from "@/lib/biometrics";
+import { clearPinLock, hasPinLock } from "@/components/PinLock";
 import { loadVaultPreferences, saveVaultPreferences, subscribeVaultPreferences, type AutoLockMinutes, type ClipboardClearSeconds, type VaultPreferences } from "@/lib/vaultPreferences";
 import { useToast } from "@/components/Toast";
 import { useVaultKey } from "@/components/auth/VaultKeyProvider";
@@ -29,6 +30,8 @@ export function SecuritySettings({ masterPassword, onLock }: { masterPassword: s
   const [bioEnabled, setBioEnabled] = useState(false);
   const [bioSupported, setBioSupported] = useState(false);
   const [bioWorking, setBioWorking] = useState(false);
+  const [pinEnabled, setPinEnabled] = useState(false);
+  const [pinWorking, setPinWorking] = useState(false);
   const [sessionWorking, setSessionWorking] = useState(false);
   const [lastSignIn, setLastSignIn] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +42,7 @@ export function SecuritySettings({ masterPassword, onLock }: { masterPassword: s
     queueMicrotask(() => {
       setBioSupported(isBiometricsSupported());
       setBioEnabled(authenticatedUserId ? hasBiometricsEnabled(authenticatedUserId) : false);
+      setPinEnabled(authenticatedUserId ? hasPinLock(authenticatedUserId) : false);
     });
     void supabase.auth.getUser().then(({ data }) => setLastSignIn(data.user?.last_sign_in_at ?? null));
   }, [authenticatedUserId]);
@@ -66,6 +70,23 @@ export function SecuritySettings({ masterPassword, onLock }: { masterPassword: s
     }
   };
 
+  // PIN unlock can only be turned off here, not on: enrollment needs the PIN
+  // entered twice for confirmation, which happens in the dedicated post-login
+  // prompt, not this settings toggle.
+  const disablePinLock = () => {
+    if (!pinEnabled) return;
+    if (!confirm("Turn off PIN unlock on this device? You'll need your master key to unlock next time.")) return;
+    setPinWorking(true);
+    setError(null);
+    try {
+      clearPinLock();
+      setPinEnabled(false);
+      toast("PIN unlock disabled on this device", "info");
+    } finally {
+      setPinWorking(false);
+    }
+  };
+
   const signOutOthers = async () => {
     setSessionWorking(true);
     setError(null);
@@ -89,6 +110,9 @@ export function SecuritySettings({ masterPassword, onLock }: { masterPassword: s
         </SettingsControl>
         <SettingsControl icon={FingerprintIcon} title="Face ID / Touch ID" description={bioSupported ? (bioEnabled ? "Enabled on this device" : "Use this device to unlock faster") : "Unavailable in this browser or context"}>
           <button type="button" className={`settings-toggle system-interactive ${bioEnabled ? "is-on" : ""}`} role="switch" aria-checked={bioEnabled} aria-label="Toggle biometric unlock" disabled={!authenticatedUserId || !bioSupported || bioWorking} onClick={toggleBiometrics}>{bioWorking ? <Loader2Icon className="animate-spin" /> : <span />}</button>
+        </SettingsControl>
+        <SettingsControl icon={GridIcon} title="PIN unlock" description={pinEnabled ? "Enabled on this device" : "Set up from the PIN prompt after signing in"}>
+          <button type="button" className={`settings-toggle system-interactive ${pinEnabled ? "is-on" : ""}`} role="switch" aria-checked={pinEnabled} aria-label="Turn off PIN unlock" disabled={!pinEnabled || pinWorking} onClick={disablePinLock}>{pinWorking ? <Loader2Icon className="animate-spin" /> : <span />}</button>
         </SettingsControl>
         <SettingsControl icon={ClipboardIcon} title="Clear clipboard" description="Only clears a secret if it is still the latest copied value.">
           <select value={preferences.clipboardClearSeconds} onChange={(event) => updatePreferences({ clipboardClearSeconds: Number(event.target.value) as ClipboardClearSeconds })} aria-label="Clipboard clearing duration">

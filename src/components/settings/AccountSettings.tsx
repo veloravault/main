@@ -17,15 +17,19 @@ const AVATAR_OPTIONS: { key: AvatarChoice; label: string }[] = [
   { key: "initials", label: "Initials" },
 ];
 
-export function AccountSettings() {
+export function AccountSettings({ masterPassword }: { masterPassword: string }) {
   const [user, setUser] = useState<User | null>(null);
   const [fullName, setFullName] = useState("");
   const [avatarKind, setAvatarKind] = useState<AvatarKind | null>(null);
+  const [hint, setHint] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savingAvatar, setSavingAvatar] = useState<AvatarChoice | null>(null);
+  const [savingHint, setSavingHint] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hintError, setHintError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [hintSaved, setHintSaved] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -38,6 +42,7 @@ export function AccountSettings() {
         setUser(data.user);
         setFullName((data.user.user_metadata?.full_name as string | undefined) ?? "");
         setAvatarKind(isAvatarKind(data.user.user_metadata?.avatar_kind) ? data.user.user_metadata.avatar_kind : null);
+        setHint((data.user.user_metadata?.master_key_hint as string | undefined) ?? "");
       }
       setLoading(false);
     });
@@ -62,6 +67,32 @@ export function AccountSettings() {
     setFullName(nextName);
     setSaved(true);
     toast("Account details saved", "success");
+  };
+
+  const saveHint = async () => {
+    // Same constraints as the hint set during onboarding (OnboardingFlow.tsx):
+    // capped length, and it can never contain the actual master key.
+    const nextHint = hint.trim();
+    if (nextHint.length > 50) {
+      setHintError("Keep your master key hint within 50 characters.");
+      return;
+    }
+    if (nextHint && nextHint.toLocaleLowerCase().includes(masterPassword.toLocaleLowerCase())) {
+      setHintError("Your hint cannot contain your master key.");
+      return;
+    }
+    setSavingHint(true);
+    setHintSaved(false);
+    setHintError(null);
+    const { error: updateError } = await supabase.auth.updateUser({ data: { master_key_hint: nextHint || null } });
+    setSavingHint(false);
+    if (updateError) {
+      setHintError(updateError.message);
+      return;
+    }
+    setHint(nextHint);
+    setHintSaved(true);
+    toast("Master key hint saved", "success");
   };
 
   const chooseAvatar = async (choice: AvatarChoice) => {
@@ -129,6 +160,27 @@ export function AccountSettings() {
               </button>
             );
           })}
+        </div>
+      </div>
+
+      <div className="settings-group settings-account-card">
+        <div className="settings-account-fields">
+          <div className="settings-value-row settings-avatar-picker-head"><span>Master key hint</span><strong>A reminder shown at unlock - never the key itself.</strong></div>
+          <label className="settings-value-row">
+            <span>Hint</span>
+            <input
+              value={hint}
+              maxLength={50}
+              onChange={(event) => { setHint(event.target.value); setHintSaved(false); }}
+              placeholder="e.g. Same as my first apartment"
+            />
+          </label>
+          {hintError && <p className="settings-inline-error" role="alert">{hintError}</p>}
+          <div className="settings-form-actions">
+            <Button onClick={saveHint} disabled={savingHint} className="settings-primary-button">
+              {savingHint ? <Loader2Icon className="animate-spin" /> : hintSaved ? <><CheckIcon />Saved</> : "Save hint"}
+            </Button>
+          </div>
         </div>
       </div>
     </section>

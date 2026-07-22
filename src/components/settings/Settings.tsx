@@ -45,7 +45,7 @@ export function Settings({ masterPassword, onLock, initialSection, sectionReques
               exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.2, ease: "easeInOut" }}
             >
-              {active === "account" && <AccountSettings />}
+              {active === "account" && <AccountSettings masterPassword={masterPassword} />}
               {active === "plan" && <PlanSettings autoUpgrade={autoUpgrade} />}
               {active === "appearance" && <AppearanceSettings />}
               {active === "security" && <SecuritySettings masterPassword={masterPassword} onLock={onLock} />}
