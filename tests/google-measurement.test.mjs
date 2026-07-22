@@ -8,7 +8,7 @@ test("root layout publishes Search Console verification and mounts consent-gated
   const layout = read("src/app/layout.tsx");
 
   // Must live in the `metadata` export (Next.js renders this as a real
-  // <meta name="google-site-verification"> tag) — NOT inside the JSON-LD
+  // <meta name="google-site-verification"> tag) - NOT inside the JSON-LD
   // blocks, which Google Search Console's verifier does not read at all.
   const metadataBlock = layout.match(/export const metadata: Metadata = (\{[\s\S]*?\n\};)/)?.[1] ?? "";
   assert.match(metadataBlock, /verification:\s*\{\s*google:\s*["']Ujcj8cwdFNvamMuqMoR_Bhhs2mUTxHctWA4Xhf6sr8k["']/);
@@ -16,8 +16,7 @@ test("root layout publishes Search Console verification and mounts consent-gated
   const jsonLd = layout.match(/const ORGANIZATION_JSON_LD = (\{[\s\S]*?\n\};)/)?.[1] ?? "";
   assert.doesNotMatch(jsonLd, /verification/);
 
-  // The gtag scripts themselves live in Analytics.tsx, gated behind consent —
-  // see the next test — layout just mounts that component with the CSP nonce.
+  // The gtag scripts themselves live in Analytics.tsx, gated behind consent -   // see the next test - layout just mounts that component with the CSP nonce.
   assert.match(layout, /<Analytics nonce=\{nonce\}/);
 });
 

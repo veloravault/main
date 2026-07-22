@@ -117,8 +117,7 @@ export function PlanSettings({ autoUpgrade }: { autoUpgrade?: SettingsAutoUpgrad
   }, []);
 
   // Once an existing paid subscription loads, default the billing-period
-  // toggle to what the subscriber is actually billed, not always "monthly" —
-  // otherwise the period-change action below would appear to offer switching
+  // toggle to what the subscriber is actually billed, not always "monthly" -   // otherwise the period-change action below would appear to offer switching
   // to the period they're already on.
   useEffect(() => {
     if (periodSynced.current || !subscription || autoUpgrade) return;
@@ -144,7 +143,7 @@ export function PlanSettings({ autoUpgrade }: { autoUpgrade?: SettingsAutoUpgrad
         setUsage(next);
         if (next.plan === targetPlan) return true;
       } catch {
-        // Keep trying — a transient failure here shouldn't stop polling.
+        // Keep trying - a transient failure here shouldn't stop polling.
       }
     }
     return false;
@@ -174,14 +173,14 @@ export function PlanSettings({ autoUpgrade }: { autoUpgrade?: SettingsAutoUpgrad
                 body: JSON.stringify(result),
               });
             } catch {
-              // Non-fatal — the webhook is the real authority, this is just UX feedback.
+              // Non-fatal - the webhook is the real authority, this is just UX feedback.
             }
-            toast("Payment received — activating your plan…", "info");
+            toast("Payment received - activating your plan…", "info");
             const activated = await pollForActivation(plan);
             await refresh();
             setProcessingPlan(null);
             if (activated) toast("Upgraded to Plus", "success");
-            else toast("Still confirming your payment — refresh in a moment if your plan doesn't update.", "info");
+            else toast("Still confirming your payment - refresh in a moment if your plan doesn't update.", "info");
           })();
         },
         onDismiss: () => setProcessingPlan(null),
@@ -194,7 +193,7 @@ export function PlanSettings({ autoUpgrade }: { autoUpgrade?: SettingsAutoUpgrad
 
   useEffect(() => {
     if (!autoUpgrade || autoUpgradeTriggered.current || !usage) return;
-    if (usage.plan === autoUpgrade.plan) return; // Already on it — nothing to do.
+    if (usage.plan === autoUpgrade.plan) return; // Already on it - nothing to do.
     autoUpgradeTriggered.current = true;
     queueMicrotask(() => { void upgrade(autoUpgrade.plan, autoUpgrade.period); });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -228,7 +227,7 @@ export function PlanSettings({ autoUpgrade }: { autoUpgrade?: SettingsAutoUpgrad
       toast(
         payload.scheduled_period
           ? `Billing will switch to ${payload.scheduled_period === "yearly" ? "yearly" : "monthly"} at your next renewal`
-          : "Pending billing change cancelled — you'll stay on your current plan",
+          : "Pending billing change cancelled - you'll stay on your current plan",
         "success",
       );
       await refresh();
@@ -255,7 +254,7 @@ export function PlanSettings({ autoUpgrade }: { autoUpgrade?: SettingsAutoUpgrad
 
       {subscription?.last_payment_failed_at && (
         <p className="settings-plan-payment-warning" role="alert">
-          Your last payment failed. We&apos;ll retry automatically — update your payment method with Razorpay if this continues, or your plan will drop to Free once retries are exhausted.
+          Your last payment failed. We&apos;ll retry automatically - update your payment method with Razorpay if this continues, or your plan will drop to Free once retries are exhausted.
         </p>
       )}
 

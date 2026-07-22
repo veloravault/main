@@ -105,7 +105,7 @@ export function AccountSettings() {
       </div>
 
       <div className="settings-group settings-avatar-picker-group">
-        <div className="settings-value-row settings-avatar-picker-head"><span>Avatar</span><strong>Choose how you appear — no photo needed.</strong></div>
+        <div className="settings-value-row settings-avatar-picker-head"><span>Avatar</span><strong>Choose how you appear - no photo needed.</strong></div>
         <div className="settings-avatar-picker" role="radiogroup" aria-label="Avatar style">
           {AVATAR_OPTIONS.map((option) => {
             const active = currentChoice === option.key;

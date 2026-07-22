@@ -5,7 +5,7 @@ import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
 import { AuthorizationError, getMembershipForUser, requireUser } from "@/lib/server/access";
 
 export const metadata: Metadata = {
-  title: "Set up your vault — Velora Vault",
+  title: "Set up your vault - Velora Vault",
   description: "Set up your Velora Vault.",
   robots: { index: false, follow: false },
 };

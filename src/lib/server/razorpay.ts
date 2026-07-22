@@ -5,7 +5,7 @@ import type { PlanId } from "@/lib/plans";
 
 // Thin wrapper over the Razorpay REST API (no SDK). Auth is HTTP Basic with
 // key_id:key_secret. Only the configured Plus plan ids are ever
-// sent to Razorpay — the client only ever chooses among a fixed enum, never a
+// sent to Razorpay - the client only ever chooses among a fixed enum, never a
 // raw Razorpay plan_id or amount, which closes off price tampering.
 
 export type PaidPlanId = Extract<PlanId, "plus">;
@@ -122,8 +122,7 @@ export async function cancelSubscriptionImmediately(subscriptionId: string): Pro
 }
 
 /**
- * Changes a subscription's plan (used here for billing-period changes only —
- * monthly <-> yearly on the same Plus tier). schedule_change_at: "cycle_end"
+ * Changes a subscription's plan (used here for billing-period changes only -  * monthly <-> yearly on the same Plus tier). schedule_change_at: "cycle_end"
  * keeps the current, already-paid-for cycle untouched and applies the new
  * plan starting the next renewal, so there is nothing to prorate.
  */

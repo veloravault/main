@@ -18,7 +18,7 @@ type Props = {
   /**
    * Set for above-the-fold usage (e.g. the homepage hero). Skips the
    * hidden→shown entrance animation so the element never ships as
-   * `opacity:0` in the server-rendered HTML — that gates the LCP element
+   * `opacity:0` in the server-rendered HTML - that gates the LCP element
    * behind JS hydration, which reproduces in production, not just dev.
    * Scroll-linked parallax (the `y` transform) is unaffected either way.
    */

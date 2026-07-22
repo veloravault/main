@@ -53,7 +53,7 @@ export function EmptyState({ type, onCta }: EmptyStateProps) {
       transition={{ duration: 0.25 }}
       className="flex flex-col items-center justify-center py-24 text-center px-6"
     >
-      {/* SF Symbol-style icon — muted, single-weight */}
+      {/* SF Symbol-style icon - muted, single-weight */}
       <div className="w-16 h-16 flex items-center justify-center mb-4">
         <Icon className="w-12 h-12 text-muted-foreground/40" strokeWidth={1} />
       </div>

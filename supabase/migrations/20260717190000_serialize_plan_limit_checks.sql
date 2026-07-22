@@ -3,8 +3,7 @@
 -- try_consume_ai_credit / enforce_document_quota / enforce_wallet_quota each do
 -- a SELECT count/sum followed by an INSERT. Under concurrency (e.g. a Free user
 -- firing several /api/scan requests at once), every transaction reads a count
--- below the limit before any of them commits, so all of them are allowed —
--- letting a Free user exceed the monthly AI allowance (each excess call is a
+-- below the limit before any of them commits, so all of them are allowed - -- letting a Free user exceed the monthly AI allowance (each excess call is a
 -- paid Gemini request), the wallet record cap, or the document byte cap.
 --
 -- Fix: take a per-user transaction-scoped advisory lock before the count so

@@ -65,7 +65,7 @@ test("utility metadata delegates the site-name suffix to the root template", () 
     "password-strength",
   ]) {
     const source = read(`src/app/utilities/${route}/page.tsx`);
-    assert.doesNotMatch(source, /title: ["'][^"']*— Velora Vault["']/);
+    assert.doesNotMatch(source, /title: ["'][^"']* - Velora Vault["']/);
   }
 });
 

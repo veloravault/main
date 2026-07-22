@@ -69,4 +69,4 @@ Local PIN or biometric wrappers remain device-local conveniences bound to the au
 
 ## Production rollout
 
-Repository code does not configure or mutate the hosted Supabase project's dashboard settings. An operator must confirm "Allow new users to sign up" is enabled, the "Confirm signup" email template is configured, and the `/confirm-signup` redirect URL is allow-listed, on the hosted Supabase project — these must match `supabase/config.toml` but are not automatically synced to a linked hosted project.
+Repository code does not configure or mutate the hosted Supabase project's dashboard settings. An operator must confirm "Allow new users to sign up" is enabled, the "Confirm signup" email template is configured, and the `/confirm-signup` redirect URL is allow-listed, on the hosted Supabase project - these must match `supabase/config.toml` but are not automatically synced to a linked hosted project.

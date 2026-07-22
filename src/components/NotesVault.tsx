@@ -72,7 +72,7 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
   }, [focusedItemId]);
 
   const fetchItems = useCallback(async () => {
-    // Serve cache instantly — no skeleton flash on repeat visits
+    // Serve cache instantly - no skeleton flash on repeat visits
     const cached = getCache<DecryptedNote>("secure_notes");
     if (cached) { setItems(cached); setLoading(false); return; }
 

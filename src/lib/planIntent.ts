@@ -2,7 +2,7 @@
 // onboarding boundary, so a new user who picked Plus on the pricing
 // page lands straight in checkout instead of hunting through Settings
 // afterward. A cookie (not sessionStorage) because confirming an email
-// commonly opens a new tab/window — sessionStorage wouldn't survive that,
+// commonly opens a new tab/window - sessionStorage wouldn't survive that,
 // but a Lax same-site cookie does since it's still the same browser.
 
 import type { PlanId } from "@/lib/plans";
@@ -16,7 +16,7 @@ export interface PlanIntent {
 }
 
 const COOKIE_NAME = "velora_plan_intent";
-const MAX_AGE_SECONDS = 60 * 60; // 1 hour — plenty for a signup + email-confirm round trip.
+const MAX_AGE_SECONDS = 60 * 60; // 1 hour - plenty for a signup + email-confirm round trip.
 
 function isPlanIntentPlan(value: string): value is PlanIntentPlan {
   return value === "plus";

@@ -1,5 +1,6 @@
 .article {
-  max-width: 760px;
+  width: 100%;
+  max-width: none;
   margin-inline: auto;
   padding-block: 132px 120px;
 }

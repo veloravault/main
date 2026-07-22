@@ -299,17 +299,17 @@ After the table block, add idempotent `drop policy if exists` / `create policy` 
 
 | Resource | Operation | `USING` | `WITH CHECK` |
 |---|---|---|---|
-| `vault_items`, `vault_documents`, `secure_notes`, `secure_wallet` | SELECT | `auth.uid() = user_id` and active membership | — |
-| same four tables | INSERT | — | `auth.uid() = user_id` and active membership |
+| `vault_items`, `vault_documents`, `secure_notes`, `secure_wallet` | SELECT | `auth.uid() = user_id` and active membership | - |
+| same four tables | INSERT | - | `auth.uid() = user_id` and active membership |
 | same four tables | UPDATE | `auth.uid() = user_id` and active membership | `auth.uid() = user_id` and active membership |
-| same four tables | DELETE | `auth.uid() = user_id` and active membership | — |
-| `storage.objects`, bucket `vault_documents` | SELECT | first folder segment equals `auth.uid()` and active membership | — |
-| same bucket | INSERT | — | first folder segment equals `auth.uid()` and active membership |
+| same four tables | DELETE | `auth.uid() = user_id` and active membership | - |
+| `storage.objects`, bucket `vault_documents` | SELECT | first folder segment equals `auth.uid()` and active membership | - |
+| same bucket | INSERT | - | first folder segment equals `auth.uid()` and active membership |
 | same bucket | UPDATE | first folder segment equals `auth.uid()` and active membership | first folder segment equals `auth.uid()` and active membership |
-| same bucket | DELETE | first folder segment equals `auth.uid()` and active membership | — |
-| `storage.objects`, bucket `avatars` | INSERT | — | first folder segment equals `auth.uid()` and active membership |
+| same bucket | DELETE | first folder segment equals `auth.uid()` and active membership | - |
+| `storage.objects`, bucket `avatars` | INSERT | - | first folder segment equals `auth.uid()` and active membership |
 | same bucket | UPDATE | first folder segment equals `auth.uid()` and active membership | first folder segment equals `auth.uid()` and active membership |
-| same bucket | DELETE | first folder segment equals `auth.uid()` and active membership | — |
+| same bucket | DELETE | first folder segment equals `auth.uid()` and active membership | - |
 
 Preserve the existing public avatar SELECT policy; only avatar writes require membership. Every active-membership predicate is exactly:
 
@@ -804,7 +804,7 @@ The repository injects the exported `mapInvitationError()` from `src/lib/server/
 
 - [ ] **Step 4: Implement atomic repository claims and cursor pagination**
 
-The claim is one conditional `update` filtered by request ID and either `status in ('pending','invite_failed')` or a stale `inviting` lease whose `invite_started_at` is more than 10 minutes old. It sets `inviting`, refreshes `invite_started_at`, sets `reviewed_by`, increments `invite_attempts`, and selects one row. A fresh `inviting` row returns `already_processing`; an unknown ID returns `not_found`. Before any send—including stale-lease recovery—the orchestrator reconciles by canonical email against Auth Admin users so a provider success followed by a persistence outage cannot cause a duplicate invitation. Admin lists use keyset pagination ordered by `(requested_at desc, id desc)` and a 25-row limit; no `offset` or whole-row serialization.
+The claim is one conditional `update` filtered by request ID and either `status in ('pending','invite_failed')` or a stale `inviting` lease whose `invite_started_at` is more than 10 minutes old. It sets `inviting`, refreshes `invite_started_at`, sets `reviewed_by`, increments `invite_attempts`, and selects one row. A fresh `inviting` row returns `already_processing`; an unknown ID returns `not_found`. Before any send - including stale-lease recovery - the orchestrator reconciles by canonical email against Auth Admin users so a provider success followed by a persistence outage cannot cause a duplicate invitation. Admin lists use keyset pagination ordered by `(requested_at desc, id desc)` and a 25-row limit; no `offset` or whole-row serialization.
 
 - [ ] **Step 5: Implement the invitation provider**
 

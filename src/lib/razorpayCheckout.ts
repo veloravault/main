@@ -1,5 +1,5 @@
 // Client-side helper for loading Razorpay's Checkout script and opening it.
-// No SDK — Razorpay Checkout is a single script + a global constructor.
+// No SDK - Razorpay Checkout is a single script + a global constructor.
 
 declare global {
   interface Window {

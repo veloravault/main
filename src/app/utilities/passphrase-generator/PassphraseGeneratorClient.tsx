@@ -161,7 +161,7 @@ export function PassphraseGeneratorClient() {
     <UtilityPageLayout
       slug="passphrase-generator"
       title="Passphrase Generator"
-      description="Build a long credential from unrelated random words—easier to type, while still generated securely in your browser."
+      description="Build a long credential from unrelated random words - easier to type, while still generated securely in your browser."
       workbench={workbench}
       benefits={[
         {

@@ -3,7 +3,7 @@ import "server-only";
 import { AwsClient } from "aws4fetch";
 
 // Cloudflare R2 access via its S3-compatible API. Credentials are server-only;
-// the browser never sees them — it uploads/downloads through short-lived
+// the browser never sees them - it uploads/downloads through short-lived
 // presigned URLs minted here. Documents are already client-side encrypted, so
 // R2 only ever holds opaque ciphertext.
 

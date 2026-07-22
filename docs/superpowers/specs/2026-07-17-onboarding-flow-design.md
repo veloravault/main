@@ -1,4 +1,4 @@
-# Onboarding Flow — Design
+# Onboarding Flow - Design
 
 **Date:** 2026-07-17
 **Status:** Approved (design), pending implementation plan
@@ -8,7 +8,7 @@
 Turn the current two-step onboarding (pick avatar → set master key) into a
 polished, guided welcome experience: two branded intro screens that tell
 Velora Vault's story, flowing into the existing avatar and master-key steps,
-ending in a success state — all animated properly with framer-motion and
+ending in a success state - all animated properly with framer-motion and
 built to production standard, reusing the existing style system.
 
 This is a **welcome/personality flow**, not a data questionnaire. The intro
@@ -39,16 +39,16 @@ Ordered steps, single source of truth:
 ["vault", "security", "avatar", "master-key", "done"]
 ```
 
-1. **vault** — "What lives in your vault." Passwords + documents in one
+1. **vault** - "What lives in your vault." Passwords + documents in one
    encrypted place. Intro/presentational. Controls: Continue, Skip setup intro.
-2. **security** — "Zero-knowledge security." Only you can open your vault; the
+2. **security** - "Zero-knowledge security." Only you can open your vault; the
    master key is never sent, stored, or recoverable. Sets up the master-key
    step. Intro/presentational. Controls: Continue, Back, Skip setup intro.
-3. **avatar** — Existing avatar picker (male/female preset or skip → initials).
-   Controls: Continue, Back, Skip — use my initials.
-4. **master-key** — Existing master-key + confirmation with strength meter.
+3. **avatar** - Existing avatar picker (male/female preset or skip → initials).
+   Controls: Continue, Back, Skip - use my initials.
+4. **master-key** - Existing master-key + confirmation with strength meter.
    Controls: Set master key (submit), Back.
-5. **done** — Brief success state, then redirect.
+5. **done** - Brief success state, then redirect.
 
 "Skip setup intro" from an intro step jumps directly to **avatar**.
 
@@ -56,33 +56,32 @@ Ordered steps, single source of truth:
 
 Dedicated onboarding component owns the staged experience; `AuthShell` is not
 involved (it stays dedicated to login/signup). This matches the codebase's
-file-per-responsibility structure and gives directional motion a clean home —
-`AuthShell`'s mode-based transition cannot express a forward/back direction.
+file-per-responsibility structure and gives directional motion a clean home - `AuthShell`'s mode-based transition cannot express a forward/back direction.
 
 ### Files
 
 **New**
-- `src/components/auth/OnboardingFlow.tsx` — client component. Owns step index,
+- `src/components/auth/OnboardingFlow.tsx` - client component. Owns step index,
   direction, avatar/master-key state, and all logic migrated from
   `OnboardingForm`: avatar persist, `/api/onboarding/complete` call,
   `setMasterKey`, plan-intent redirect. Renders inside `PublicPageShell`.
-- `src/components/auth/onboarding-steps/IntroScreen.tsx` — reusable value-prop
+- `src/components/auth/onboarding-steps/IntroScreen.tsx` - reusable value-prop
   screen (icon badge, title, body, bullet list). Presentational.
-- `src/components/auth/onboarding-steps/AvatarStep.tsx` — extracted avatar
+- `src/components/auth/onboarding-steps/AvatarStep.tsx` - extracted avatar
   picker body (presentational; receives selection state + handlers).
-- `src/components/auth/onboarding-steps/MasterKeyStep.tsx` — extracted
+- `src/components/auth/onboarding-steps/MasterKeyStep.tsx` - extracted
   master-key form body (presentational; receives values, handlers, error,
   strength, submitting).
-- `src/components/auth/onboarding-steps/CompletionStep.tsx` — success state.
-- `src/components/auth/onboarding.module.css` — onboarding-specific classes
+- `src/components/auth/onboarding-steps/CompletionStep.tsx` - success state.
+- `src/components/auth/onboarding.module.css` - onboarding-specific classes
   (progress dots, intro layout, icon badges), reusing `--auth-*` tokens.
 
 **Edited**
-- `src/app/onboarding/page.tsx` — keep the server-side gate; replace
+- `src/app/onboarding/page.tsx` - keep the server-side gate; replace
   `AuthShell` + `OnboardingForm` with `PublicPageShell` + `OnboardingFlow`.
 
 **Retired**
-- `src/components/auth/OnboardingForm.tsx` — logic migrated into
+- `src/components/auth/OnboardingForm.tsx` - logic migrated into
   `OnboardingFlow` and the step sub-components; file removed.
 
 ### Style
@@ -136,7 +135,7 @@ file-per-responsibility structure and gives directional motion a clean home —
 ## Testing
 
 - `tests/invite-onboarding.test.mjs` (server/API contract + gate) must stay
-  green — the API and gate are unchanged.
+  green - the API and gate are unchanged.
 - Add component-level checks where the repo harness supports it: step
   advance/back, skip-intro jumps to avatar, reduced-motion path renders, and
   completion still fires the same request + redirect. Match the repo's existing

@@ -14,14 +14,14 @@ import { WhyPasswordManager } from "@/components/dreelio/WhyPasswordManager";
 import { PasswordManagerEssentials } from "@/components/dreelio/PasswordManagerEssentials";
 import { DOCUMENT_PILLS, PROJECT_PILLS, FINANCE_PILLS } from "@/components/dreelio/data";
 
-const TITLE = "Velora Vault — One private vault for everything that matters";
+const TITLE = "Velora Vault - One private vault for everything that matters";
 const DESCRIPTION =
   "A private, encrypted home for passwords, documents, notes and financial essentials. Your master key never leaves your device.";
 
 export const metadata: Metadata = {
   ...pageMetadata({ title: TITLE, description: DESCRIPTION, path: "/" }),
   // Bypass the root layout's title template: the homepage deliberately leads
-  // with the brand name itself, so appending "— Velora Vault" again would
+  // with the brand name itself, so appending " - Velora Vault" again would
   // duplicate it.
   title: { absolute: TITLE },
 };

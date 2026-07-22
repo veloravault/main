@@ -1,7 +1,6 @@
 -- Ticket-based support system. Members (active only) can open a ticket and
 -- reply on their own thread; only the service role (the admin API routes,
--- gated by requireAdmin()) can reply as the owner or change ticket status —
--- matching the same "admin actions never go through client-side RLS alone"
+-- gated by requireAdmin()) can reply as the owner or change ticket status - -- matching the same "admin actions never go through client-side RLS alone"
 -- convention as app_members mutation.
 
 create table if not exists public.support_tickets (

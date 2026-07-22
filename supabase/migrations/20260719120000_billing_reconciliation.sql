@@ -1,6 +1,6 @@
 -- Razorpay's cancel/change-period APIs can succeed while the follow-up local
 -- write to public.subscriptions fails (network blip, transient DB error).
--- Today that desync is only console.error'd — invisible outside logs, with
+-- Today that desync is only console.error'd - invisible outside logs, with
 -- no way for the owner to reconcile it. This queue captures the exact patch
 -- that failed to apply so an admin can retry it from the console.
 

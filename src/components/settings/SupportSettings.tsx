@@ -160,7 +160,7 @@ export function SupportSettings() {
         </div>
       )}
 
-      <AdaptiveSheet open={isNewOpen} onOpenChange={(open) => { setIsNewOpen(open); if (!open) setNewTicketError(null); }} title="New support ticket" description="Describe what you need help with — the owner will reply here." size="md">
+      <AdaptiveSheet open={isNewOpen} onOpenChange={(open) => { setIsNewOpen(open); if (!open) setNewTicketError(null); }} title="New support ticket" description="Describe what you need help with - the owner will reply here." size="md">
         <form onSubmit={createTicket} noValidate>
           <AdaptiveSheetBody className="space-y-4">
             <div className="space-y-1">

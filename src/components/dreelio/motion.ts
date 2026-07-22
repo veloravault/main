@@ -7,7 +7,7 @@ export const LANDING_VIEWPORT = {
   // A low threshold, not 0.2: a fast/instant scroll (anchor jump, browser
   // scroll restoration, a quick trackpad flick) can cross a 20%-visible
   // threshold in one frame and be missed entirely, leaving the element stuck
-  // at `opacity:0` — reproduced on the pricing page's comparison table, FAQ,
+  // at `opacity:0` - reproduced on the pricing page's comparison table, FAQ,
   // and final CTA. Any-pixel-visible is far less likely to be skipped.
   amount: 0.01,
 } as const;

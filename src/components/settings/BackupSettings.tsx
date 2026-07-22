@@ -128,7 +128,7 @@ export function BackupSettings({ masterPassword }: { masterPassword: string }) {
       <div className="apple-grouped-list" style={{ marginTop: 20 }}>
         <div className="settings-backup-hero">
           <span><UploadIcon aria-hidden="true" /></span>
-          <div><h3>Restore from backup</h3><p>Add the items from a previously exported .telkarvault file back into this vault. This adds to your vault — it doesn&apos;t replace or deduplicate existing items.</p></div>
+          <div><h3>Restore from backup</h3><p>Add the items from a previously exported .telkarvault file back into this vault. This adds to your vault - it doesn&apos;t replace or deduplicate existing items.</p></div>
           <Button onClick={pickRestoreFile} variant="outline" className="settings-primary-button"><UploadIcon />Choose backup file</Button>
         </div>
       </div>
@@ -156,7 +156,7 @@ export function BackupSettings({ masterPassword }: { masterPassword: string }) {
               {restoring && restoreProgress && (
                 <div className="settings-backup-progress">
                   <span style={{ width: restoreProgress.total > 0 ? `${Math.round((restoreProgress.completed / restoreProgress.total) * 100)}%` : "0%" }} />
-                  <p>Restoring {RECORD_LABELS[restoreProgress.stage]} — {restoreProgress.completed} of {restoreProgress.total}</p>
+                  <p>Restoring {RECORD_LABELS[restoreProgress.stage]} - {restoreProgress.completed} of {restoreProgress.total}</p>
                 </div>
               )}
               {restoreError && <p className="settings-inline-error" role="alert">{restoreError}</p>}

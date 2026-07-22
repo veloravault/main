@@ -38,8 +38,8 @@ export async function parseImportCsv(file: File): Promise<{ drafts: ImportDraft[
 
     // Browser password exports are login-shaped rows; only classify as a
     // password when the row actually looks like one (has a domain, username,
-    // or password), so a stray non-login row some browsers mix in — a note
-    // or payment entry — isn't misfiled as a password with a missing field.
+    // or password), so a stray non-login row some browsers mix in - a note
+    // or payment entry - isn't misfiled as a password with a missing field.
     if (hasLoginSignal) {
       return createImportDraft("password", title, { domain: pick(row, aliases.domain), username: pick(row, aliases.username), password: pick(row, aliases.password), notes: pick(row, aliases.content), category: "Imported" }, source);
     }
@@ -53,7 +53,7 @@ export async function parseImportCsv(file: File): Promise<{ drafts: ImportDraft[
   });
 
   if (recognizedRows === 0) {
-    return { drafts: [], errors: [...errors, "This file doesn't look like a supported export — no recognizable columns (title, url, username, password, account, card, or note fields) were found."] };
+    return { drafts: [], errors: [...errors, "This file doesn't look like a supported export - no recognizable columns (title, url, username, password, account, card, or note fields) were found."] };
   }
 
   return { drafts, errors };

@@ -91,8 +91,7 @@ export default function VaultApp() {
   const [refreshVersion, setRefreshVersion] = useState(0);
   const [settingsAutoUpgrade, setSettingsAutoUpgrade] = useState<SettingsAutoUpgrade | null>(null);
   // Undefined by default (not "account") so Settings keeps its normal
-  // behavior — no forced section, mobile shows the section picker first —
-  // until something explicitly asks to jump to a section (sidebar "Upgrade
+  // behavior - no forced section, mobile shows the section picker first -   // until something explicitly asks to jump to a section (sidebar "Upgrade
   // plan", or a post-onboarding ?upgrade= param).
   const [settingsInitialSection, setSettingsInitialSection] = useState<"account" | "plan" | undefined>(undefined);
   const [settingsSectionRequestId, setSettingsSectionRequestId] = useState(0);
@@ -452,7 +451,7 @@ export default function VaultApp() {
           )}
         </AnimatePresence>, document.body)}
 
-        {/* ── Scrollable content — all tabs always mounted, hidden via display:none */}
+        {/* ── Scrollable content - all tabs always mounted, hidden via display:none */}
         <div ref={contentScrollRef} className="ios-content-scroll flex-1 overflow-auto">
           <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 md:px-7 py-4 sm:py-5 pb-32 md:pb-8">
             <div style={{ display: activeTab === "dashboard" ? undefined : "none" }}><Dashboard  {...sharedProps} /></div>

@@ -114,7 +114,7 @@ export async function listMembersAdmin(args: {
   if (args.status) query = query.eq("status", args.status);
   if (args.search) {
     // `_` is a valid email character but also ILIKE's single-character
-    // wildcard — escape it (and `%`/`\` defensively) so a literal underscore
+    // wildcard - escape it (and `%`/`\` defensively) so a literal underscore
     // in the query doesn't match unrelated emails.
     const escapedSearch = args.search.replace(/[\\%_]/g, (char) => `\\${char}`);
     query = query.ilike("email", `%${escapedSearch}%`);

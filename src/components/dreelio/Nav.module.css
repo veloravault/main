@@ -213,6 +213,25 @@
   height: 17px;
 }
 
+.searchTrigger,
+.mobileSearchTrigger {
+  background: transparent;
+}
+
+.searchTrigger:hover,
+.mobileSearchTrigger:hover,
+:global(.dark) .searchTrigger,
+:global(.dark) .mobileSearchTrigger,
+:global(.dark) .searchTrigger:hover,
+:global(.dark) .mobileSearchTrigger:hover {
+  background: transparent;
+}
+
+.searchTrigger:hover,
+.mobileSearchTrigger:hover {
+  opacity: 0.58;
+}
+
 .mobileControls {
   display: none;
   align-items: center;

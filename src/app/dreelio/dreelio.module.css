@@ -1,15 +1,14 @@
 /* ============================================================
-   Dreelio clone — shared design tokens + primitives
+   Dreelio clone - shared design tokens + primitives
    Scoped under .root so nothing leaks into the vault app.
    ============================================================ */
 
 .root {
-  /* palette — Apple's neutral grays + documented system accent colors */
+  /* palette - Apple's neutral grays + documented system accent colors */
   --ink: #1d1d1f;
   --ink-body: #424245;
   /* #6e6e73, not #86868b: #86868b on white measures ~3.6:1, below the
-     4.5:1 AA minimum for the small captions/prices/eyebrows this colors —
-     #6e6e73 clears ~5:1. (#86868b stays correct for dark mode below, where
+     4.5:1 AA minimum for the small captions/prices/eyebrows this colors -      #6e6e73 clears ~5:1. (#86868b stays correct for dark mode below, where
      it's ~5.8:1 against black.) */
   --ink-muted: #6e6e73;
   --eyebrow: #6e6e73;
@@ -264,7 +263,7 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   /* Dark ink, not white: white text on the green pill measured ~2.2:1 and
-     on the rust/blue pills ~3.5-4:1 — all below the 4.5:1 AA minimum for
+     on the rust/blue pills ~3.5-4:1 - all below the 4.5:1 AA minimum for
      small text. Dark ink clears 4.5:1 against all three pill colors. */
   color: #1d1d1f;
 }

@@ -175,7 +175,7 @@ export function WalletVault({ masterPassword, focusedItemId, refreshVersion = 0 
   };
 
   const fetchItems = useCallback(async () => {
-    // Serve cache instantly — no skeleton flash on revisit
+    // Serve cache instantly - no skeleton flash on revisit
     const cached = getCache<DecryptedWallet>("secure_wallet_cards");
     if (cached) { setItems(cached); setLoading(false); return; }
 
@@ -311,11 +311,11 @@ export function WalletVault({ masterPassword, focusedItemId, refreshVersion = 0 
     if (n.startsWith("4")) return "from-[#1a1f71] to-[#2952c4] shadow-blue-900/50";
     const mc2 = parseInt(n.substring(0,2)), mc4 = parseInt(n.substring(0,4));
     if ((mc4 >= 2221 && mc4 <= 2720) || (mc2 >= 51 && mc2 <= 55))
-      return "from-[#1a1a2e] to-[#16213e] shadow-slate-900/60"; // Mastercard — dark
+      return "from-[#1a1a2e] to-[#16213e] shadow-slate-900/60"; // Mastercard - dark
     if (n.startsWith("34") || n.startsWith("37")) return "from-[#007b5e] to-[#004c3f] shadow-green-900/40";
-    // RuPay — check 652x BEFORE generic 65 Discover
+    // RuPay - check 652x BEFORE generic 65 Discover
     if (n.startsWith("60") || n.startsWith("652") || n.startsWith("6069") || n.startsWith("6070"))
-      return "from-[#00308F] to-[#001f5c] shadow-blue-900/50"; // RuPay — deep navy
+      return "from-[#00308F] to-[#001f5c] shadow-blue-900/50"; // RuPay - deep navy
     if (n.startsWith("6011") || n.startsWith("65") || (parseInt(n.substring(0,6)) >= 622126 && parseInt(n.substring(0,6)) <= 622925))
       return "from-[#e65c00] to-[#f9d423] shadow-orange-900/40";
     return "from-slate-700 to-slate-900 shadow-slate-900/40";

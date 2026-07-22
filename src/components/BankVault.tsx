@@ -143,7 +143,7 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
         !data.data.name && "account holder name",
       ].filter((label): label is string => Boolean(label));
       if (missing.length > 0) {
-        toast(`Couldn't read the ${missing.join(", ")} from this image — please fill in the rest manually.`, "info");
+        toast(`Couldn't read the ${missing.join(", ")} from this image - please fill in the rest manually.`, "info");
       }
     } catch (err) {
       console.error(err);
@@ -155,7 +155,7 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
   };
 
   const fetchItems = useCallback(async () => {
-    // Serve cache instantly — no skeleton flash on revisit
+    // Serve cache instantly - no skeleton flash on revisit
     const cached = getCache<DecryptedBank>("secure_wallet_banks");
     if (cached) { setItems(cached); setLoading(false); return; }
 
@@ -473,7 +473,7 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                           <BuildingIcon strokeWidth={2} className="w-5 h-5 text-primary" />
                         </div>
-                        <div><span className={`type-row-title block ${expandedBankId === item.id ? 'text-primary' : ''}`}>{item.title}</span><span className="type-metadata text-muted-foreground">Account suffix ••••{(item.payload.account || "").slice(-4)} · IFSC / Routing {item.payload.routing || "—"}</span></div>
+                        <div><span className={`type-row-title block ${expandedBankId === item.id ? 'text-primary' : ''}`}>{item.title}</span><span className="type-metadata text-muted-foreground">Account suffix ••••{(item.payload.account || "").slice(-4)} · IFSC / Routing {item.payload.routing || " - "}</span></div>
                       </div>
                       <ChevronRightIcon className={`h-5 w-5 ${expandedBankId === item.id ? 'text-primary' : 'text-muted-foreground'}`} />
                     </div>

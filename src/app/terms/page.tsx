@@ -55,7 +55,7 @@ export default function TermsPage() {
                   If you lose your master key, your vault data cannot be
                   recovered
                 </strong>{" "}
-                — by you, by us, or by anyone else. There is no backdoor and
+ - by you, by us, or by anyone else. There is no backdoor and
                 no recovery process, because we never have access to the key
                 in the first place.
               </li>
@@ -132,7 +132,7 @@ export default function TermsPage() {
             <p>
               <strong>The short version:</strong>{" "}
               use it responsibly, respect other members&rsquo; privacy, and
-              keep your master key safe — because if it&rsquo;s gone, so is
+              keep your master key safe - because if it&rsquo;s gone, so is
               access to your vault.
             </p>
           </div>

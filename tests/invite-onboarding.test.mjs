@@ -8,7 +8,7 @@ import { putUserPasswordWithToken } from "../src/lib/auth/updateUserWithToken.ts
 const file = (path) => new URL(`../${path}`, import.meta.url);
 const read = (path) => readFileSync(file(path), "utf8");
 
-test("onboarding only sets the master key — the sign-in password is set at signup, not here", () => {
+test("onboarding only sets the master key - the sign-in password is set at signup, not here", () => {
   const path = "src/components/auth/OnboardingFlow.tsx";
   assert.equal(existsSync(file(path)), true, `${path} must exist`);
   const source = read(path);

@@ -1,4 +1,4 @@
-# Pricing plan enforcement — design
+# Pricing plan enforcement - design
 
 Date: 2026-07-17
 
@@ -27,28 +27,28 @@ multi-account infrastructure that does not exist).
 ## Data model (new migration `20260717120000_pricing_plans.sql`)
 
 - `app_members.plan text not null default 'free' check (plan in ('free','plus','family'))`
-- `vault_documents.size_bytes bigint not null default 0` — encrypted blob size.
+- `vault_documents.size_bytes bigint not null default 0` - encrypted blob size.
 - `public.ai_usage_events (id, user_id, kind, created_at)` + index on
   `(user_id, created_at)`. RLS: users read their own; writes via functions only.
 
 ### Functions (all `security definer`, `set search_path = ''`)
 
-- `try_consume_ai_credit(p_user_id uuid) returns boolean` — reads plan; paid →
+- `try_consume_ai_credit(p_user_id uuid) returns boolean` - reads plan; paid →
   insert event + return true; free → count this-calendar-month events, insert +
   return true if `< 5`, else return false. Granted to `service_role` only
   (server is the trust boundary; it has already authenticated the token).
 - `get_account_usage() returns table(plan, storage_bytes, storage_limit,
-  ai_used, ai_limit, wallet_count, wallet_limit)` — uses `auth.uid()`. Granted
+  ai_used, ai_limit, wallet_count, wallet_limit)` - uses `auth.uid()`. Granted
   to `authenticated`. Powers the profile panel in one round-trip.
-- `mock_set_plan(p_plan text) returns text` — sets the caller's plan
+- `mock_set_plan(p_plan text) returns text` - sets the caller's plan
   (`auth.uid()`), validates the value. Granted to `authenticated`. **Placeholder
-  for Razorpay** — replace with a payment-verified path later.
+  for Razorpay** - replace with a payment-verified path later.
 
 ### Triggers (`before insert`)
 
-- `vault_documents` — sum caller's `size_bytes` + `NEW.size_bytes`; raise
+- `vault_documents` - sum caller's `size_bytes` + `NEW.size_bytes`; raise
   `check_violation` if over the plan byte limit (Free = 0 → all docs blocked).
-- `secure_wallet` — block the 4th record on Free.
+- `secure_wallet` - block the 4th record on Free.
 
 ## Server enforcement
 

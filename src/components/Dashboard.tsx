@@ -236,7 +236,7 @@ export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
   return (
     <div className="apple-surface w-full space-y-5 sm:space-y-7 pb-10">
 
-      {/* Greeting — clean, typographic, no background effects */}
+      {/* Greeting - clean, typographic, no background effects */}
       <div>
         <p className="text-[13px] sm:text-[14px] text-muted-foreground font-medium mb-0.5">
           {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
@@ -342,7 +342,7 @@ export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
         </div>
       )}
 
-      {/* Stats — iOS-style grouped inset list */}
+      {/* Stats - iOS-style grouped inset list */}
       <div className="bg-card rounded-[16px] border border-border overflow-hidden">
         {[
           { label: "Passwords",  value: stats.passwords,  icon: KeyRoundIcon  },

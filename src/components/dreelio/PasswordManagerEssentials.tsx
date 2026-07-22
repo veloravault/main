@@ -1,4 +1,11 @@
-import { FileKeyIcon, KeyRoundIcon, LockKeyholeIcon } from "lucide-react";
+import {
+  FileKeyIcon,
+  FingerprintIcon,
+  KeyRoundIcon,
+  LockKeyholeIcon,
+  SearchIcon,
+  ShieldCheckIcon,
+} from "lucide-react";
 import shared from "@/app/dreelio/dreelio.module.css";
 import styles from "./PasswordManagerEssentials.module.css";
 
@@ -17,6 +24,21 @@ const ESSENTIALS = [
     icon: LockKeyholeIcon,
     title: "Protect everything before storage",
     body: "Use one private workspace built around local encryption and clear access controls.",
+  },
+  {
+    icon: ShieldCheckIcon,
+    title: "Spot weak and reused credentials",
+    body: "Review password health signals and replace credentials that put more than one account at risk.",
+  },
+  {
+    icon: SearchIcon,
+    title: "Find saved information quickly",
+    body: "Search across the vault and move directly to the password, note, document, or card you need.",
+  },
+  {
+    icon: FingerprintIcon,
+    title: "Unlock in the way that suits you",
+    body: "Use your master key, a device PIN, or a supported platform authenticator for convenient local access.",
   },
 ] as const;
 

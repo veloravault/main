@@ -90,7 +90,7 @@ export function Features() {
         </motion.div>
 
         <div className={styles.topRow}>
-          {/* Card 1 — personalization */}
+          {/* Card 1 - personalization */}
           <motion.article
             className={styles.bigCard}
             initial={reduceMotion ? false : "hidden"}
@@ -146,11 +146,11 @@ export function Features() {
             <p className={styles.cardBody}>
               <strong>Personalize every detail.</strong> Choose light or dark
               mode, set a PIN, and turn on biometric unlock so opening your
-              vault feels effortless — and still only yours.
+              vault feels effortless - and still only yours.
             </p>
           </motion.article>
 
-          {/* Card 2 — magic import */}
+          {/* Card 2 - magic import */}
           <motion.article
             className={styles.bigCard}
             initial={reduceMotion ? false : "hidden"}
@@ -208,7 +208,7 @@ export function Features() {
             </div>
             <p className={styles.cardBody}>
               <strong>Magic import.</strong> Paste a list, export a CSV from
-              your browser, or snap a photo — Velora Vault parses it and shows
+              your browser, or snap a photo - Velora Vault parses it and shows
               you exactly what it found before anything is saved.
             </p>
           </motion.article>

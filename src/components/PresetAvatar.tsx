@@ -1,6 +1,6 @@
 // Profile avatars without any file storage. Users pick "male" or "female"
 // (stored in Supabase user_metadata.avatar_kind); anyone who hasn't chosen gets
-// a deterministic colored-initials circle. Everything is inline SVG — no
+// a deterministic colored-initials circle. Everything is inline SVG - no
 // uploads, no buckets, no external requests.
 
 export type AvatarKind = "male" | "female";

@@ -22,7 +22,7 @@ export const typedText = (value: string, progress: number) => {
 /**
  * Fades the whole scene in from, and back out to, the plain background at the
  * very start/end of the composition so the <video loop> restart lands on two
- * matching (empty) frames instead of jump-cutting mid-flow — the visible
+ * matching (empty) frames instead of jump-cutting mid-flow - the visible
  * "reset" that reads as a jittery glitch on an autoplaying, looping demo.
  */
 export const loopFadeOpacity = (

@@ -2,20 +2,20 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace the current two-step onboarding with a polished, framer-motion-animated welcome flow — two branded intro screens, then the existing avatar and master-key steps, then a success state — reusing the existing style system and preserving every security guarantee.
+**Goal:** Replace the current two-step onboarding with a polished, framer-motion-animated welcome flow - two branded intro screens, then the existing avatar and master-key steps, then a success state - reusing the existing style system and preserving every security guarantee.
 
 **Architecture:** A new client component `OnboardingFlow` owns the whole staged experience (step index, direction, progress dots, per-step heading, directional `AnimatePresence`) and holds ALL security-critical logic migrated from the retired `OnboardingForm`. Intro/avatar/master-key/completion bodies are presentational sub-components under `onboarding-steps/`. `AuthShell` is untouched (login/signup keep it). The server-side gate in `onboarding/page.tsx` is unchanged.
 
-**Tech Stack:** Next.js 16 (App Router), React 19, TypeScript, framer-motion ^12, lucide-react ^1.24, CSS Modules. Tests via `node --test tests/*.test.mjs` (Node's built-in runner; existing tests assert on source via `readFileSync` — no DOM harness exists in this repo).
+**Tech Stack:** Next.js 16 (App Router), React 19, TypeScript, framer-motion ^12, lucide-react ^1.24, CSS Modules. Tests via `node --test tests/*.test.mjs` (Node's built-in runner; existing tests assert on source via `readFileSync` - no DOM harness exists in this repo).
 
 ## Global Constraints
 
-- **Master key never leaves the client form.** No storage APIs (`localStorage`, `sessionStorage`, `indexedDB`, `document.cookie`) may appear in `OnboardingFlow.tsx` — cookie access stays inside `src/lib/planIntent.ts` helpers.
+- **Master key never leaves the client form.** No storage APIs (`localStorage`, `sessionStorage`, `indexedDB`, `document.cookie`) may appear in `OnboardingFlow.tsx` - cookie access stays inside `src/lib/planIntent.ts` helpers.
 - **Completion request shape is contract-bound:** the server (`src/app/api/onboarding/complete/route.ts`) rejects any body that isn't exactly `{ completed: true, expectedUserId }` (two keys). Do not add fields.
 - **Ordering is a security invariant:** live identity re-check (`supabase.auth.getUser()`) → durable activation (`fetch("/api/onboarding/complete")`) → local key handoff (`setMasterKey`). Never reorder.
 - **Avatar persistence is non-fatal:** a failed `updateUser` must only `console.error`, never block activation.
 - **Reuse `--auth-*` tokens** from `auth-shell.module.css`; introduce no new color tokens or visual language.
-- **Respect `prefers-reduced-motion`** via framer-motion's `useReducedMotion()` — collapse slides to opacity-only.
+- **Respect `prefers-reduced-motion`** via framer-motion's `useReducedMotion()` - collapse slides to opacity-only.
 - **Reference signatures (verbatim, do not change):**
   - `useVaultKey().setMasterKey(value: string, expectedUserId: string): boolean`
   - `getStrength(value: string): { level: StrengthLevel; score: number; label: string }` where `StrengthLevel = "weak" | "fair" | "strong" | "very-strong"`, from `@/lib/passwordHealth`.
@@ -27,7 +27,7 @@
 
 ## Pre-existing condition (read before starting)
 
-`tests/invite-onboarding.test.mjs` test #1 (`"onboarding only sets the master key…"`) currently **FAILS** on `main`: line 25 asserts `router.replace(["']\/vault["']\)` but the plan-intent commit changed the call to a ternary `router.replace(intent ? \`/vault?upgrade=…\` : "/vault")`. Task 4 updates this test to target the new file AND fixes this stale assertion. Do not treat the initial red as caused by your changes — verify with the baseline step below.
+`tests/invite-onboarding.test.mjs` test #1 (`"onboarding only sets the master key…"`) currently **FAILS** on `main`: line 25 asserts `router.replace(["']\/vault["']\)` but the plan-intent commit changed the call to a ternary `router.replace(intent ? \`/vault?upgrade=…\` : "/vault")`. Task 4 updates this test to target the new file AND fixes this stale assertion. Do not treat the initial red as caused by your changes - verify with the baseline step below.
 
 - [ ] **Baseline: confirm current test state**
 
@@ -39,26 +39,26 @@ Expected: test #1 FAILS on the `router.replace` assertion; tests #2–#5 PASS. R
 ## File Structure
 
 **Create**
-- `src/components/auth/onboarding.module.css` — progress dots, intro layout, icon badge (new classes only).
-- `src/components/auth/onboarding-steps/onboardingSteps.ts` — the ordered step model + intro screen content constants + motion variants (shared, no JSX).
-- `src/components/auth/onboarding-steps/IntroScreen.tsx` — presentational value-prop screen.
-- `src/components/auth/onboarding-steps/AvatarStep.tsx` — presentational avatar picker body.
-- `src/components/auth/onboarding-steps/MasterKeyStep.tsx` — presentational master-key form body.
-- `src/components/auth/onboarding-steps/CompletionStep.tsx` — presentational success state.
-- `src/components/auth/OnboardingFlow.tsx` — orchestrator; owns state, motion, progress, and all security logic.
+- `src/components/auth/onboarding.module.css` - progress dots, intro layout, icon badge (new classes only).
+- `src/components/auth/onboarding-steps/onboardingSteps.ts` - the ordered step model + intro screen content constants + motion variants (shared, no JSX).
+- `src/components/auth/onboarding-steps/IntroScreen.tsx` - presentational value-prop screen.
+- `src/components/auth/onboarding-steps/AvatarStep.tsx` - presentational avatar picker body.
+- `src/components/auth/onboarding-steps/MasterKeyStep.tsx` - presentational master-key form body.
+- `src/components/auth/onboarding-steps/CompletionStep.tsx` - presentational success state.
+- `src/components/auth/OnboardingFlow.tsx` - orchestrator; owns state, motion, progress, and all security logic.
 
 **Modify**
-- `src/app/onboarding/page.tsx` — swap `AuthShell` + `OnboardingForm` for `PublicPageShell` + `OnboardingFlow`.
-- `tests/invite-onboarding.test.mjs` — retarget test #1 to `OnboardingFlow.tsx`; fix the stale redirect assertion.
+- `src/app/onboarding/page.tsx` - swap `AuthShell` + `OnboardingForm` for `PublicPageShell` + `OnboardingFlow`.
+- `tests/invite-onboarding.test.mjs` - retarget test #1 to `OnboardingFlow.tsx`; fix the stale redirect assertion.
 
 **Delete**
-- `src/components/auth/OnboardingForm.tsx` — logic migrated.
+- `src/components/auth/OnboardingForm.tsx` - logic migrated.
 
 ---
 
 ## Task 1: Step model, content constants, and motion variants
 
-Pure data/logic module — no React, no JSX — so it can be reasoned about and referenced by every later task.
+Pure data/logic module - no React, no JSX - so it can be reasoned about and referenced by every later task.
 
 **Files:**
 - Create: `src/components/auth/onboarding-steps/onboardingSteps.ts`
@@ -71,7 +71,7 @@ Pure data/logic module — no React, no JSX — so it can be reasoned about and 
   - `const ONBOARDING_STEPS: readonly OnboardingStepId[]` (in that exact order)
   - `const STEP_HEADINGS: Record<OnboardingStepId, { eyebrow: string; title: string; description: string }>`
   - `const INTRO_CONTENT: Record<"vault" | "security", { icon: "vault" | "shield"; bullets: string[] }>`
-  - `const FIRST_INTERACTIVE_INDEX: number` (index of `"avatar"` — the skip-intro target)
+  - `const FIRST_INTERACTIVE_INDEX: number` (index of `"avatar"` - the skip-intro target)
   - `function stepVariants(reduceMotion: boolean): Variants` (framer-motion variants with a `custom` direction)
 
 - [ ] **Step 1: Write the failing test**
@@ -109,7 +109,7 @@ test("step model lists the five steps in flow order with avatar as the skip targ
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `node --test tests/onboarding-flow.test.mjs`
-Expected: FAIL — file `onboardingSteps.ts` does not exist.
+Expected: FAIL - file `onboardingSteps.ts` does not exist.
 
 - [ ] **Step 3: Write the implementation**
 
@@ -130,7 +130,7 @@ export const STEP_HEADINGS: Record<OnboardingStepId, { eyebrow: string; title: s
   vault: {
     eyebrow: "Welcome to Velora",
     title: "Everything worth protecting, in one vault.",
-    description: "Passwords and important documents live together — encrypted end to end, readable only by you.",
+    description: "Passwords and important documents live together - encrypted end to end, readable only by you.",
   },
   security: {
     eyebrow: "Zero-knowledge",
@@ -160,7 +160,7 @@ export const INTRO_CONTENT: Record<"vault" | "security", { icon: "vault" | "shie
     bullets: [
       "Logins, cards, and secure notes in one place",
       "Attach and store important documents",
-      "Encrypted end to end — even from us",
+      "Encrypted end to end - even from us",
     ],
   },
   security: {
@@ -168,7 +168,7 @@ export const INTRO_CONTENT: Record<"vault" | "security", { icon: "vault" | "shie
     bullets: [
       "Your master key never leaves this browser",
       "Not sent, not stored, not logged",
-      "If you lose it, no one — including us — can recover your vault",
+      "If you lose it, no one - including us - can recover your vault",
     ],
   },
 };
@@ -207,7 +207,7 @@ git commit -m "feat(onboarding): add step model, content, and motion variants"
 
 ## Task 2: Presentational step components
 
-Four dumb components that render UI from props. No state, no network, no crypto — that all stays in the orchestrator (Task 3). This keeps the security surface in one file and makes these safe to hold in context.
+Four dumb components that render UI from props. No state, no network, no crypto - that all stays in the orchestrator (Task 3). This keeps the security surface in one file and makes these safe to hold in context.
 
 **Files:**
 - Create: `src/components/auth/onboarding-steps/IntroScreen.tsx`
@@ -224,7 +224,7 @@ Four dumb components that render UI from props. No state, no network, no crypto 
   - `MasterKeyStep({ masterKey, confirmation, onMasterKeyChange, onConfirmationChange, strength, submitting }: { masterKey: string; confirmation: string; onMasterKeyChange: (v: string) => void; onConfirmationChange: (v: string) => void; strength: { level: StrengthLevel; score: number; label: string }; submitting: boolean })`
   - `CompletionStep()`
 
-Note: `MasterKeyStep` is presentational only. It renders the two inputs (ids `onboarding-master-key`, `onboarding-master-key-confirmation`) and the strength meter, but performs NO validation and NO submit — the parent `<form>` in the orchestrator owns `onSubmit`. `onboarding.module.css` is created in Task 5; import it now (an empty/partial module is fine until then — components only reference class names).
+Note: `MasterKeyStep` is presentational only. It renders the two inputs (ids `onboarding-master-key`, `onboarding-master-key-confirmation`) and the strength meter, but performs NO validation and NO submit - the parent `<form>` in the orchestrator owns `onSubmit`. `onboarding.module.css` is created in Task 5; import it now (an empty/partial module is fine until then - components only reference class names).
 
 - [ ] **Step 1: Write the failing test** (append to `tests/onboarding-flow.test.mjs`)
 
@@ -259,7 +259,7 @@ test("presentational step components exist and stay logic-free", () => {
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `node --test tests/onboarding-flow.test.mjs`
-Expected: FAIL — the four component files do not exist.
+Expected: FAIL - the four component files do not exist.
 
 - [ ] **Step 3: Write the implementations**
 
@@ -452,7 +452,7 @@ Behavioral requirements (all preserved from `OnboardingForm`):
 - Master-key step is a real `<form>` whose `onSubmit` runs `completeOnboarding`.
 - `completeOnboarding`: guard empty key → guard `strength.level === "weak"` → guard `masterKey !== masterKeyConfirmation` → set submitting → `supabase.auth.getUser()` identity re-check → non-fatal avatar `updateUser` → `fetch("/api/onboarding/complete", { completed: true, expectedUserId: userId })` → `setMasterKey(masterKey, userId)` → clear both fields → read+clear plan intent → advance to `done` → `router.replace(intent ? ... : "/vault")` → `router.refresh()`.
 - On any thrown error: show message in the alert region, re-enable submit, stay on master-key step.
-- Navigation: `goNext`/`goBack` set direction then index; intro steps show Continue + "Skip setup intro" (jumps to `FIRST_INTERACTIVE_INDEX`); avatar shows Continue + Back + "Skip — use my initials"; master-key shows submit + Back.
+- Navigation: `goNext`/`goBack` set direction then index; intro steps show Continue + "Skip setup intro" (jumps to `FIRST_INTERACTIVE_INDEX`); avatar shows Continue + Back + "Skip - use my initials"; master-key shows submit + Back.
 
 - [ ] **Step 1: Write the failing test** (append to `tests/onboarding-flow.test.mjs`)
 
@@ -491,7 +491,7 @@ test("orchestrator preserves the onboarding security contract", () => {
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `node --test tests/onboarding-flow.test.mjs`
-Expected: FAIL — `OnboardingFlow.tsx` does not exist.
+Expected: FAIL - `OnboardingFlow.tsx` does not exist.
 
 - [ ] **Step 3: Write the implementation**
 
@@ -560,7 +560,7 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
       return;
     }
     if (masterKeyStrength.level === "weak") {
-      setError("Your master key is too weak. Use a longer key with a mix of letters, numbers, and symbols — it's the only thing protecting your vault.");
+      setError("Your master key is too weak. Use a longer key with a mix of letters, numbers, and symbols - it's the only thing protecting your vault.");
       return;
     }
     if (masterKey !== masterKeyConfirmation) {
@@ -673,7 +673,7 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
                 <div className={styles.stepFooter}>
                   <button type="button" className={shell.secondaryAction} onClick={goBack}>Back</button>
                   <button type="button" className={shell.textLink} onClick={() => { setAvatarKind(null); goNext(); }}>
-                    Skip — use my initials
+                    Skip - use my initials
                   </button>
                 </div>
               </div>
@@ -765,7 +765,7 @@ In `tests/invite-onboarding.test.mjs`, in test #1 (`"onboarding only sets the ma
 ```
 
 Run: `node --test tests/invite-onboarding.test.mjs`
-Expected: test #1 now reads `OnboardingFlow.tsx` (which exists from Task 3) and PASSES; tests #2–#5 still PASS. (If `OnboardingForm.tsx` still exists, that's fine — it's deleted in Step 4.)
+Expected: test #1 now reads `OnboardingFlow.tsx` (which exists from Task 3) and PASSES; tests #2–#5 still PASS. (If `OnboardingForm.tsx` still exists, that's fine - it's deleted in Step 4.)
 
 - [ ] **Step 2: Create the CSS module**
 
@@ -857,7 +857,7 @@ import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
 import { AuthorizationError, getMembershipForUser, requireUser } from "@/lib/server/access";
 
 export const metadata: Metadata = {
-  title: "Set up your vault — Velora Vault",
+  title: "Set up your vault - Velora Vault",
   description: "Set up your Velora Vault.",
   robots: { index: false, follow: false },
 };
@@ -926,7 +926,7 @@ Run: `npm run lint`
 Expected: no errors in the new/modified files.
 
 Run: `npm run build`
-Expected: build succeeds — no unused imports (confirm `AuthShell` is no longer imported by `page.tsx`), no type errors, no missing CSS-module classes.
+Expected: build succeeds - no unused imports (confirm `AuthShell` is no longer imported by `page.tsx`), no type errors, no missing CSS-module classes.
 
 - [ ] **Step 2: Confirm no dangling references to the retired component**
 
@@ -937,7 +937,7 @@ Expected: no matches.
 
 Use the `verify` skill (or `npm run dev`) to exercise the flow in a real browser as an `invited` user:
 - Intro screens advance/back; progress dots animate; "Skip setup intro" jumps to the avatar step.
-- Avatar select/deselect works; "Skip — use my initials" advances.
+- Avatar select/deselect works; "Skip - use my initials" advances.
 - Master key: weak key blocked; mismatch blocked; valid key completes, shows the success state, and lands on `/vault` (or `/vault?upgrade=…&period=…` when a plan-intent cookie is set).
 - Toggle OS "Reduce Motion" and confirm transitions collapse to fades with no layout jump.
 - Reload the page after activation → server gate redirects to `/vault` (confirms the gate still governs).
@@ -963,6 +963,6 @@ git commit -m "fix(onboarding): address verification findings"
 - Style via `--auth-*` tokens, new classes in `onboarding.module.css` → Task 4. ✓
 - Tests: server contract stays green (retargeted) + new structural/security tests → Tasks 1–4. ✓ (Note: repo has no DOM test harness; runtime behavior like skip-navigation and reduced-motion is verified via the `verify` skill in Task 5, per the spec's "where the harness supports it" caveat.)
 
-**Placeholder scan:** No TBD/TODO/"handle edge cases"/vague steps — every code step contains full code. ✓
+**Placeholder scan:** No TBD/TODO/"handle edge cases"/vague steps - every code step contains full code. ✓
 
 **Type consistency:** `setMasterKey(value, expectedUserId): boolean`, `getStrength → { level, score, label }`, `AvatarKind`, `PlanIntent`, and the Task 1→2→3 exports (`ONBOARDING_STEPS`, `FIRST_INTERACTIVE_INDEX`, `STEP_HEADINGS`, `INTRO_CONTENT`, `stepVariants`, `OnboardingStepId`) are named identically across tasks. ✓

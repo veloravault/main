@@ -22,7 +22,7 @@ export function SignUpForm() {
     setError("");
 
     if (website.trim()) {
-      // Honeypot tripped — pretend success without calling Supabase.
+      // Honeypot tripped - pretend success without calling Supabase.
       setSent(true);
       return;
     }

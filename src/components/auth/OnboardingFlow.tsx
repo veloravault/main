@@ -64,7 +64,7 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
       return;
     }
     if (masterKeyStrength.level === "weak") {
-      setError("Your master key is too weak. Use a longer key with a mix of letters, numbers, and symbols — it's the only thing protecting your vault.");
+      setError("Your master key is too weak. Use a longer key with a mix of letters, numbers, and symbols - it's the only thing protecting your vault.");
       return;
     }
     if (masterKey !== masterKeyConfirmation) {
@@ -223,7 +223,7 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
                 <div className={styles.stepFooter}>
                   <button type="button" className={shell.secondaryAction} onClick={goBack}>Back</button>
                   <button type="button" className={shell.textLink} onClick={() => { setAvatarKind(null); goNext(); }}>
-                    Skip — use my initials
+                    Skip - use my initials
                   </button>
                 </div>
               </div>

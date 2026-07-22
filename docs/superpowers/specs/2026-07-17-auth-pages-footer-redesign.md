@@ -58,9 +58,9 @@ Typography continues to use the project’s Apple-system/Geist stack. Hierarchy 
 
 The footer has three bands:
 
-1. **Identity and promise** — a large Velora lockup plus the concise statement “Encrypted before storage. Yours to unlock.” This is the signature element.
-2. **Navigation** — the existing public destinations in two compact, accessible columns. No duplicated calls to action.
-3. **Trust rail** — authentic Visa, Mastercard, RuPay, and UPI image assets; net-banking/Razorpay text; the Razorpay security statement; copyright and legal links.
+1. **Identity and promise** - a large Velora lockup plus the concise statement “Encrypted before storage. Yours to unlock.” This is the signature element.
+2. **Navigation** - the existing public destinations in two compact, accessible columns. No duplicated calls to action.
+3. **Trust rail** - authentic Visa, Mastercard, RuPay, and UPI image assets; net-banking/Razorpay text; the Razorpay security statement; copyright and legal links.
 
 The payment marks remain downloaded brand assets rendered through `next/image`. They are not redrawn in JSX, CSS, or generated SVG.
 

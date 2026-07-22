@@ -16,8 +16,8 @@ type PageMetadataInput = {
 /**
  * Shared canonical + Open Graph + Twitter Card metadata for a public page.
  *
- * `title` should be the short, page-specific title (e.g. "Pricing") — the
- * root layout's title template appends "— Velora Vault" for the <title> tag
+ * `title` should be the short, page-specific title (e.g. "Pricing") - the
+ * root layout's title template appends " - Velora Vault" for the <title> tag
  * automatically. Social platforms don't see that template (they render
  * `openGraph`/`twitter` verbatim), so this appends the site name there itself.
  */
@@ -30,7 +30,7 @@ export function pageMetadata({
   publishedTime,
 }: PageMetadataInput): Metadata {
   const url = `${SITE_URL}${path}`;
-  const socialTitle = title.includes(SITE_NAME) ? title : `${title} — ${SITE_NAME}`;
+  const socialTitle = title.includes(SITE_NAME) ? title : `${title} - ${SITE_NAME}`;
 
   return {
     title,

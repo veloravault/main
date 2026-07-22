@@ -44,7 +44,7 @@ Expected classes include:
 - **local wrapper/decryption failure:** explain that biometric unlock must be reset and retain master-key fallback;
 - **unexpected:** use a neutral failure message and log the diagnostic cause without leaking implementation details.
 
-All biometric surfaces—settings, initial unlock, PIN fallback, local verification, onboarding/setup, and the dashboard enrollment prompt—will consume the same normalized message. Cancellation is treated as a recoverable state, not as a destructive or vault-corruption warning.
+All biometric surfaces - settings, initial unlock, PIN fallback, local verification, onboarding/setup, and the dashboard enrollment prompt - will consume the same normalized message. Cancellation is treated as a recoverable state, not as a destructive or vault-corruption warning.
 
 ## Security page update
 

@@ -1,7 +1,7 @@
 .page {
-  width: min(calc(100% - 48px), 1120px);
+  width: 100%;
   margin-inline: auto;
-  padding: 150px 0 112px;
+  padding: 150px var(--pad) 112px;
   font-family: var(--font-geist-sans), sans-serif;
 }
 
@@ -812,8 +812,8 @@
 
 @media (max-width: 767px) {
   .page {
-    width: min(calc(100% - 32px), 1120px);
-    padding: 116px 0 80px;
+    width: 100%;
+    padding: 116px 16px 80px;
   }
 
   .hero {

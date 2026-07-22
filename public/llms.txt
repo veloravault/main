@@ -19,4 +19,4 @@ Cipher: AES-256-GCM. Key derivation: PBKDF2-SHA-256, 600,000 iterations (matchin
 - [Why your master key gets hashed 600,000 times before it touches a database](https://veloravault.in/blog/why-600000-iterations)
 - [Spotting a phishing page before you type your password](https://veloravault.in/blog/spotting-a-phishing-page)
 - [The case for a quarterly reused-password audit](https://veloravault.in/blog/quarterly-reused-password-audit)
-- [What "encryption at rest" does — and doesn't — protect you from](https://veloravault.in/blog/what-encryption-at-rest-doesnt-protect)
+- [What "encryption at rest" does - and doesn't - protect you from](https://veloravault.in/blog/what-encryption-at-rest-doesnt-protect)

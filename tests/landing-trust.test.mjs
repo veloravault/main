@@ -137,6 +137,33 @@ test("homepage includes the two password-manager education structures", () => {
   assert.match(essentialsCss, /@media \(max-width:\s*800px\)/);
 });
 
+test("public pages use the full viewport shell and the essentials grid has six cards", () => {
+  for (const path of [
+    "src/app/pricing/pricing.module.css",
+    "src/app/security/security.module.css",
+    "src/app/blog/blog.module.css",
+    "src/app/blog/[slug]/blog-post.module.css",
+    "src/app/utilities/utilities.module.css",
+    "src/components/legal/Legal.module.css",
+  ]) {
+    const css = read(path);
+    assert.match(css, /\.(?:page|article)\s*\{[^}]*width:\s*100%;/s, `${path} should span the viewport shell`);
+    assert.doesNotMatch(css, /width:\s*min\([^}]*1120px/);
+    assert.doesNotMatch(css, /max-width:\s*760px/);
+  }
+
+  const essentials = read("src/components/dreelio/PasswordManagerEssentials.tsx");
+  assert.equal((essentials.match(/title:\s*"/g) ?? []).length, 6);
+  assert.match(essentials, /FingerprintIcon/);
+  assert.match(essentials, /SearchIcon/);
+  assert.match(essentials, /ShieldCheckIcon/);
+});
+
+test("header search control has no filled circular background", () => {
+  const css = read("src/components/dreelio/Nav.module.css");
+  assert.match(css, /\.searchTrigger,\s*\n\.mobileSearchTrigger\s*\{[^}]*background:\s*transparent;/s);
+});
+
 test("public layout and header span the viewport with a functional site search", () => {
   const sharedCss = read("src/app/dreelio/dreelio.module.css");
   const nav = read("src/components/dreelio/Nav.tsx");

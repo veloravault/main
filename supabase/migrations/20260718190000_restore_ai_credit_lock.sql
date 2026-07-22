@@ -1,7 +1,7 @@
 -- 20260718180000_meter_global_import.sql replaced try_consume_ai_credit to add
 -- the 'import' kind, but its CREATE OR REPLACE body was copied from before
 -- 20260717190000_serialize_plan_limit_checks.sql added the per-user advisory
--- lock — silently dropping the fix for the check-then-insert race described
+-- lock - silently dropping the fix for the check-then-insert race described
 -- there. Restore the lock on the current (import-aware) function body.
 
 create or replace function public.try_consume_ai_credit(p_user_id uuid, p_kind text)

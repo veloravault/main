@@ -52,7 +52,7 @@ export function Analytics({ nonce }: { nonce?: string }) {
   };
 
   // The privacy policy promises analytics never runs on the unlocked vault
-  // itself, so this stays out of that route entirely — not just unprompted.
+  // itself, so this stays out of that route entirely - not just unprompted.
   if (pathname?.startsWith("/vault")) return null;
 
   return (

@@ -1,5 +1,5 @@
 /**
- * Password Health — utilities for analysing password strength and finding reused passwords.
+ * Password Health - utilities for analysing password strength and finding reused passwords.
  */
 
 export type StrengthLevel = "weak" | "fair" | "strong" | "very-strong";

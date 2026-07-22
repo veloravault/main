@@ -1,5 +1,5 @@
 /**
- * Vault Cache — simple in-memory store that holds already-decrypted
+ * Vault Cache - simple in-memory store that holds already-decrypted
  * items per table so tab switches don't re-fetch from Supabase.
  *
  * Usage:

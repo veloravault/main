@@ -41,7 +41,7 @@ export function BlogListContent() {
         <h1>Notes on privacy, security, and building Velora Vault</h1>
         <p>
           Practical guidance on passwords, encryption, and staying ahead of
-          the ways accounts actually get compromised — plus the occasional
+          the ways accounts actually get compromised - plus the occasional
           look at how the vault itself is built.
         </p>
         <Link href="/signup" className={`${shared.btn} ${shared.btnDark} ${styles.heroCta}`}>

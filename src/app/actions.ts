@@ -225,9 +225,9 @@ async function parseGlobalBulkData(rawText: string): Promise<GlobalImportResult>
           role: "system",
           content: `You are a precise data extraction engine for a secure personal vault. The user will paste a raw text dump of all their credentials. Your job is to parse it into 4 strictly separated categories.
 
-CATEGORY RULES — follow these EXACTLY:
+CATEGORY RULES - follow these EXACTLY:
 
-1. "passwords" — Any login credential for any website/app/service/game/government portal. This includes:
+1. "passwords" - Any login credential for any website/app/service/game/government portal. This includes:
    - Social media (Instagram, Facebook, Snapchat, X/Twitter)
    - Email accounts (Gmail, Outlook, Yahoo)
    - Gaming (Call of Duty, Supercell/COC)
@@ -236,24 +236,24 @@ CATEGORY RULES — follow these EXACTLY:
    - Coding (Github)
    - Portals (MahaDBT, Qooh.me, MahaDMahit)
    - Apple ID, Microsoft Account
-   - Bank INTERNET LOGIN credentials (Customer ID + login password for HDFC, Kotak, Federal Bank, Abhudaya etc. — these are PASSWORDS not bank accounts)
+   - Bank INTERNET LOGIN credentials (Customer ID + login password for HDFC, Kotak, Federal Bank, Abhudaya etc. - these are PASSWORDS not bank accounts)
    Each password object must have: { "title": string, "url": string (domain like "instagram.com"), "username": string (email or username), "password": string (login password), "extra_details": string (any extra info like PINs, Customer ID, Recovery codes), "category": string }
    For bank login entries: title = "HDFC Bank Login", username = Customer ID, password = login password, extra_details include Login Pin, UPI Pin.
    IMPORTANT: Do NOT use the email address domain as the service URL (e.g. for Google Account, use "google.com" not "gmail.com" as URL for service but username can be the gmail address).
    
-2. "bank_accounts" — Actual bank account records (account number, IFSC, routing). Each object: { "title": string (bank name), "account": string, "routing": string (IFSC code), "name": string, "extra_details": string (any extra info like Customer ID, UPI Pin, Login Pin etc.) }
+2. "bank_accounts" - Actual bank account records (account number, IFSC, routing). Each object: { "title": string (bank name), "account": string, "routing": string (IFSC code), "name": string, "extra_details": string (any extra info like Customer ID, UPI Pin, Login Pin etc.) }
 
-3. "credit_cards" — Any debit OR credit card with a card number. Each object: { "title": string (e.g. "HDFC Debit Card", "Kotak Debit Card", "HDFC Credit Card"), "number": string (card number, digits only or spaced), "expiry": string (MM/YY format), "cvv": string, "name": string (cardholder name if present), "pin": string (ATM/Debit card PIN if present, else ""), "upi_pin": string (UPI PIN if present, else ""), "extra_details": string (any remaining info not captured above) }
+3. "credit_cards" - Any debit OR credit card with a card number. Each object: { "title": string (e.g. "HDFC Debit Card", "Kotak Debit Card", "HDFC Credit Card"), "number": string (card number, digits only or spaced), "expiry": string (MM/YY format), "cvv": string, "name": string (cardholder name if present), "pin": string (ATM/Debit card PIN if present, else ""), "upi_pin": string (UPI PIN if present, else ""), "extra_details": string (any remaining info not captured above) }
 
-4. "notes" — Anything that doesn't fit cleanly into the above 3 categories. Each object: { "title": string, "content": string, "category": string }
+4. "notes" - Anything that doesn't fit cleanly into the above 3 categories. Each object: { "title": string, "content": string, "category": string }
 
 CRITICAL RULES:
 - A bank section may contain BOTH a bank login (→ passwords) AND an account number (→ bank_accounts) AND card details (→ credit_cards). Split them properly.
 - HDFC Bank: the "Customer ID + Password" is a PASSWORD entry. The "Account No + IFSC" is a BANK_ACCOUNT entry. The "Debit/Credit Card number" entries are CREDIT_CARDS entries.
 - If a card is labeled "Debit Card", put it in credit_cards with title saying "Debit Card".
-- For each Instagram account, GitHub account, Google account etc — create ONE password entry per credential pair (multiple usernames = multiple entries).
-- For Supercell/COC "Email Code" type passwords — use "Email Code" as the password value.
-- For Abhudaya Bank with only PINs and no account number — create a password entry with the PINs in extra_details.
+- For each Instagram account, GitHub account, Google account etc - create ONE password entry per credential pair (multiple usernames = multiple entries).
+- For Supercell/COC "Email Code" type passwords - use "Email Code" as the password value.
+- For Abhudaya Bank with only PINs and no account number - create a password entry with the PINs in extra_details.
 - Return ONLY a valid JSON object with exactly these four array keys: passwords, bank_accounts, credit_cards, notes.`
         },
         {

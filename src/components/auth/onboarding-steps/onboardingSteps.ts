@@ -14,7 +14,7 @@ export const STEP_HEADINGS: Record<OnboardingStepId, { eyebrow: string; title: s
   "vault": {
     eyebrow: "Welcome to Velora",
     title: "Everything worth protecting, in one vault.",
-    description: "Passwords and important documents live together — encrypted end to end, readable only by you.",
+    description: "Passwords and important documents live together - encrypted end to end, readable only by you.",
   },
   "security": {
     eyebrow: "Zero-knowledge",
@@ -44,7 +44,7 @@ export const INTRO_CONTENT: Record<"vault" | "security", { icon: "vault" | "secu
     bullets: [
       { icon: "key", text: "Logins, cards, and secure notes in one place" },
       { icon: "file-lock", text: "Attach and store important documents" },
-      { icon: "shield-check", text: "Encrypted end to end — even from us" },
+      { icon: "shield-check", text: "Encrypted end to end - even from us" },
     ],
   },
   "security": {
@@ -52,7 +52,7 @@ export const INTRO_CONTENT: Record<"vault" | "security", { icon: "vault" | "secu
     bullets: [
       { icon: "monitor-smartphone", text: "Your master key never leaves this browser" },
       { icon: "eye-off", text: "Not sent, not stored, not logged" },
-      { icon: "key-round", text: "If you lose it, no one — including us — can recover your vault" },
+      { icon: "key-round", text: "If you lose it, no one - including us - can recover your vault" },
     ],
   },
 };

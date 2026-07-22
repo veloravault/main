@@ -24,15 +24,15 @@
 
 **Create:**
 
-- `src/lib/server/admin-overview-repository.ts` — owner-safe aggregate metrics.
-- `src/app/api/admin/overview/route.ts` — owner-only Overview endpoint.
-- `src/components/admin/AdminOverview.tsx` — Overview cards and recent activity.
-- `src/lib/server/member-operations.ts` — member usage DTO and setup-email operation.
-- `src/app/api/admin/members/[id]/setup-email/route.ts` — resend setup email.
-- `src/components/admin/AdminMemberDetail.tsx` — desktop drawer/mobile sheet.
-- `src/components/admin/AdminSupportThread.tsx` — responsive ticket thread.
-- `src/components/auth/ResetPasswordClient.tsx` — reset client leaf.
-- `tests/request-security.test.mjs` — trusted-origin runtime tests.
+- `src/lib/server/admin-overview-repository.ts` - owner-safe aggregate metrics.
+- `src/app/api/admin/overview/route.ts` - owner-only Overview endpoint.
+- `src/components/admin/AdminOverview.tsx` - Overview cards and recent activity.
+- `src/lib/server/member-operations.ts` - member usage DTO and setup-email operation.
+- `src/app/api/admin/members/[id]/setup-email/route.ts` - resend setup email.
+- `src/components/admin/AdminMemberDetail.tsx` - desktop drawer/mobile sheet.
+- `src/components/admin/AdminSupportThread.tsx` - responsive ticket thread.
+- `src/components/auth/ResetPasswordClient.tsx` - reset client leaf.
+- `tests/request-security.test.mjs` - trusted-origin runtime tests.
 
 **Modify:** `src/lib/server/request-security.ts`, `src/app/reset-password/page.tsx`, `src/lib/server/access-repository.ts`, `src/lib/server/support-repository.ts`, admin API routes, admin types/components/CSS, and admin/project tests.
 

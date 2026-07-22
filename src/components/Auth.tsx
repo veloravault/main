@@ -55,7 +55,7 @@ export function Auth({
     </button>
   );
 
-  // PIN setup state — shown after successful login if no PIN exists yet
+  // PIN setup state - shown after successful login if no PIN exists yet
   const [pendingMaster, setPendingMaster] = useState<string | null>(null);
   const [pendingUserId, setPendingUserId] = useState<string | null>(null);
   const [pinSetupPhase, setPinSetupPhase] = useState<"prompt" | "enter" | "confirm">("prompt");
@@ -167,7 +167,7 @@ export function Auth({
             <div>
               <h1 className="text-[24px] font-semibold text-foreground tracking-tight mb-2">Speed up future logins</h1>
               <p className="text-[14px] text-muted-foreground leading-relaxed">
-                Set a 6-digit PIN to unlock your vault instantly — no need to type your master key every time.
+                Set a 6-digit PIN to unlock your vault instantly - no need to type your master key every time.
               </p>
             </div>
             <div className="flex flex-col gap-3 w-full">

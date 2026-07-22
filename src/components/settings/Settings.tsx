@@ -19,7 +19,7 @@ export function Settings({ masterPassword, onLock, initialSection, sectionReques
   const active = selected ?? "account";
 
   // Settings is a long-lived instance (VaultApp keeps every tab panel
-  // mounted, just hidden) — a later prop update won't re-run the useState
+  // mounted, just hidden) - a later prop update won't re-run the useState
   // initializer above, so an explicit sync is needed for requests to jump to
   // a section (sidebar "Upgrade plan", or a post-onboarding ?upgrade= param)
   // that arrive after Settings has already mounted.

@@ -25,7 +25,7 @@ export const PRICING_TIERS: PricingTier[] = [
     features: [
       "Unlimited passwords & secure notes",
       "Up to 3 wallet & bank records",
-      "Password health monitoring — weak & reused alerts",
+      "Password health monitoring - weak & reused alerts",
       "Face ID / Touch ID and PIN unlock",
       "5 AI-assisted imports per month",
     ],
@@ -74,12 +74,12 @@ export const PRICING_FAQ: { question: string; answer: string }[] = [
   {
     question: "Is the Free tier actually free?",
     answer:
-      "Yes — free forever, no credit card required. It includes unlimited passwords and notes, with limits on wallet records and AI-assisted imports, and no document storage. Upgrade to Plus whenever you need more.",
+      "Yes - free forever, no credit card required. It includes unlimited passwords and notes, with limits on wallet records and AI-assisted imports, and no document storage. Upgrade to Plus whenever you need more.",
   },
   {
     question: "What happens to my data if I'm over a plan limit?",
     answer:
-      "Nothing is deleted or locked. You keep read access to everything you've already saved — you just can't add more in that category until you're back under the limit or you upgrade.",
+      "Nothing is deleted or locked. You keep read access to everything you've already saved - you just can't add more in that category until you're back under the limit or you upgrade.",
   },
   {
     question: "Can I change plans later?",

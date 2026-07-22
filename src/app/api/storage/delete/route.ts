@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     const prefix = `${user.id}/`;
     const keys = rawKeys.filter((key): key is string => typeof key === "string" && key.startsWith(prefix));
-    // Reject the whole request if any key is not the caller's — no partial trust.
+    // Reject the whole request if any key is not the caller's - no partial trust.
     if (keys.length !== rawKeys.length) {
       return NextResponse.json({ error: "Not found." }, { status: 404 });
     }

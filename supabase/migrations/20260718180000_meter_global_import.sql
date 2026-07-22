@@ -1,6 +1,6 @@
 -- The "Magic Import" paste-to-extract flow (extractGlobalImportDrafts /
 -- parseGlobalBulkData in src/app/actions.ts) was never wired into AI usage
--- metering — every other user-initiated AI action (image scan, document
+-- metering - every other user-initiated AI action (image scan, document
 -- auto-naming, document categorization) counts against the Free plan's
 -- monthly allowance, but a Free user could call this one an unlimited
 -- number of times. Add 'import' as a metered kind so it shares the same

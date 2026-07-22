@@ -5,11 +5,11 @@ import { periodForPlanId, verifyWebhookSignature } from "@/lib/server/razorpay";
 
 export const runtime = "nodejs";
 
-// Razorpay webhook — the SOLE authority that ever grants or revokes a paid
+// Razorpay webhook - the SOLE authority that ever grants or revokes a paid
 // plan. Verifies the signature over the raw (unparsed) body, then processes
 // idempotently: every event is recorded in payment_events keyed by its event
 // id (or a hash of the body as a fallback), and a unique-violation on that
-// insert means "already processed" — return 200 without reprocessing.
+// insert means "already processed" - return 200 without reprocessing.
 
 interface RazorpaySubscriptionEntity {
   id: string;
@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
     .insert({ razorpay_event_id: eventId, event_type: eventType, payload: record });
   if (insertError) {
     if (insertError.code === "23505") {
-      // Already processed this exact event — Razorpay retries deliveries.
+      // Already processed this exact event - Razorpay retries deliveries.
       return NextResponse.json({ ok: true, duplicate: true });
     }
     console.error("payment_events insert failed:", insertError);
@@ -187,7 +187,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     // The idempotency row was already inserted above. If processing failed, a
     // Razorpay retry would otherwise hit the unique constraint and be dismissed
-    // as a duplicate — permanently dropping this plan change. Roll the record
+    // as a duplicate - permanently dropping this plan change. Roll the record
     // back so the retry reprocesses. (Best-effort: if the delete itself fails,
     // we're no worse off than before this guard.)
     const { error: rollbackError } = await admin

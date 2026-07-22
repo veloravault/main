@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     if (error) throw error;
     if (!row) return NextResponse.json({ error: "No active subscription to change." }, { status: 404 });
     if (row.cancel_at_cycle_end) {
-      return NextResponse.json({ error: "This subscription is scheduled to cancel — resubscribe instead of changing its period." }, { status: 409 });
+      return NextResponse.json({ error: "This subscription is scheduled to cancel - resubscribe instead of changing its period." }, { status: 409 });
     }
     if (row.period === targetPeriod && !row.scheduled_period) {
       return NextResponse.json({ error: `Already billed ${targetPeriod}.` }, { status: 409 });
@@ -50,8 +50,7 @@ export async function POST(req: NextRequest) {
     await updateSubscriptionPlan(row.razorpay_subscription_id, razorpayPlanId);
 
     // Reverting to the currently-billed period cancels the pending switch
-    // rather than scheduling a "change" to the value already in effect —
-    // otherwise the UI would show "switching to X" forever with nothing
+    // rather than scheduling a "change" to the value already in effect -     // otherwise the UI would show "switching to X" forever with nothing
     // actually changing at the next renewal.
     const nextScheduledPeriod = targetPeriod === row.period ? null : targetPeriod;
 
@@ -63,7 +62,7 @@ export async function POST(req: NextRequest) {
       if (updateError) throw updateError;
     } catch (dbError) {
       // Razorpay has already applied the plan change regardless of whether
-      // this local write lands — don't tell the user to retry (that would
+      // this local write lands - don't tell the user to retry (that would
       // call Razorpay's update API again); queue the desync for admin retry.
       console.error("change-period: Razorpay updated but local DB update failed:", dbError);
       await recordBillingReconciliationIssue({

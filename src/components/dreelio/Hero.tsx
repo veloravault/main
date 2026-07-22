@@ -33,7 +33,7 @@ export function Hero() {
           for everything that matters
         </motion.h1>
         <motion.p className={styles.subtitle} variants={staggerItem}>
-          Passwords, documents, notes, and financial essentials — encrypted on
+          Passwords, documents, notes, and financial essentials - encrypted on
           your device before they&rsquo;re stored.
         </motion.p>
         <motion.div className={styles.actions} variants={staggerItem}>

@@ -38,7 +38,7 @@ In particular, the page continues to disclose browser-side encryption, key deriv
 
 The page uses the established Apple-like landing system: neutral grouped surfaces, precise typography, soft separators, system blue, and short spring-like movement. It does not introduce another visual theme.
 
-The signature element is the **sealed path**. A single blue trace moves through four states—readable input, scrambled blocks, authorization checkpoint, sealed storage—then resolves into the existing four-loop Velora mark. This adapts the landing page's sealed-aperture signature to a security explanation rather than using generic shields, locks, or floating gradients.
+The signature element is the **sealed path**. A single blue trace moves through four states - readable input, scrambled blocks, authorization checkpoint, sealed storage - then resolves into the existing four-loop Velora mark. This adapts the landing page's sealed-aperture signature to a security explanation rather than using generic shields, locks, or floating gradients.
 
 The page palette remains token-driven:
 

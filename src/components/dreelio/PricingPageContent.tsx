@@ -32,7 +32,7 @@ const priceDigits = {
 };
 
 type PricingPageContentProps = {
-  /** Server-resolved signed-in state — see Nav's `initialSignedIn` for why. */
+  /** Server-resolved signed-in state - see Nav's `initialSignedIn` for why. */
   initialSignedIn?: boolean;
 };
 
@@ -53,7 +53,7 @@ export function PricingPageContent({ initialSignedIn = false }: PricingPageConte
 
   const selectPlan = (tier: PricingTier) => {
     if (signedIn) {
-      // Already signed in — skip the auth modal entirely and land straight on
+      // Already signed in - skip the auth modal entirely and land straight on
       // the plan, checkout auto-triggered (see VaultApp's `upgrade` param).
       if (tier.id === "free") { router.push("/vault"); return; }
       router.push(`/vault?upgrade=${tier.id}&period=${billing === "annual" ? "yearly" : "monthly"}`);
@@ -201,7 +201,7 @@ export function PricingPageContent({ initialSignedIn = false }: PricingPageConte
                   {row.values.map((value, index) => (
                     <td key={index} className={PRICING_TIERS[index].featured ? styles.compareFeaturedCol : undefined}>
                       {typeof value === "boolean" ? (
-                        value ? <CheckIcon aria-label="Included" className={styles.compareCheck} /> : <span aria-hidden="true" className={styles.compareDash}>—</span>
+                        value ? <CheckIcon aria-label="Included" className={styles.compareCheck} /> : <span aria-hidden="true" className={styles.compareDash}> - </span>
                       ) : (
                         value
                       )}

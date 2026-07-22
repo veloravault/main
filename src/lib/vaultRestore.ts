@@ -42,7 +42,7 @@ export async function parseVaultBackupFile(file: File): Promise<ParsedBackup> {
   try {
     parsed = JSON.parse(text) as EncryptedVaultBackup;
   } catch {
-    throw new BackupRestoreError("This file is not a valid backup — it isn't valid JSON.");
+    throw new BackupRestoreError("This file is not a valid backup - it isn't valid JSON.");
   }
 
   const manifest = parsed?.manifest;
@@ -56,7 +56,7 @@ export async function parseVaultBackupFile(file: File): Promise<ParsedBackup> {
   const unsigned = { ...parsed, manifest: { ...manifest, sha256: "" } };
   const digest = await sha256(JSON.stringify(unsigned));
   if (digest !== manifest.sha256) {
-    throw new BackupRestoreError("This backup file's integrity check failed — it may be damaged or altered.");
+    throw new BackupRestoreError("This backup file's integrity check failed - it may be damaged or altered.");
   }
 
   return { backup: parsed, manifest };
@@ -65,7 +65,7 @@ export async function parseVaultBackupFile(file: File): Promise<ParsedBackup> {
 /**
  * Best-effort check that the current master key can actually read this
  * backup: tries to decrypt the first password or note record. A pure
- * heuristic (a single row could be corrupt for unrelated reasons) — callers
+ * heuristic (a single row could be corrupt for unrelated reasons) - callers
  * should warn, not block, on a negative result.
  */
 export async function backupMatchesMasterKey(backup: EncryptedVaultBackup, masterPassword: string): Promise<boolean> {
@@ -73,7 +73,7 @@ export async function backupMatchesMasterKey(backup: EncryptedVaultBackup, maste
   const notes = (backup.records.secure_notes ?? []) as Array<{ encrypted_content?: string; salt?: string; iv?: string }>;
   const sample = passwords.find((row) => row.encrypted_data && row.salt && row.iv)
     ?? notes.find((row) => row.encrypted_content && row.salt && row.iv);
-  if (!sample) return true; // Nothing to check (e.g. a wallet/documents-only backup) — don't warn without evidence.
+  if (!sample) return true; // Nothing to check (e.g. a wallet/documents-only backup) - don't warn without evidence.
   const ciphertext = (sample as { encrypted_data?: string }).encrypted_data ?? (sample as { encrypted_content?: string }).encrypted_content;
   if (!ciphertext || !sample.salt || !sample.iv) return true;
   try {
@@ -98,7 +98,7 @@ export interface RestoreResult {
 /**
  * Re-inserts every record from a validated backup as NEW rows under the
  * current signed-in user (never the backup file's own user_id). Documents
- * are re-uploaded to fresh R2 keys — old paths from the file aren't reused,
+ * are re-uploaded to fresh R2 keys - old paths from the file aren't reused,
  * since the original blobs may no longer exist. This adds to the vault; it
  * never overwrites or deduplicates against existing items.
  */

@@ -29,29 +29,29 @@ export default function PrivacyPage() {
             <p>We collect the minimum needed to run your account:</p>
             <ul>
               <li>
-                <strong>Account information</strong> — your email address,
+                <strong>Account information</strong> - your email address,
                 account status, profile choices, and any optional master key
                 hint you choose to save. A hint is readable account metadata,
                 so it must never contain the master key itself. Supabase Auth handles your sign-in password;
                 Velora Vault does not store the raw password in its application database.
               </li>
               <li>
-                <strong>Encrypted vault contents</strong> — your passwords,
+                <strong>Encrypted vault contents</strong> - your passwords,
                 documents, notes, cards, and bank details, but only in
                 encrypted form. See below for what this means in practice.
               </li>
               <li>
-                <strong>Session and device metadata</strong> — sign-in
+                <strong>Session and device metadata</strong> - sign-in
                 timestamps and basic device information, used to keep your
                 account secure and to detect suspicious activity.
               </li>
               <li>
-                <strong>Contact form submissions</strong> — if you use the
+                <strong>Contact form submissions</strong> - if you use the
                 contact form, we collect the name, email address, topic,
                 subject, and message you enter so we can respond to you.
               </li>
               <li>
-                <strong>Analytics data</strong> — only if you accept the
+                <strong>Analytics data</strong> - only if you accept the
                 analytics cookie prompt, we collect basic usage data such as
                 pages viewed, referring pages, and device/browser type through
                 Google Analytics. See <strong>Analytics</strong> below.
@@ -100,7 +100,7 @@ export default function PrivacyPage() {
             </ul>
             <p>
               We do not sell your information, and we do not use your vault
-              contents for advertising, analytics, or model training — we
+              contents for advertising, analytics, or model training - we
               cannot, since we cannot decrypt it.
             </p>
           </section>
@@ -109,7 +109,7 @@ export default function PrivacyPage() {
             <h2 className={styles.sectionTitle}>Analytics</h2>
             <p>
               We use Google Analytics to understand how the marketing site is
-              used — pages viewed, referring pages, approximate location, and
+              used - pages viewed, referring pages, approximate location, and
               device/browser type. This never includes your vault contents,
               master key, or anything you store inside the app, and it never
               runs on your unlocked vault pages.

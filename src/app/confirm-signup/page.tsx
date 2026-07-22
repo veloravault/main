@@ -6,7 +6,7 @@ import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
 import styles from "@/components/auth/auth-shell.module.css";
 
 export const metadata: Metadata = {
-  title: "Confirm your email — Velora Vault",
+  title: "Confirm your email - Velora Vault",
   description: "Confirm your Velora Vault account.",
   robots: { index: false, follow: false },
 };

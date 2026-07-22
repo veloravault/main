@@ -57,7 +57,7 @@ function ThemeToggle({
 type NavProps = {
   /** Server-resolved signed-in state, so the CTA renders correctly on first
    * paint instead of always starting signed-out and swapping after the
-   * client re-checks the session — that swap is a real layout shift. */
+   * client re-checks the session - that swap is a real layout shift. */
   initialSignedIn?: boolean;
 };
 

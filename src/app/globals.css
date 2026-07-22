@@ -41,7 +41,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* ─── Light Mode — pure iOS/macOS system palette ─────────────── */
+/* ─── Light Mode - pure iOS/macOS system palette ─────────────── */
 :root {
   --apple-spring: 300ms cubic-bezier(.22, .88, .36, 1);
   --system-blue:       #007AFF;
@@ -406,7 +406,7 @@
   .settings-control-row .settings-toggle { position: absolute; right: 36px; }
 }
 
-/* Vault system foundations — opt-in; intentionally excludes Wallet surfaces. */
+/* Vault system foundations - opt-in; intentionally excludes Wallet surfaces. */
 :root {
   --motion-fast: 140ms;
   --motion-standard: 220ms;
@@ -522,7 +522,7 @@
 .settings-value-row > span { color: var(--muted-foreground); font-size: 13px; }
 .settings-value-row > strong, .settings-value-row > input { min-width: 0; overflow: hidden; background: transparent; color: var(--foreground); font-weight: 560; text-overflow: ellipsis; outline: none; }
 .settings-value-row > strong { font-size: 15px; }
-/* 16px, not 15px: below 16px, iOS Safari auto-zooms on focus — the page no
+/* 16px, not 15px: below 16px, iOS Safari auto-zooms on focus - the page no
    longer caps pinch-zoom globally to work around that, so inputs opt out individually. */
 .settings-value-row > input { font-size: 16px; }
 .settings-value-row > input:focus { color: var(--primary); }
@@ -636,7 +636,7 @@
   [role="dialog"].wallet-mobile-sheet { --tw-translate-x: 0px !important; --tw-translate-y: 0px !important; top: auto !important; bottom: calc(var(--bottom-bar-height) + env(safe-area-inset-bottom, 0px)) !important; left: 0 !important; display: flex; width: 100% !important; max-width: none !important; max-height: min(74dvh, 620px); flex-direction: column; transform: none !important; overflow: hidden; border-radius: 28px 28px 0 0 !important; padding: 30px 16px 0; }
 }
 
-/* ─── Dark Mode — pure iOS/macOS dark system palette ─────────── */
+/* ─── Dark Mode - pure iOS/macOS dark system palette ─────────── */
 .dark {
   --system-blue:       #0A84FF;
   --grouped-bg:        #000000;
@@ -954,7 +954,7 @@ a:focus-visible {
 .apple-sheet { border-radius: 24px; background: var(--elevated-bg); box-shadow: var(--apple-shadow); }
 .apple-tabbar { padding-bottom: env(safe-area-inset-bottom); }
 
-/* Apple Passwords master-detail — mirrors .apple-bank-* split view */
+/* Apple Passwords master-detail - mirrors .apple-bank-* split view */
 .apple-password-list { width: 100%; max-width: 760px; margin-inline: auto; }
 .apple-password-detail {
   overflow: hidden;

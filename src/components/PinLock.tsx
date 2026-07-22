@@ -21,7 +21,7 @@ const LEGACY_PIN_ITERATIONS = 100_000;
 // Doubled from 600_000 (OWASP's current PBKDF2-SHA256 minimum) to raise the
 // cost of offline brute-forcing the 6-digit PIN keyspace if an attacker ever
 // extracts vault_pin_hash/vault_pin_encrypted_master from localStorage. This
-// does not eliminate that risk — no purely client-side derivation can, since
+// does not eliminate that risk - no purely client-side derivation can, since
 // a locally-stored secret protected only by a short PIN is always subject to
 // unrate-limited offline attack once extracted. Existing enrollments upgrade
 // to this value transparently on their next successful unlock.
@@ -29,8 +29,7 @@ const PIN_ITERATIONS = 1_200_000;
 
 // Schemes control how the verifier hash and the encryption key are derived
 // from the same (pin, salt, iterations). "v1" (legacy) derives both from the
-// identical salt, which makes the PBKDF2 output byte-identical between them —
-// the stored "hash" was actually the literal AES-GCM key, so anyone reading
+// identical salt, which makes the PBKDF2 output byte-identical between them - // the stored "hash" was actually the literal AES-GCM key, so anyone reading
 // localStorage could decrypt the master key without the PIN. "v2" derives
 // each from a purpose-suffixed salt so the two outputs are independent; a v1
 // enrollment still verifies/decrypts correctly (for existing users) and gets

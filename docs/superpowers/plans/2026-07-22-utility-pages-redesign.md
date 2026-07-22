@@ -27,21 +27,21 @@
 
 ### Create
 
-- `src/app/utilities/generatorLogic.ts` — deterministic password, random-string, passphrase, username, and strength-label rules with injected secure randomness.
-- `src/app/utilities/utilityData.ts` — shared route labels, hrefs, and related-tool filtering.
-- `src/app/utilities/UtilityPageLayout.tsx` — shared hero, benefit band, educational-section, related-tools, and CTA composition.
-- `src/app/utilities/UtilityWorkbench.tsx` — accessible output, range, switch, segmented control, privacy badge, and workbench primitives.
-- `src/app/utilities/useUtilityClipboard.ts` — copy success/failure/manual-selection feedback without logging values.
-- `tests/utility-generator-logic.test.mjs` — executable logic tests using Node 24 TypeScript stripping.
-- `tests/utility-pages-contract.test.mjs` — source-level accessibility, privacy, routing, and responsive-contract tests.
+- `src/app/utilities/generatorLogic.ts` - deterministic password, random-string, passphrase, username, and strength-label rules with injected secure randomness.
+- `src/app/utilities/utilityData.ts` - shared route labels, hrefs, and related-tool filtering.
+- `src/app/utilities/UtilityPageLayout.tsx` - shared hero, benefit band, educational-section, related-tools, and CTA composition.
+- `src/app/utilities/UtilityWorkbench.tsx` - accessible output, range, switch, segmented control, privacy badge, and workbench primitives.
+- `src/app/utilities/useUtilityClipboard.ts` - copy success/failure/manual-selection feedback without logging values.
+- `tests/utility-generator-logic.test.mjs` - executable logic tests using Node 24 TypeScript stripping.
+- `tests/utility-pages-contract.test.mjs` - source-level accessibility, privacy, routing, and responsive-contract tests.
 
 ### Replace or substantially modify
 
-- `src/app/utilities/utilities.module.css` — complete shared responsive workbench and content system.
-- `src/app/utilities/password-generator/PasswordGeneratorClient.tsx` — password-specific state and controls.
-- `src/app/utilities/passphrase-generator/PassphraseGeneratorClient.tsx` — passphrase-specific state and controls.
-- `src/app/utilities/username-generator/UsernameGeneratorClient.tsx` — readable/random-string modes and controls.
-- `src/app/utilities/password-strength/PasswordStrengthClient.tsx` — private input and stable zxcvbn result panel.
+- `src/app/utilities/utilities.module.css` - complete shared responsive workbench and content system.
+- `src/app/utilities/password-generator/PasswordGeneratorClient.tsx` - password-specific state and controls.
+- `src/app/utilities/passphrase-generator/PassphraseGeneratorClient.tsx` - passphrase-specific state and controls.
+- `src/app/utilities/username-generator/UsernameGeneratorClient.tsx` - readable/random-string modes and controls.
+- `src/app/utilities/password-strength/PasswordStrengthClient.tsx` - private input and stable zxcvbn result panel.
 - The four `page.tsx` files remain unchanged Server Components and are covered by route-contract tests.
 
 ---

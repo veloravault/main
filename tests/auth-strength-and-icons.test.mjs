@@ -58,8 +58,8 @@ test("onboarding uses one deliberate Apple-style Lucide symbol vocabulary", () =
 
   assert.match(steps, /icon:\s*"key"[\s\S]*icon:\s*"file-lock"[\s\S]*icon:\s*"shield-check"/);
   assert.match(steps, /icon:\s*"monitor-smartphone"[\s\S]*icon:\s*"eye-off"[\s\S]*icon:\s*"key-round"/);
-  assert.match(steps, /Encrypted end to end — even from us/);
-  assert.match(steps, /If you lose it, no one — including us — can recover your vault/);
+  assert.match(steps, /Encrypted end to end - even from us/);
+  assert.match(steps, /If you lose it, no one - including us - can recover your vault/);
   assert.match(intro, /BENEFIT_ICONS/);
   assert.doesNotMatch(intro, /\bCheckIcon\b/);
 

@@ -19,7 +19,7 @@ const CONTACT_CHANNELS = [
   },
   {
     title: "Security disclosures",
-    body: "Found a vulnerability? Tell us before anyone else finds it — we credit responsible disclosures.",
+    body: "Found a vulnerability? Tell us before anyone else finds it - we credit responsible disclosures.",
     email: "security@veloravault.in",
   },
   {

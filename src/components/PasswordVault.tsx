@@ -57,7 +57,7 @@ function extractDomain(url: string | undefined): string | null {
   }
 }
 
-// Parses plaintext stored in vault_items — supports JSON (Magic Import) and legacy text format
+// Parses plaintext stored in vault_items - supports JSON (Magic Import) and legacy text format
 function parsePlaintext(plaintext: string): { isJson: boolean; username: string | null; password: string | null; notes: string | null; domain: string | null } {
   try {
     const obj = JSON.parse(plaintext);
@@ -71,7 +71,7 @@ function parsePlaintext(plaintext: string): { isJson: boolean; username: string 
       };
     }
   } catch {
-    // not JSON — fall through to regex
+    // not JSON - fall through to regex
   }
   const userMatch = plaintext.match(/Username:\s*([^\n]+)/i);
   const passMatch = plaintext.match(/Password:\s*([^\n]+)/i);
@@ -108,7 +108,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
 
   // Large vaults: render (and animate) a bounded number of rows per category
   // rather than the whole list at once. Data is still fetched and decrypted
-  // in full up front — this only limits what actually hits the DOM.
+  // in full up front - this only limits what actually hits the DOM.
   const CATEGORY_PAGE_SIZE = 40;
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -348,7 +348,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
 
             const encrypted = await encryptText(secretText, masterPassword);
 
-            // Only match on a real, non-empty username on both sides — matching
+            // Only match on a real, non-empty username on both sides - matching
             // on "both blank" would treat any two unrelated same-titled items
             // (e.g. a manually-added password with no username) as duplicates
             // and silently overwrite one with the other.

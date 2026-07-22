@@ -2,7 +2,7 @@
 //
 // This is the single source of truth on the client. The same numbers are
 // mirrored in the Postgres migration (20260717120000_pricing_plans.sql), which
-// is where the limits are actually *enforced* — keep the two in sync when
+// is where the limits are actually *enforced* - keep the two in sync when
 // changing a limit. Marketing copy lives in components/dreelio/pricing-data.ts.
 
 export type PlanId = "free" | "plus";

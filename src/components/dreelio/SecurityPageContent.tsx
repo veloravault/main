@@ -45,7 +45,7 @@ export function SecurityPageContent() {
       >
         <motion.div className={styles.heroCopy} variants={staggerItem}>
           <p className={styles.eyebrow}>Security architecture</p>
-          <h1>What Velora Vault protects—and what it cannot.</h1>
+          <h1>What Velora Vault protects - and what it cannot.</h1>
           <p>
             Security claims should be inspectable. This page describes the
             encryption and access controls implemented today, along with the

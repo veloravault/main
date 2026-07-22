@@ -1,12 +1,12 @@
 # Invite-only production rollout (superseded)
 
-**This runbook describes the invite-only access model that Velora Vault no longer uses.** The application now uses open self-serve signup — see the README's "Signup architecture" section and `supabase/migrations/*_self_signup_membership.sql`. The invite-only tables, RPCs, and email template referenced below remain in the database, unused, but the routes and admin UI this runbook describes have been removed from the codebase. Kept for historical reference only; do not follow it for a current rollout.
+**This runbook describes the invite-only access model that Velora Vault no longer uses.** The application now uses open self-serve signup - see the README's "Signup architecture" section and `supabase/migrations/*_self_signup_membership.sql`. The invite-only tables, RPCs, and email template referenced below remain in the database, unused, but the routes and admin UI this runbook describes have been removed from the codebase. Kept for historical reference only; do not follow it for a current rollout.
 
 ---
 
 This is the operator runbook for enabling Velora Vault's invite-only access model in a hosted Supabase project. Execute it in order, record evidence for every gate, and stop on the first unexpected result. No hosted changes are performed by this repository; cloning, building, or deploying the application does not apply SQL, edit Auth settings, send invitations, or change DNS.
 
-Use a staging project first. Replace values such as `OWNER_UUID` and `YOUR_PRODUCTION_ORIGIN` locally—never commit real keys, SMTP credentials, tokens, or user data.
+Use a staging project first. Replace values such as `OWNER_UUID` and `YOUR_PRODUCTION_ORIGIN` locally - never commit real keys, SMTP credentials, tokens, or user data.
 
 ## Preconditions
 
@@ -21,7 +21,7 @@ Use a staging project first. Replace values such as `OWNER_UUID` and `YOUR_PRODU
 1. Create a fresh logical or platform backup before running SQL.
 2. Record its timestamp, project ref, region, application commit, database migration state, and restore procedure in the release ticket.
 3. Prove the backup is restorable in a non-production project or confirm the most recent restore drill is within policy.
-4. Export counts only—not row contents—for `vault_items`, `vault_documents`, `secure_notes`, and `secure_wallet` as a post-migration comparison baseline.
+4. Export counts only - not row contents - for `vault_items`, `vault_documents`, `secure_notes`, and `secure_wallet` as a post-migration comparison baseline.
 
 Do not continue without a restorable backup.
 
@@ -213,7 +213,7 @@ Use one disposable internal address with mailbox access:
 
 1. Submit name and email at `/request-access`; confirm the response does not reveal whether the email already exists.
 2. Sign in as the owner and open `/admin`.
-3. Approve exactly one pending request and record the request UUID, audit result code, and Auth user UUID—never the token or email body.
+3. Approve exactly one pending request and record the request UUID, audit result code, and Auth user UUID - never the token or email body.
 4. Verify custom SMTP delivery, one unmodified link, and successful SPF/DKIM/DMARC results.
 5. In a private browser profile, GET the email link. Refresh once before accepting to prove the token was not consumed by GET.
 6. Press **Accept invitation**. Confirm POST `/auth/confirm` returns a session and redirects to `/onboarding`.

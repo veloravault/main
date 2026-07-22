@@ -11,7 +11,7 @@ import { TAP_PRESS } from "./motion";
 // The footer holds Privacy/Terms links and always sits at the bottom of the
 // page, so it doesn't get a scroll-triggered entrance animation: a
 // `whileInView` reveal here can leave it (and those links) stuck at
-// `opacity:0` if the page is scrolled non-linearly — an anchor jump, browser
+// `opacity:0` if the page is scrolled non-linearly - an anchor jump, browser
 // scroll restoration, or a fast trackpad flick can all land past the
 // intersection threshold before Framer Motion registers it. Hover/tap
 // feedback on individual links is unaffected and stays.

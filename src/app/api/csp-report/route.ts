@@ -38,7 +38,7 @@ async function readBoundedBody(request: Request): Promise<string | null> {
 // Public, unauthenticated sink for browser-generated Content-Security-Policy
 // violation reports (report-uri, and report-to via the Reporting-Endpoints
 // header). No state-changing action and no session is involved, so this
-// intentionally has no origin/auth check — it only logs telemetry.
+// intentionally has no origin/auth check - it only logs telemetry.
 export async function POST(request: Request) {
   const mediaType = request.headers.get("content-type")?.split(";", 1)[0]?.trim().toLowerCase();
   if (mediaType !== "application/csp-report" && mediaType !== "application/reports+json" && mediaType !== "application/json") {
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     const parsed: unknown = JSON.parse(text);
     console.error("CSP_VIOLATION_REPORT", parsed);
   } catch {
-    // Malformed report body — nothing to log, still acknowledge receipt.
+    // Malformed report body - nothing to log, still acknowledge receipt.
   }
 
   return new NextResponse(null, { status: 204 });

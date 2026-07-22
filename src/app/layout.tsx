@@ -38,8 +38,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   // No maximumScale cap: capping pinch-zoom site-wide to work around iOS's
   // input-focus auto-zoom fails WCAG 1.4.4 (reflow/zoom). Auto-zoom is
-  // prevented per-input instead — see the 16px+ font-size rule those inputs
-  // carry — so zoom stays available for everyone else.
+  // prevented per-input instead - see the 16px+ font-size rule those inputs
+  // carry - so zoom stays available for everyone else.
   viewportFit: "cover",    // Allow content to extend under iPhone notch/home bar
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
@@ -77,7 +77,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://veloravault.in"),
   title: {
     default: "Velora Vault",
-    template: "%s — Velora Vault",
+    template: "%s - Velora Vault",
   },
   description:
     "A private, encrypted home for passwords, documents, notes and financial essentials.",
@@ -118,7 +118,7 @@ export default async function RootLayout({
           "beforeInteractive" wrapper re-serializes props into its own
           internal <script> element without forwarding suppressHydrationWarning.
           Browsers also blank a script's nonce attribute once it's inserted into
-          the document (so page JS can't read and re-use it) — the initial HTML
+          the document (so page JS can't read and re-use it) - the initial HTML
           still has the real value the CSP check already passed against, but
           React sees the later empty attribute as a server/client mismatch.
         */}
