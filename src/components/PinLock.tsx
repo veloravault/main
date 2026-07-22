@@ -3,8 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { XCircleIcon } from "lucide-react";
-import { FaceIdIcon, AppleLockIcon } from "@/components/Icons";
-import { hasBiometricsEnabled, unlockWithBiometrics } from "@/lib/biometrics";
+import { AppleLockIcon } from "@/components/Icons";
 import { useVaultKey } from "@/components/auth/VaultKeyProvider";
 import { canUseVaultWrapper, commitForExpectedAuthenticatedUser, requireAuthenticatedVaultUserId, requireVaultWrapperOwner, type AuthenticatedUserPredicate } from "@/lib/vaultKeyOwnership";
 
@@ -219,8 +218,6 @@ export function PinLock({ authenticatedUserId, onUnlock, onFallback }: PinLockPr
   const [shake, setShake] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const hasBio = hasBiometricsEnabled(authenticatedUserId);
-
   // Read attempts from localStorage so they persist across refreshes
   useEffect(() => {
     if (attempts >= MAX_ATTEMPTS) {
@@ -278,7 +275,7 @@ export function PinLock({ authenticatedUserId, onUnlock, onFallback }: PinLockPr
   return (
     <div className="apple-app apple-surface flex h-dvh w-full items-center justify-center px-4">
       <motion.div
-        className="apple-material w-full max-w-xs flex flex-col items-center gap-8 rounded-[28px] p-7"
+        className="w-full max-w-xs flex flex-col items-center gap-8"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", bounce: 0.3, duration: 0.5 }}
@@ -361,29 +358,10 @@ export function PinLock({ authenticatedUserId, onUnlock, onFallback }: PinLockPr
           })}
         </div>
 
-        {/* Fallback links */}
+        {/* Fallback link - PIN and Face ID/Touch ID are mutually exclusive
+            device unlock methods (enforced in Settings > Security), so this
+            screen only ever needs the master-key escape hatch. */}
         <div className="flex flex-col items-center gap-4">
-          {hasBio && (
-            <button
-              type="button"
-              onClick={async () => {
-                setChecking(true);
-                try {
-                  const masterKey = await unlockWithBiometrics(authenticatedUserId, isAuthenticatedUserCurrent);
-                  if (!onUnlock(masterKey, authenticatedUserId)) {
-                    throw new Error("Your authenticated account changed before the vault finished unlocking.");
-                  }
-                } catch (error: unknown) {
-                  setError(error instanceof Error ? error.message : "Biometric unlock could not be completed. Use your PIN or master key and try again.");
-                  setChecking(false);
-                }
-              }}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted text-foreground text-[14px] font-medium hover:bg-muted/80 transition-colors"
-            >
-              <FaceIdIcon className="w-4 h-4" />
-              Use Face ID / Touch ID
-            </button>
-          )}
           <button
             type="button"
             onClick={onFallback}
