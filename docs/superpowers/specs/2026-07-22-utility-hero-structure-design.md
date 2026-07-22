@@ -51,6 +51,17 @@ The existing workbench moves below the hero into a dedicated, full-width section
 - The section provides clear separation from the hero through spacing and surface treatment rather than an excessive blank gap.
 - Existing output wrapping and responsive control behavior remain intact.
 
+### Internal workbench hierarchy
+
+The generator workbenches follow Bitwarden's top-to-bottom hierarchy rather than Velora's previous desktop split view:
+
+1. Workbench heading and local-only marker
+2. Settings arranged in a compact responsive control band
+3. Full-width generated result
+4. Centered regenerate and copy actions
+
+The password-strength workbench uses the equivalent vertical sequence: heading, full-width password input and strength meter, then full-width analysis. Output and settings must never sit in permanent left/right desktop columns. On mobile, the control band collapses to one column while preserving the same reading and focus order.
+
 ## Responsive behavior
 
 ### Desktop

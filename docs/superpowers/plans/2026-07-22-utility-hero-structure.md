@@ -340,3 +340,151 @@ Then commit:
 git add tests/utility-pages-contract.test.mjs src/app/utilities/utilities.module.css
 git commit -m "feat: add scroll-first utility hero structure"
 ```
+
+---
+
+### Task 3: Convert utility workbenches to a vertical hierarchy
+
+**Files:**
+- Modify: `tests/utility-pages-contract.test.mjs`
+- Modify: `src/app/utilities/password-generator/PasswordGeneratorClient.tsx`
+- Modify: `src/app/utilities/passphrase-generator/PassphraseGeneratorClient.tsx`
+- Modify: `src/app/utilities/username-generator/UsernameGeneratorClient.tsx`
+- Modify: `src/app/utilities/utilities.module.css`
+
+**Interfaces:**
+- Consumes: the existing `workbenchBody`, `controlsPanel`, `outputPanel`, and `outputActions` hooks
+- Produces: controls-first DOM order for the three generators and a shared one-column workbench body for all four utilities
+
+- [ ] **Step 1: Add failing vertical-hierarchy contracts**
+
+Add to `tests/utility-pages-contract.test.mjs`:
+
+```js
+test("generator workbenches use controls-first vertical hierarchy", () => {
+  for (const path of [
+    "src/app/utilities/password-generator/PasswordGeneratorClient.tsx",
+    "src/app/utilities/passphrase-generator/PassphraseGeneratorClient.tsx",
+    "src/app/utilities/username-generator/UsernameGeneratorClient.tsx",
+  ]) {
+    const source = read(path);
+    const bodyStart = source.indexOf("<div className={styles.workbenchBody}>");
+    const bodyEnd = source.indexOf("</UtilityWorkbench>", bodyStart);
+    assert.ok(bodyStart >= 0 && bodyEnd > bodyStart, `${path} exposes the shared workbench body`);
+    const body = source.slice(bodyStart, bodyEnd);
+    assert.ok(
+      body.indexOf("styles.controlsPanel") < body.indexOf("<UtilityOutput"),
+      `${path} renders controls before output`,
+    );
+  }
+
+  const css = read("src/app/utilities/utilities.module.css");
+  assert.match(css, /\.workbenchBody\s*\{[^}]*grid-template-columns:\s*1fr/);
+  assert.match(css, /\.controlsPanel\s*\{[^}]*grid-template-columns:\s*repeat\(2,/);
+  assert.match(css, /\.outputValue\s*\{[^}]*text-align:\s*center/);
+  assert.match(css, /\.outputActions\s*\{[^}]*justify-content:\s*center/);
+  assert.match(
+    css,
+    /@media \(max-width: 767px\)[\s\S]*?\.controlsPanel\s*\{[^}]*grid-template-columns:\s*1fr/,
+  );
+});
+```
+
+- [ ] **Step 2: Verify the new contract fails**
+
+Run:
+
+```bash
+node --test --test-name-pattern="generator workbenches use controls-first" tests/utility-pages-contract.test.mjs
+```
+
+Expected: FAIL because generator output precedes controls and the desktop workbench still uses two columns.
+
+- [ ] **Step 3: Put generator controls before output in DOM order**
+
+In each of the three generator clients, move the complete existing `<div className={styles.controlsPanel}>…</div>` block above the existing `<UtilityOutput … />` inside `workbenchBody`. Do not modify state, handlers, labels, props, or route content.
+
+The resulting structure in each client must be:
+
+```tsx
+<div className={styles.workbenchBody}>
+  <div className={styles.controlsPanel}>
+    {/* Existing route-specific controls, unchanged. */}
+  </div>
+  <UtilityOutput
+    value={existingValue}
+    label={existingLabel}
+    outputRef={clipboard.outputRef}
+    onCopy={clipboard.copy}
+    onRegenerate={regenerate}
+    status={clipboard.status}
+  />
+</div>
+```
+
+- [ ] **Step 4: Implement the vertical shared CSS**
+
+Change the shared workbench rules to:
+
+```css
+.workbenchBody {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1px;
+  background: var(--line);
+}
+
+.outputValue {
+  width: 100%;
+  text-align: center;
+}
+
+.outputActions {
+  justify-content: center;
+}
+
+.controlsPanel {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 32px;
+}
+
+.controlsPanel > .feedbackPanel {
+  grid-column: 1 / -1;
+}
+```
+
+Keep `.analysisPanel` single-column. In the existing mobile media query add:
+
+```css
+.controlsPanel {
+  grid-template-columns: 1fr;
+}
+```
+
+Keep the current full-width mobile action buttons.
+
+- [ ] **Step 5: Run focused and full automated verification**
+
+Run:
+
+```bash
+node --test --test-name-pattern="generator workbenches use controls-first" tests/utility-pages-contract.test.mjs
+node --test tests/utility-pages-contract.test.mjs
+npm test
+npm run lint
+npm run build
+git diff --check
+```
+
+Expected: the new contract passes, the full suite has zero failures, ESLint exits 0, the production build lists all four utility routes, and the diff check is clean.
+
+- [ ] **Step 6: Verify the revised workbench visually**
+
+At `1440×1000`, inspect password, passphrase, and username generators and confirm settings are above the full-width result with centered actions. Inspect password strength and confirm input precedes full-width analysis. At `390×844`, confirm controls collapse to one column, DOM/focus order matches visual order, generated values wrap, and no route has horizontal overflow. Verify light/dark themes and a clean browser console.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add tests/utility-pages-contract.test.mjs src/app/utilities/password-generator/PasswordGeneratorClient.tsx src/app/utilities/passphrase-generator/PassphraseGeneratorClient.tsx src/app/utilities/username-generator/UsernameGeneratorClient.tsx src/app/utilities/utilities.module.css
+git commit -m "feat: stack utility controls above results"
+```
