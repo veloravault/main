@@ -117,15 +117,22 @@ export function AccountSettings({ masterPassword }: { masterPassword: string }) 
   return (
     <section className="settings-detail-section" aria-labelledby="settings-account-title">
       <header><p className="type-group-label">Account</p><h2 id="settings-account-title">Your account</h2><p>Manage the identity shown across Velora Vault.</p></header>
-      <div className="settings-group settings-account-card">
-        <div className="settings-avatar-column">
+      <div className="settings-group">
+        <div className="account-profile-header">
           <div className="settings-avatar" aria-hidden="true">
             <PresetAvatar kind={avatarKind} name={fullName} email={user.email} />
           </div>
+          <div className="account-identity">
+            <strong>{fullName || "Your name"}</strong>
+            <span title={user.email}>{user.email}</span>
+          </div>
         </div>
-        <div className="settings-account-fields">
-          <div className="settings-value-row"><span>Email</span><strong title={user.email}>{user.email}</strong></div>
-          <label className="settings-value-row"><span>Full name</span><input value={fullName} onChange={(event) => { setFullName(event.target.value); setSaved(false); }} placeholder="Your name" /></label>
+
+        <div className="account-field">
+          <label>
+            <span className="account-field-label">Full name</span>
+            <input className="account-field-input" value={fullName} onChange={(event) => { setFullName(event.target.value); setSaved(false); }} placeholder="Your name" />
+          </label>
           {error && <p className="settings-inline-error" role="alert">{error}</p>}
           <div className="settings-form-actions">
             <Button onClick={saveName} disabled={saving} className="settings-primary-button">
@@ -133,10 +140,11 @@ export function AccountSettings({ masterPassword }: { masterPassword: string }) 
             </Button>
           </div>
         </div>
-      </div>
 
-      <div className="settings-group settings-avatar-picker-group">
-        <div className="settings-value-row settings-avatar-picker-head"><span>Avatar</span><strong>Choose how you appear - no photo needed.</strong></div>
+        <div className="settings-section-head">
+          <strong>Avatar</strong>
+          <span>Choose how you appear - no photo needed.</span>
+        </div>
         <div className="settings-avatar-picker" role="radiogroup" aria-label="Avatar style">
           {AVATAR_OPTIONS.map((option) => {
             const active = currentChoice === option.key;
@@ -163,12 +171,16 @@ export function AccountSettings({ masterPassword }: { masterPassword: string }) 
         </div>
       </div>
 
-      <div className="settings-group settings-account-card">
-        <div className="settings-account-fields">
-          <div className="settings-value-row settings-avatar-picker-head"><span>Master key hint</span><strong>A reminder shown at unlock - never the key itself.</strong></div>
-          <label className="settings-value-row">
-            <span>Hint</span>
+      <div className="settings-group" style={{ marginTop: 20 }}>
+        <div className="settings-section-head">
+          <strong>Master key hint</strong>
+          <span>A reminder shown at unlock - never the key itself.</span>
+        </div>
+        <div className="account-field">
+          <label>
+            <span className="account-field-label">Hint</span>
             <input
+              className="account-field-input"
               value={hint}
               maxLength={50}
               onChange={(event) => { setHint(event.target.value); setHintSaved(false); }}

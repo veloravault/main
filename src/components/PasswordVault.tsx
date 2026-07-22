@@ -98,7 +98,9 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
   
   // New Item State
   const [newTitle, setNewTitle] = useState("");
+  const [newUsername, setNewUsername] = useState("");
   const [newSecret, setNewSecret] = useState("");
+  const [newNotes, setNewNotes] = useState("");
   const [showNewSecret, setShowNewSecret] = useState(false);
   const [addItemError, setAddItemError] = useState<string | null>(null);
 
@@ -232,7 +234,17 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
     setAddItemError(null);
 
     try {
-      const encrypted = await encryptText(newSecret, masterPassword);
+      // Same structured shape the edit flow and Magic Import use (username/
+      // password/notes as JSON) rather than plain password text, so a
+      // username or notes entered at creation time round-trip correctly.
+      const plaintext = newUsername.trim() || newNotes.trim()
+        ? JSON.stringify({
+            username: newUsername.trim() || undefined,
+            password: newSecret,
+            notes: newNotes.trim() || undefined,
+          })
+        : newSecret;
+      const encrypted = await encryptText(plaintext, masterPassword);
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) throw new Error("No user found");
@@ -253,7 +265,9 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
       if (error) throw error;
       
       setNewTitle("");
+      setNewUsername("");
       setNewSecret("");
+      setNewNotes("");
       setShowNewSecret(false);
       setIsAddOpen(false);
       invalidateCache("vault_items");
@@ -668,35 +682,60 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
           <AdaptiveSheet open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if (!open) { setShowNewSecret(false); setAddItemError(null); } }} title="New Password" description="Add a credential encrypted with your existing master key." size="sm" className="vault-create-sheet">
             <form onSubmit={handleAddItem} noValidate className="vault-create-form">
             <AdaptiveSheetBody>
-              <div className="rounded-2xl border border-border/60 bg-secondary/60 overflow-hidden">
-                <div className="px-4 py-3 border-b border-border/50">
-                  <label className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold block mb-1">Title</label>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="new-pw-title" className="account-field-label">Title</label>
                   <input
+                    id="new-pw-title"
                     type="text"
                     autoComplete="off"
                     placeholder="e.g. Netflix, Bank"
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
-                    className="w-full bg-transparent text-[17px] text-foreground focus:outline-none"
+                    className="account-field-input"
                     required
                   />
                 </div>
-                <div className="px-4 py-3">
-                  <label className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold block mb-1">Password</label>
-                  <div className="flex items-center gap-2">
+                <div>
+                  <label htmlFor="new-pw-username" className="account-field-label">Username <span className="normal-case font-normal text-muted-foreground/60">(optional)</span></label>
+                  <input
+                    id="new-pw-username"
+                    type="text"
+                    autoComplete="off"
+                    placeholder="e.g. jane@example.com"
+                    value={newUsername}
+                    onChange={(e) => setNewUsername(e.target.value)}
+                    className="account-field-input"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="new-pw-password" className="account-field-label">Password</label>
+                  <div className="relative">
                     <input
+                      id="new-pw-password"
                       type={showNewSecret ? "text" : "password"}
                       autoComplete="new-password"
                       placeholder="••••••••••••"
                       value={newSecret}
                       onChange={(e) => setNewSecret(e.target.value)}
-                      className="w-full bg-transparent text-[17px] font-mono tracking-wide text-foreground focus:outline-none"
+                      className="account-field-input has-trailing-icon font-mono tracking-wide"
                       required
                     />
-                    <button type="button" onClick={() => setShowNewSecret((v) => !v)} className="flex items-center justify-center w-11 h-11 -my-3 -mr-2 shrink-0 text-muted-foreground/50 hover:text-primary active:text-primary transition-colors" aria-label={showNewSecret ? "Hide password" : "Show password"}>
+                    <button type="button" onClick={() => setShowNewSecret((v) => !v)} className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center w-9 h-9 shrink-0 text-muted-foreground/60 hover:text-primary active:text-primary transition-colors" aria-label={showNewSecret ? "Hide password" : "Show password"}>
                       {showNewSecret ? <EyeOffIcon className="w-[18px] h-[18px]" /> : <EyeIcon className="w-[18px] h-[18px]" />}
                     </button>
                   </div>
+                </div>
+                <div>
+                  <label htmlFor="new-pw-notes" className="account-field-label">Notes <span className="normal-case font-normal text-muted-foreground/60">(optional)</span></label>
+                  <textarea
+                    id="new-pw-notes"
+                    rows={2}
+                    placeholder="Anything else worth remembering"
+                    value={newNotes}
+                    onChange={(e) => setNewNotes(e.target.value)}
+                    className="account-field-input"
+                  />
                 </div>
               </div>
               {addItemError && <p className="text-[13px] text-destructive mt-3 px-1" role="alert">{addItemError}</p>}
@@ -708,55 +747,59 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
           <AdaptiveSheet open={!!editingItem} onOpenChange={(open) => { if (!open) { setEditingItem(null); setShowEditSecret(false); setEditItemError(null); } }} title="Edit Password" description="Changes are re-encrypted with your existing master key." size="sm" className="vault-create-sheet">
             <form onSubmit={handleEditItem} noValidate className="vault-create-form">
             <AdaptiveSheetBody>
-              <div className="rounded-2xl border border-border/60 bg-secondary/60 overflow-hidden">
-                <div className="px-4 py-3 border-b border-border/50">
-                  <label className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold block mb-1">Title</label>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="edit-pw-title" className="account-field-label">Title</label>
                   <input
+                    id="edit-pw-title"
                     type="text"
                     autoComplete="off"
                     placeholder="e.g. Netflix, Bank"
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
-                    className="w-full bg-transparent text-[17px] text-foreground focus:outline-none"
+                    className="account-field-input"
                     required
                   />
                 </div>
-                <div className="px-4 py-3 border-b border-border/50">
-                  <label className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold block mb-1">Username <span className="normal-case text-muted-foreground/60">(optional)</span></label>
+                <div>
+                  <label htmlFor="edit-pw-username" className="account-field-label">Username <span className="normal-case font-normal text-muted-foreground/60">(optional)</span></label>
                   <input
+                    id="edit-pw-username"
                     type="text"
                     autoComplete="off"
                     placeholder="e.g. jane@example.com"
                     value={editUsername}
                     onChange={(e) => setEditUsername(e.target.value)}
-                    className="w-full bg-transparent text-[17px] text-foreground focus:outline-none"
+                    className="account-field-input"
                   />
                 </div>
-                <div className="px-4 py-3 border-b border-border/50">
-                  <label className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold block mb-1">Password</label>
-                  <div className="flex items-center gap-2">
+                <div>
+                  <label htmlFor="edit-pw-password" className="account-field-label">Password</label>
+                  <div className="relative">
                     <input
+                      id="edit-pw-password"
                       type={showEditSecret ? "text" : "password"}
                       autoComplete="new-password"
                       placeholder="••••••••••••"
                       value={editSecret}
                       onChange={(e) => setEditSecret(e.target.value)}
-                      className="w-full bg-transparent text-[17px] font-mono tracking-wide text-foreground focus:outline-none"
+                      className="account-field-input has-trailing-icon font-mono tracking-wide"
                       required
                     />
-                    <button type="button" onClick={() => setShowEditSecret((v) => !v)} className="flex items-center justify-center w-11 h-11 -my-3 -mr-2 shrink-0 text-muted-foreground/50 hover:text-primary active:text-primary transition-colors" aria-label={showEditSecret ? "Hide password" : "Show password"}>
+                    <button type="button" onClick={() => setShowEditSecret((v) => !v)} className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center justify-center w-9 h-9 shrink-0 text-muted-foreground/60 hover:text-primary active:text-primary transition-colors" aria-label={showEditSecret ? "Hide password" : "Show password"}>
                       {showEditSecret ? <EyeOffIcon className="w-[18px] h-[18px]" /> : <EyeIcon className="w-[18px] h-[18px]" />}
                     </button>
                   </div>
                 </div>
-                <div className="px-4 py-3">
-                  <label className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold block mb-1">Notes <span className="normal-case text-muted-foreground/60">(optional)</span></label>
+                <div>
+                  <label htmlFor="edit-pw-notes" className="account-field-label">Notes <span className="normal-case font-normal text-muted-foreground/60">(optional)</span></label>
                   <textarea
+                    id="edit-pw-notes"
                     rows={2}
                     placeholder="Anything else worth remembering"
                     value={editNotes}
                     onChange={(e) => setEditNotes(e.target.value)}
-                    className="w-full resize-none bg-transparent text-[15px] text-foreground focus:outline-none"
+                    className="account-field-input"
                   />
                 </div>
               </div>

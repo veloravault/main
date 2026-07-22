@@ -310,24 +310,26 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
           <AdaptiveSheet open={isAddOpen} onOpenChange={(open) => { setIsAddOpen(open); if (!open) setAddItemError(null); }} title="New Secure Note" description="Write a note that stays encrypted inside your vault." size="md" className="vault-create-sheet">
               <form onSubmit={handleAddItem} noValidate className="vault-create-form">
               <AdaptiveSheetBody className="space-y-4">
-                <div className="space-y-1">
-                  <label className="text-[13px] text-muted-foreground ml-1 uppercase tracking-wider font-medium">Title</label>
+                <div>
+                  <label htmlFor="new-note-title" className="account-field-label">Title</label>
                   <input
+                    id="new-note-title"
                     type="text"
                     placeholder="e.g. Diary Entry, Server Keys"
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
-                    className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[17px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    className="account-field-input full-width"
                     required
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[13px] text-muted-foreground ml-1 uppercase tracking-wider font-medium">Content</label>
+                <div>
+                  <label htmlFor="new-note-content" className="account-field-label">Content</label>
                   <textarea
+                    id="new-note-content"
                     placeholder="Write your secure note here..."
                     value={newContent}
                     onChange={(e) => setNewContent(e.target.value)}
-                    className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[17px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all min-h-[150px] resize-y"
+                    className="account-field-input is-large"
                     required
                   />
                 </div>
@@ -340,24 +342,26 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
           <AdaptiveSheet open={!!editingItem} onOpenChange={(open) => { if (!open) { setEditingItem(null); setEditItemError(null); } }} title="Edit Secure Note" description="Changes are re-encrypted with your existing master key." size="md" className="vault-create-sheet">
               <form onSubmit={handleEditItem} noValidate className="vault-create-form">
               <AdaptiveSheetBody className="space-y-4">
-                <div className="space-y-1">
-                  <label className="text-[13px] text-muted-foreground ml-1 uppercase tracking-wider font-medium">Title</label>
+                <div>
+                  <label htmlFor="edit-note-title" className="account-field-label">Title</label>
                   <input
+                    id="edit-note-title"
                     type="text"
                     placeholder="e.g. Diary Entry, Server Keys"
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
-                    className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[17px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    className="account-field-input full-width"
                     required
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[13px] text-muted-foreground ml-1 uppercase tracking-wider font-medium">Content</label>
+                <div>
+                  <label htmlFor="edit-note-content" className="account-field-label">Content</label>
                   <textarea
+                    id="edit-note-content"
                     placeholder="Write your secure note here..."
                     value={editContent}
                     onChange={(e) => setEditContent(e.target.value)}
-                    className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[17px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all min-h-[150px] resize-y"
+                    className="account-field-input is-large"
                     required
                   />
                 </div>
