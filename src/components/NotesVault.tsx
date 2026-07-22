@@ -50,6 +50,13 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
   const [newContent, setNewContent] = useState("");
   const [addItemError, setAddItemError] = useState<string | null>(null);
 
+  // Edit Item State
+  const [editingItem, setEditingItem] = useState<DecryptedNote | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editContent, setEditContent] = useState("");
+  const [editItemError, setEditItemError] = useState<string | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+
   // Bulk State
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -167,7 +174,45 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
     }
   };
 
+  const openEditItem = (item: DecryptedNote) => {
+    setEditingItem(item);
+    setEditTitle(item.title);
+    setEditContent(item.plaintext);
+    setEditItemError(null);
+  };
 
+  const handleEditItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+    if (!editTitle.trim() || !editContent.trim()) {
+      setEditItemError("A title and some content are required.");
+      return;
+    }
+    setEditItemError(null);
+    setIsSavingEdit(true);
+
+    try {
+      const encrypted = await encryptText(editContent, masterPassword);
+      const { error } = await supabase.from("secure_notes").update({
+        title: editTitle,
+        encrypted_content: encrypted.ciphertext,
+        iv: encrypted.iv,
+        salt: encrypted.salt,
+      }).eq("id", editingItem.id);
+
+      if (error) throw error;
+
+      setEditingItem(null);
+      invalidateCache("secure_notes");
+      fetchItems();
+      toast("Note updated", "success");
+    } catch (err) {
+      console.error("Failed to update note:", err);
+      setEditItemError("Failed to encrypt and save the changes.");
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
 
   const handleDeleteItem = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -292,6 +337,35 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
               </form>
           </AdaptiveSheet>
 
+          <AdaptiveSheet open={!!editingItem} onOpenChange={(open) => { if (!open) { setEditingItem(null); setEditItemError(null); } }} title="Edit Secure Note" description="Changes are re-encrypted with your existing master key." size="md" className="vault-create-sheet">
+              <form onSubmit={handleEditItem} noValidate className="vault-create-form">
+              <AdaptiveSheetBody className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-[13px] text-muted-foreground ml-1 uppercase tracking-wider font-medium">Title</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Diary Entry, Server Keys"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[17px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[13px] text-muted-foreground ml-1 uppercase tracking-wider font-medium">Content</label>
+                  <textarea
+                    placeholder="Write your secure note here..."
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[17px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all min-h-[150px] resize-y"
+                    required
+                  />
+                </div>
+                {editItemError && <p className="text-[13px] text-destructive px-1" role="alert">{editItemError}</p>}
+              </AdaptiveSheetBody>
+              <AdaptiveSheetFooter><Button type="button" variant="ghost" onClick={() => setEditingItem(null)}>Cancel</Button><Button type="submit" disabled={isSavingEdit} className="import-primary-action">{isSavingEdit ? "Saving…" : "Save Changes"}</Button></AdaptiveSheetFooter>
+              </form>
+          </AdaptiveSheet>
 
         </div>
       </div>
@@ -347,6 +421,7 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
                 <ContextActions key={item.id} title={item.title} actions={[
                   { id: "open", label: isExpanded ? "Close details" : "View details", onSelect: () => setExpandedId(isExpanded ? null : item.id) },
                   { id: "copy", label: "Copy note", onSelect: () => void copyToClipboard(item.plaintext) },
+                  { id: "edit", label: "Edit", onSelect: () => openEditItem(item) },
                   { id: "delete", label: "Delete", destructive: true, onSelect: () => { if (expandedId === item.id) setExpandedId(null); scheduleDelete(item); } },
                 ]}>{(bindings) => <motion.div
                     {...bindings}
@@ -417,7 +492,13 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
                             >
                               Copy Note
                             </button>
-                            <button 
+                            <button
+                              onClick={() => openEditItem(item)}
+                              className="py-3 px-6 rounded-xl text-[15px] font-semibold text-foreground bg-secondary hover:bg-secondary/80 active:scale-[0.98] transition-all"
+                            >
+                              Edit
+                            </button>
+                            <button
                               onClick={(e) => handleDeleteItem(item.id, e)}
                               className="py-3 px-6 rounded-xl text-[15px] font-semibold text-destructive bg-destructive/10 hover:bg-destructive/20 active:scale-[0.98] transition-all"
                             >

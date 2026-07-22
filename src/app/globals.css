@@ -181,8 +181,12 @@ html {
 .wallet-secure > div button svg { width: 15px; height: 15px; }
 .wallet-extra { padding: 16px 0; border-bottom: 1px solid var(--separator); }
 .wallet-extra > p:last-child { margin-top: 7px; color: var(--muted-foreground); font-size: 13px; line-height: 1.45; overflow-wrap: anywhere; }
+.wallet-actions { display: flex; gap: 8px; margin-top: 16px; }
+.wallet-actions .wallet-delete, .wallet-actions .wallet-edit { margin-top: 0; flex: 1; }
 .wallet-delete { display: flex; width: 100%; min-height: 44px; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; border-radius: 12px; background: color-mix(in srgb, var(--destructive) 10%, transparent); color: var(--destructive); font-size: 14px; font-weight: 680; }
 .wallet-delete svg { width: 17px; height: 17px; }
+.wallet-edit { display: flex; width: 100%; min-height: 44px; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; border-radius: 12px; background: var(--fill-tertiary); color: var(--foreground); font-size: 14px; font-weight: 680; }
+.wallet-edit svg { width: 17px; height: 17px; }
 .wallet-filter-empty { display: grid; min-height: 240px; place-content: center; justify-items: center; gap: 12px; color: var(--muted-foreground); text-align: center; }
 .wallet-filter-empty button { min-height: 40px; border-radius: 999px; padding: 0 15px; background: var(--fill-tertiary); color: var(--system-blue); font-size: 13px; font-weight: 650; }
 .apple-bank-list { max-width: 760px; margin-inline: auto; }

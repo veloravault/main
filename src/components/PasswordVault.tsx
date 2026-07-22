@@ -102,6 +102,16 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
   const [showNewSecret, setShowNewSecret] = useState(false);
   const [addItemError, setAddItemError] = useState<string | null>(null);
 
+  // Edit Item State
+  const [editingItem, setEditingItem] = useState<DecryptedItem | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editUsername, setEditUsername] = useState("");
+  const [editSecret, setEditSecret] = useState("");
+  const [editNotes, setEditNotes] = useState("");
+  const [showEditSecret, setShowEditSecret] = useState(false);
+  const [editItemError, setEditItemError] = useState<string | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+
   // Bulk State
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -254,7 +264,62 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
     }
   };
 
+  const openEditItem = (item: DecryptedItem) => {
+    const parsed = parsePlaintext(item.plaintext);
+    const password = parsed.password || (!parsed.isJson && !parsed.username && item.plaintext !== "Decryption Failed" ? item.plaintext : "");
+    setEditingItem(item);
+    setEditTitle(item.title);
+    setEditUsername(parsed.username ?? "");
+    setEditSecret(password);
+    setEditNotes(parsed.notes ?? "");
+    setShowEditSecret(false);
+    setEditItemError(null);
+  };
 
+  const handleEditItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+    if (!editTitle.trim() || !editSecret.trim()) {
+      setEditItemError("A title and a password are required.");
+      return;
+    }
+    setEditItemError(null);
+    setIsSavingEdit(true);
+
+    try {
+      // Same structured shape Magic Import already saves (username/password/
+      // notes as JSON) rather than the legacy "Username: X\nPassword: Y" text
+      // format - parsePlaintext() already reads both, and JSON round-trips
+      // notes correctly, which the legacy text format doesn't.
+      const plaintext = editUsername.trim() || editNotes.trim()
+        ? JSON.stringify({
+            username: editUsername.trim() || undefined,
+            password: editSecret,
+            notes: editNotes.trim() || undefined,
+          })
+        : editSecret;
+      const encrypted = await encryptText(plaintext, masterPassword);
+
+      const { error } = await supabase.from("vault_items").update({
+        title: editTitle,
+        encrypted_data: encrypted.ciphertext,
+        iv: encrypted.iv,
+        salt: encrypted.salt,
+      }).eq("id", editingItem.id);
+
+      if (error) throw error;
+
+      setEditingItem(null);
+      invalidateCache("vault_items");
+      fetchItems(true);
+      toast("Password updated", "success");
+    } catch (err) {
+      console.error("Failed to update item:", err);
+      setEditItemError("Failed to encrypt and save the changes.");
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
 
   const handleDeleteItem = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -508,7 +573,10 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
               {parsed.notes && <DetailValue label="Notes" value={parsed.notes} copyLabel="Notes" />}
             </div>
 
-            <div className="mt-6 rounded-[24px] overflow-hidden shadow-sm ring-1 ring-border/50">
+            <div className="mt-6 flex flex-col gap-[1px] rounded-[24px] overflow-hidden shadow-sm ring-1 ring-border/50">
+              <button type="button" onClick={() => openEditItem(item)} className="w-full py-4 bg-background hover:bg-secondary/60 active:scale-[0.98] transition-all text-center text-foreground text-[16px] font-medium">
+                Edit Password
+              </button>
               <button type="button" onClick={(e) => handleDeleteItem(item.id, e)} className="w-full py-4 bg-background hover:bg-secondary/60 active:scale-[0.98] transition-all text-center text-destructive text-[16px] font-medium">
                 Delete Password
               </button>
@@ -637,6 +705,66 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
             </form>
           </AdaptiveSheet>
 
+          <AdaptiveSheet open={!!editingItem} onOpenChange={(open) => { if (!open) { setEditingItem(null); setShowEditSecret(false); setEditItemError(null); } }} title="Edit Password" description="Changes are re-encrypted with your existing master key." size="sm" className="vault-create-sheet">
+            <form onSubmit={handleEditItem} noValidate className="vault-create-form">
+            <AdaptiveSheetBody>
+              <div className="rounded-2xl border border-border/60 bg-secondary/60 overflow-hidden">
+                <div className="px-4 py-3 border-b border-border/50">
+                  <label className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold block mb-1">Title</label>
+                  <input
+                    type="text"
+                    autoComplete="off"
+                    placeholder="e.g. Netflix, Bank"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="w-full bg-transparent text-[17px] text-foreground focus:outline-none"
+                    required
+                  />
+                </div>
+                <div className="px-4 py-3 border-b border-border/50">
+                  <label className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold block mb-1">Username <span className="normal-case text-muted-foreground/60">(optional)</span></label>
+                  <input
+                    type="text"
+                    autoComplete="off"
+                    placeholder="e.g. jane@example.com"
+                    value={editUsername}
+                    onChange={(e) => setEditUsername(e.target.value)}
+                    className="w-full bg-transparent text-[17px] text-foreground focus:outline-none"
+                  />
+                </div>
+                <div className="px-4 py-3 border-b border-border/50">
+                  <label className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold block mb-1">Password</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type={showEditSecret ? "text" : "password"}
+                      autoComplete="new-password"
+                      placeholder="••••••••••••"
+                      value={editSecret}
+                      onChange={(e) => setEditSecret(e.target.value)}
+                      className="w-full bg-transparent text-[17px] font-mono tracking-wide text-foreground focus:outline-none"
+                      required
+                    />
+                    <button type="button" onClick={() => setShowEditSecret((v) => !v)} className="flex items-center justify-center w-11 h-11 -my-3 -mr-2 shrink-0 text-muted-foreground/50 hover:text-primary active:text-primary transition-colors" aria-label={showEditSecret ? "Hide password" : "Show password"}>
+                      {showEditSecret ? <EyeOffIcon className="w-[18px] h-[18px]" /> : <EyeIcon className="w-[18px] h-[18px]" />}
+                    </button>
+                  </div>
+                </div>
+                <div className="px-4 py-3">
+                  <label className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold block mb-1">Notes <span className="normal-case text-muted-foreground/60">(optional)</span></label>
+                  <textarea
+                    rows={2}
+                    placeholder="Anything else worth remembering"
+                    value={editNotes}
+                    onChange={(e) => setEditNotes(e.target.value)}
+                    className="w-full resize-none bg-transparent text-[15px] text-foreground focus:outline-none"
+                  />
+                </div>
+              </div>
+              {editItemError && <p className="text-[13px] text-destructive mt-3 px-1" role="alert">{editItemError}</p>}
+            </AdaptiveSheetBody>
+            <AdaptiveSheetFooter><Button type="button" variant="ghost" onClick={() => setEditingItem(null)}>Cancel</Button><Button type="submit" disabled={isSavingEdit} className="import-primary-action">{isSavingEdit ? "Saving…" : "Save Changes"}</Button></AdaptiveSheetFooter>
+            </form>
+          </AdaptiveSheet>
 
 
           <input 
@@ -712,6 +840,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
                           { id: "open", label: isExpanded ? "Close details" : "View details", onSelect: () => setExpandedId(isExpanded ? null : item.id) },
                           { id: "copy", label: "Copy password", onSelect: () => void copyToClipboard(parsedForActions.password ?? item.plaintext) },
                           { id: "favorite", label: item.is_favorite ? "Remove favorite" : "Add favorite", onSelect: () => void supabase.from("vault_items").update({ is_favorite: !item.is_favorite }).eq("id", item.id).then(({ error }) => { if (!error) { setItems((current) => current.map((candidate) => candidate.id === item.id ? { ...candidate, is_favorite: !item.is_favorite } : candidate)); invalidateCache("vault_items"); } }) },
+                          { id: "edit", label: "Edit", onSelect: () => openEditItem(item) },
                           { id: "delete", label: "Delete", destructive: true, onSelect: () => { if (expandedId === item.id) setExpandedId(null); scheduleDelete(item); } },
                         ]}>{(bindings) => <motion.div
                           {...bindings}

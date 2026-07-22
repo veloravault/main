@@ -99,6 +99,19 @@ export function WalletVault({ masterPassword, focusedItemId, refreshVersion = 0 
   const [cardSubtype, setCardSubtype] = useState<"credit" | "debit">("debit");
   const [addItemError, setAddItemError] = useState<string | null>(null);
 
+  // Edit Item State
+  const [editingItem, setEditingItem] = useState<DecryptedWallet | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editCcNumber, setEditCcNumber] = useState("");
+  const [editCcExpiry, setEditCcExpiry] = useState("");
+  const [editCcCvv, setEditCcCvv] = useState("");
+  const [editCcName, setEditCcName] = useState("");
+  const [editCcPin, setEditCcPin] = useState("");
+  const [editCcUpiPin, setEditCcUpiPin] = useState("");
+  const [editCardSubtype, setEditCardSubtype] = useState<"credit" | "debit">("debit");
+  const [editItemError, setEditItemError] = useState<string | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false);
   const [walletFilter, setWalletFilter] = useState<WalletFilter>("all");
@@ -268,6 +281,60 @@ export function WalletVault({ masterPassword, focusedItemId, refreshVersion = 0 
     }
   };
 
+  const openEditItem = (item: DecryptedWallet) => {
+    setEditingItem(item);
+    setEditTitle(item.title);
+    setEditCcNumber(item.payload.number ?? "");
+    setEditCcExpiry(item.payload.expiry ?? "");
+    setEditCcCvv(item.payload.cvv ?? "");
+    setEditCcName(item.payload.name ?? "");
+    setEditCcPin(item.payload.pin ?? "");
+    setEditCcUpiPin(item.payload.upi_pin ?? "");
+    setEditCardSubtype(inferSubtype(item) === "credit" ? "credit" : "debit");
+    setEditItemError(null);
+  };
+
+  const handleEditItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+    if (!editTitle.trim() || !editCcNumber.trim() || !editCcExpiry.trim() || !editCcCvv.trim() || !editCcName.trim()) {
+      setEditItemError("Fill in every field before saving (PIN and UPI PIN are optional).");
+      return;
+    }
+    setEditItemError(null);
+    setIsSavingEdit(true);
+
+    const payload: WalletPayload = {
+      number: editCcNumber, expiry: editCcExpiry, cvv: editCcCvv, name: editCcName,
+      subtype: editCardSubtype,
+      pin: editCcPin,
+      upi_pin: editCcUpiPin,
+      extra_details: editingItem.payload.extra_details,
+    };
+
+    try {
+      const encrypted = await encryptText(JSON.stringify(payload), masterPassword);
+      const { error } = await supabase.from("secure_wallet").update({
+        title: editTitle,
+        encrypted_content: encrypted.ciphertext,
+        iv: encrypted.iv,
+        salt: encrypted.salt,
+      }).eq("id", editingItem.id);
+
+      if (error) throw error;
+
+      setEditingItem(null);
+      invalidateCache("secure_wallet_cards");
+      fetchItems();
+      toast("Card updated", "success");
+    } catch (err) {
+      console.error("Failed to update wallet item:", err);
+      setEditItemError(err instanceof Error ? err.message : "Failed to save the changes.");
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this item?")) return;
     const { error } = await supabase.from("secure_wallet").delete().eq("id", id);
@@ -343,6 +410,7 @@ export function WalletVault({ masterPassword, focusedItemId, refreshVersion = 0 
     upiPin: selectedCard.payload.upi_pin,
     extraDetails: selectedCard.payload.extra_details,
     onCopy: (value: string, label: string) => { void copyToClipboard(value, label); },
+    onEdit: () => openEditItem(selectedCard),
     onDelete: () => handleDelete(selectedCard.id),
   } : null;
 
@@ -481,6 +549,126 @@ export function WalletVault({ masterPassword, focusedItemId, refreshVersion = 0 
                 className="w-full h-12 rounded-xl font-semibold text-[17px] mt-4 bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 Encrypt & Save
+              </Button>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+      <Dialog open={!!editingItem} onOpenChange={(open) => { if (!open) { setEditingItem(null); setEditItemError(null); } }}>
+          <DialogContent className="responsive-form-sheet sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-center font-bold">Edit Card</DialogTitle>
+            </DialogHeader>
+
+            <form onSubmit={handleEditItem} noValidate className="space-y-4 mt-2">
+              <div className="flex rounded-xl overflow-hidden border border-border p-1 bg-secondary gap-1">
+                {(["debit", "credit"] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setEditCardSubtype(t)}
+                    className={`flex-1 py-2 rounded-lg text-[14px] font-semibold capitalize transition-all ${
+                      editCardSubtype === t
+                        ? "bg-primary text-white shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {t} Card
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[13px] text-muted-foreground ml-1 font-medium">Nickname / Title</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Chase Sapphire"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[13px] text-muted-foreground ml-1 font-medium">Card Number</label>
+                <input
+                  type="text"
+                  placeholder="XXXX XXXX XXXX XXXX"
+                  value={editCcNumber}
+                  onChange={(e) => setEditCcNumber(e.target.value)}
+                  className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 font-mono text-[16px] tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  required
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="space-y-1 flex-1">
+                  <label className="text-[13px] text-muted-foreground ml-1 font-medium">Expiry</label>
+                  <input
+                    type="text"
+                    placeholder="MM/YY"
+                    value={editCcExpiry}
+                    onChange={(e) => setEditCcExpiry(e.target.value)}
+                    className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 font-mono text-[16px] tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    required
+                  />
+                </div>
+                <div className="space-y-1 flex-1">
+                  <label className="text-[13px] text-muted-foreground ml-1 font-medium">CVV</label>
+                  <input
+                    type="text"
+                    placeholder="123"
+                    value={editCcCvv}
+                    onChange={(e) => setEditCcCvv(e.target.value)}
+                    className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 font-mono text-[16px] tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[13px] text-muted-foreground ml-1 font-medium">Name on Card</label>
+                <input
+                  type="text"
+                  placeholder="e.g. John Doe"
+                  value={editCcName}
+                  onChange={(e) => setEditCcName(e.target.value)}
+                  className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all uppercase"
+                  required
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <div className="space-y-1 flex-1">
+                  <label className="text-[13px] text-muted-foreground ml-1 font-medium">Card PIN <span className="text-muted-foreground/50 font-normal">(optional)</span></label>
+                  <input
+                    type="password"
+                    placeholder="••••"
+                    value={editCcPin}
+                    onChange={(e) => setEditCcPin(e.target.value)}
+                    className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 font-mono text-[16px] tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  />
+                </div>
+                <div className="space-y-1 flex-1">
+                  <label className="text-[13px] text-muted-foreground ml-1 font-medium">UPI PIN <span className="text-muted-foreground/50 font-normal">(optional)</span></label>
+                  <input
+                    type="password"
+                    placeholder="••••••"
+                    value={editCcUpiPin}
+                    onChange={(e) => setEditCcUpiPin(e.target.value)}
+                    className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 font-mono text-[16px] tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  />
+                </div>
+              </div>
+
+              {editItemError && <p className="text-[13px] text-destructive px-1" role="alert">{editItemError}</p>}
+
+              <Button
+                type="submit"
+                disabled={isSavingEdit}
+                className="w-full h-12 rounded-xl font-semibold text-[17px] mt-4 bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                {isSavingEdit ? "Saving…" : "Save Changes"}
               </Button>
             </form>
           </DialogContent>

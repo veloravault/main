@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon, TrashIcon, XIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon, PencilIcon, TrashIcon, XIcon } from "lucide-react";
 import { CardNetworkLogo, getCardNetwork } from "@/components/CardLogos";
 
 export interface WalletCardDetailsProps {
@@ -14,6 +14,7 @@ export interface WalletCardDetailsProps {
   upiPin?: string;
   extraDetails?: string;
   onCopy: (value: string, label: string) => void;
+  onEdit: () => void;
   onDelete: () => void;
   onClose?: () => void;
 }
@@ -46,7 +47,10 @@ export function WalletCardDetails(props: WalletCardDetailsProps) {
         </dl>
         {secureRows.length > 0 && <div className="wallet-secure"><button type="button" onClick={() => setRevealed((value) => !value)}>{revealed ? <EyeOffIcon /> : <EyeIcon />}{revealed ? "Hide secure details" : "Show secure details"}</button>{secureRows.map(([label, value]) => <div key={label}><span>{label}</span><code>{revealed ? value : "••••"}</code><button type="button" onClick={() => copy(value, label)} aria-label={`Copy ${label}`}>{copied === label ? <CheckIcon /> : <CopyIcon />}</button></div>)}</div>}
         {props.extraDetails && <div className="wallet-extra"><p className="type-group-label">Additional information</p><p>{props.extraDetails}</p></div>}
-        <button type="button" className="wallet-delete" onClick={props.onDelete}><TrashIcon />Delete card</button>
+        <div className="wallet-actions">
+          <button type="button" className="wallet-edit" onClick={props.onEdit}><PencilIcon />Edit card</button>
+          <button type="button" className="wallet-delete" onClick={props.onDelete}><TrashIcon />Delete card</button>
+        </div>
       </div>
     </section>
   );

@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BuildingIcon, TrashIcon, CopyIcon, CameraIcon, Loader2Icon, MoreHorizontalIcon, CheckSquareIcon, SquareIcon, ChevronRightIcon, XIcon } from "lucide-react";
+import { BuildingIcon, TrashIcon, CopyIcon, CameraIcon, Loader2Icon, MoreHorizontalIcon, CheckSquareIcon, SquareIcon, ChevronRightIcon, PencilIcon, XIcon } from "lucide-react";
 import { useToast } from "@/components/Toast";
 import { useOptimisticDelete } from "@/hooks/useOptimisticDelete";
 import { copySensitiveText } from "@/lib/secureClipboard";
@@ -69,6 +69,15 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
   const [bankAccount, setBankAccount] = useState("");
   const [bankName, setBankName] = useState("");
   const [addItemError, setAddItemError] = useState<string | null>(null);
+
+  // Edit Item State
+  const [editingItem, setEditingItem] = useState<DecryptedBank | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBankRouting, setEditBankRouting] = useState("");
+  const [editBankAccount, setEditBankAccount] = useState("");
+  const [editBankName, setEditBankName] = useState("");
+  const [editItemError, setEditItemError] = useState<string | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   const [isScanning, setIsScanning] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -249,6 +258,55 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
     }
   };
 
+  const openEditItem = (item: DecryptedBank) => {
+    setEditingItem(item);
+    setEditTitle(item.title);
+    setEditBankRouting(item.payload.routing ?? "");
+    setEditBankAccount(item.payload.account ?? "");
+    setEditBankName(item.payload.name ?? "");
+    setEditItemError(null);
+  };
+
+  const handleEditItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+    if (!editTitle.trim() || !editBankRouting.trim() || !editBankAccount.trim() || !editBankName.trim()) {
+      setEditItemError("Fill in every field before saving.");
+      return;
+    }
+    setEditItemError(null);
+    setIsSavingEdit(true);
+
+    const payload: BankAccountPayload = {
+      routing: editBankRouting,
+      account: editBankAccount,
+      name: editBankName,
+      extra_details: editingItem.payload.extra_details,
+    };
+
+    try {
+      const encrypted = await encryptText(JSON.stringify(payload), masterPassword);
+      const { error } = await supabase.from("secure_wallet").update({
+        title: editTitle,
+        encrypted_content: encrypted.ciphertext,
+        iv: encrypted.iv,
+        salt: encrypted.salt,
+      }).eq("id", editingItem.id);
+
+      if (error) throw error;
+
+      setEditingItem(null);
+      invalidateCache("secure_wallet_banks");
+      fetchItems();
+      toast("Bank account updated", "success");
+    } catch (err) {
+      console.error("Failed to update wallet item:", err);
+      setEditItemError(err instanceof Error ? err.message : "Failed to save the changes.");
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
   const handleDeleteItem = (id: string, e?: React.SyntheticEvent) => {
     e?.stopPropagation();
     const item = items.find((candidate) => candidate.id === id);
@@ -417,6 +475,62 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
             <AdaptiveSheetFooter><Button type="button" variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button type="submit" className="import-primary-action">Encrypt & Save</Button></AdaptiveSheetFooter>
             </form>
           </AdaptiveSheet>
+
+          <AdaptiveSheet open={!!editingItem} onOpenChange={(open) => { if (!open) { setEditingItem(null); setEditItemError(null); } }} title="Edit Bank Account" description="Changes are re-encrypted with your existing master key." size="md" className="vault-create-sheet">
+            <form onSubmit={handleEditItem} noValidate className="vault-create-form">
+            <AdaptiveSheetBody className="space-y-4">
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-[13px] text-muted-foreground ml-1 font-medium">Nickname / Title</label>
+                <input
+                  type="text"
+                  placeholder="e.g. BoA Checking"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[13px] text-muted-foreground ml-1 font-medium">Routing Number</label>
+                <input
+                  type="text"
+                  value={editBankRouting}
+                  onChange={(e) => setEditBankRouting(e.target.value)}
+                  className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 font-mono text-[16px] tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  required
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[13px] text-muted-foreground ml-1 font-medium">Account Number</label>
+                <input
+                  type="text"
+                  value={editBankAccount}
+                  onChange={(e) => setEditBankAccount(e.target.value)}
+                  className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 font-mono text-[16px] tracking-widest focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[13px] text-muted-foreground ml-1 font-medium">Name on Account</label>
+                <input
+                  type="text"
+                  placeholder="e.g. John Doe"
+                  value={editBankName}
+                  onChange={(e) => setEditBankName(e.target.value)}
+                  className="w-full bg-secondary border border-transparent rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  required
+                />
+              </div>
+
+            </div>
+            {editItemError && <p className="text-[13px] text-destructive px-1" role="alert">{editItemError}</p>}
+            </AdaptiveSheetBody>
+            <AdaptiveSheetFooter><Button type="button" variant="ghost" onClick={() => setEditingItem(null)}>Cancel</Button><Button type="submit" disabled={isSavingEdit} className="import-primary-action">{isSavingEdit ? "Saving…" : "Save Changes"}</Button></AdaptiveSheetFooter>
+            </form>
+          </AdaptiveSheet>
         </div>
       </div>
 
@@ -432,6 +546,7 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
               <ContextActions key={item.id} title={item.title} actions={[
                 { id: "open", label: expandedBankId === item.id ? "Close details" : "View details", onSelect: () => setExpandedBankId(expandedBankId === item.id ? null : item.id) },
                 { id: "copy", label: "Copy account number", disabled: !item.payload.account, onSelect: () => { if (item.payload.account) void copyToClipboard(item.payload.account); } },
+                { id: "edit", label: "Edit", onSelect: () => openEditItem(item) },
                 { id: "delete", label: "Delete", destructive: true, onSelect: () => { if (expandedBankId === item.id) setExpandedBankId(null); scheduleDelete(item); } },
               ]}>{(bindings) => <motion.div
                 {...bindings}
@@ -502,7 +617,10 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
                 {selectedBank.payload.account && <DetailRow label="Account Number" value={selectedBank.payload.account} copy />}
               </div>
               {selectedBank.payload.extra_details && <div className="mt-3 rounded-2xl bg-muted/45 px-4 py-3"><p className="type-group-label mb-1.5">Additional Info</p><p className="whitespace-pre-wrap text-[13px] leading-5 text-muted-foreground">{selectedBank.payload.extra_details}</p></div>}
-              <Button variant="ghost" onClick={(e) => handleDeleteItem(selectedBank.id, e)} className="mt-3 h-11 w-full rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive"><TrashIcon className="h-4 w-4" /> Delete Account</Button>
+              <div className="mt-3 flex gap-2">
+                <Button variant="ghost" onClick={() => openEditItem(selectedBank)} className="h-11 flex-1 rounded-xl"><PencilIcon className="h-4 w-4" /> Edit</Button>
+                <Button variant="ghost" onClick={(e) => handleDeleteItem(selectedBank.id, e)} className="h-11 flex-1 rounded-xl text-destructive hover:bg-destructive/10 hover:text-destructive"><TrashIcon className="h-4 w-4" /> Delete</Button>
+              </div>
             </aside>
           </>
         )}
