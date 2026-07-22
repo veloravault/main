@@ -139,3 +139,14 @@ test("every PIN and biometric UI call site supplies the authenticated user id", 
   assert.match(pinLock, /onUnlock:\s*\(masterKey:\s*string,\s*expectedUserId:\s*string\)\s*=>\s*boolean/);
   assert.match(pinLock, /onUnlock\(masterKey,\s*authenticatedUserId\)/);
 });
+
+test("AdminPinGate reuses the vault PIN and supplies the real admin user id", () => {
+  const gate = read("src/components/admin/AdminPinGate.tsx");
+  assert.match(gate, /hasPinLock\(adminUserId\)/);
+  assert.match(gate, /verifyPinAndRecoverMaster\(pin,\s*adminUserId,\s*isAuthenticatedUserCurrent\)/);
+  assert.match(gate, /useVaultKey\(\)/);
+  // Fail-closed: must default to "checking" (never eagerly "unlocked"), or a
+  // hydration-mismatch-avoiding effect could flash admin content before the
+  // PIN status is actually known.
+  assert.match(gate, /useState<GateStatus>\("checking"\)/);
+});

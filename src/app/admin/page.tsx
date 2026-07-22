@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ShieldAlertIcon } from "lucide-react";
-import { AdminConsole } from "@/components/admin/AdminConsole";
+import { AdminPinGate } from "@/components/admin/AdminPinGate";
 import { AuthorizationError, requireAdmin } from "@/lib/server/access";
 import styles from "./admin.module.css";
 
@@ -16,12 +16,14 @@ export const metadata: Metadata = {
 
 export default async function AdminPage() {
   let adminEmail: string | null = null;
+  let adminUserId: string | null = null;
   let unauthenticated = false;
   let unauthorized = false;
 
   try {
     const admin = await requireAdmin();
     adminEmail = admin.email ?? "Verified owner";
+    adminUserId = admin.id;
   } catch (error) {
     if (!(error instanceof AuthorizationError)) throw error;
     unauthenticated = error.status === 401;
@@ -30,7 +32,7 @@ export default async function AdminPage() {
 
   if (unauthenticated) redirect("/login?next=/admin");
 
-  if (unauthorized || !adminEmail) {
+  if (unauthorized || !adminEmail || !adminUserId) {
     return (
       <main className={styles.deniedPage}>
         <section className={styles.deniedPanel} aria-labelledby="unauthorized-title">
@@ -43,5 +45,5 @@ export default async function AdminPage() {
     );
   }
 
-  return <AdminConsole adminEmail={adminEmail} />;
+  return <AdminPinGate adminUserId={adminUserId} adminEmail={adminEmail} />;
 }
