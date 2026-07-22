@@ -37,3 +37,18 @@ test("rotate_master_key_ciphertexts migration is atomic and properly scoped", ()
   assert.match(sql, /grant execute on function public\.rotate_master_key_ciphertexts\(jsonb, jsonb, jsonb, jsonb\) to authenticated;/);
   assert.doesNotMatch(sql, /grant execute[^;]*to[^;]*anon/);
 });
+
+import { chunkKeys } from "../src/lib/chunkKeys.ts";
+
+test("chunkKeys batches values into bounded groups, including exact multiples and remainders", () => {
+  assert.deepEqual(chunkKeys([], 2), []);
+  assert.deepEqual(chunkKeys(["a", "b", "c"], 2), [["a", "b"], ["c"]]);
+  assert.deepEqual(chunkKeys(["a", "b", "c", "d"], 2), [["a", "b"], ["c", "d"]]);
+  assert.deepEqual(chunkKeys([1, 2, 3], 10), [[1, 2, 3]]);
+
+  const oneThousandOne = Array.from({ length: 1001 }, (_, i) => `key-${i}`);
+  const defaultChunks = chunkKeys(oneThousandOne);
+  assert.equal(defaultChunks.length, 2);
+  assert.equal(defaultChunks[0].length, 1000);
+  assert.equal(defaultChunks[1].length, 1);
+});
