@@ -3,11 +3,31 @@
 import type { FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowUpRightIcon, ChevronDownIcon, MoonIcon, SearchIcon, SunIcon, XIcon } from "lucide-react";
+import {
+  ArrowUpRightIcon,
+  ChevronDownIcon,
+  CircleHelpIcon,
+  ContactRoundIcon,
+  CreditCardIcon,
+  FileTextIcon,
+  GaugeIcon,
+  KeyRoundIcon,
+  MoonIcon,
+  NewspaperIcon,
+  SearchIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+  SunIcon,
+  TextCursorInputIcon,
+  UserRoundIcon,
+  WorkflowIcon,
+  XIcon,
+} from "lucide-react";
 import shared from "@/app/dreelio/dreelio.module.css";
 import styles from "./Nav.module.css";
 import { VeloraBrandMark } from "./VeloraBrand";
-import { NAV_LINKS, SEARCH_ITEMS, UTILITY_LINKS } from "./data";
+import type { PublicNavIcon } from "./data";
+import { NAV_GROUPS, PRIMARY_NAV_LINKS, SEARCH_ITEMS } from "./data";
 import {
   HOVER_LIFT,
   LANDING_VIEWPORT,
@@ -16,6 +36,23 @@ import {
 } from "./motion";
 import { useTheme } from "@/components/ThemeProvider";
 import { supabase } from "@/lib/supabase";
+
+type NavMenuId = (typeof NAV_GROUPS)[number]["id"];
+
+const NAV_ICONS: Record<PublicNavIcon, typeof KeyRoundIcon> = {
+  "bank-card": CreditCardIcon,
+  contact: ContactRoundIcon,
+  document: FileTextIcon,
+  help: CircleHelpIcon,
+  import: SparklesIcon,
+  journal: NewspaperIcon,
+  password: KeyRoundIcon,
+  passphrase: TextCursorInputIcon,
+  security: ShieldCheckIcon,
+  strength: GaugeIcon,
+  username: UserRoundIcon,
+  workflow: WorkflowIcon,
+};
 
 type ThemeToggleProps = {
   className?: string;
@@ -63,12 +100,12 @@ type NavProps = {
 
 export function Nav({ initialSignedIn = false }: NavProps) {
   const [open, setOpen] = useState(false);
-  const [utilitiesOpen, setUtilitiesOpen] = useState(false);
-  const [mobileUtilitiesOpen, setMobileUtilitiesOpen] = useState(false);
+  const [activeDesktopMenu, setActiveDesktopMenu] = useState<NavMenuId | null>(null);
+  const [activeMobileMenu, setActiveMobileMenu] = useState<NavMenuId | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [signedIn, setSignedIn] = useState(initialSignedIn);
-  const utilityMenuRef = useRef<HTMLLIElement>(null);
+  const navGroupsRef = useRef<HTMLUListElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { resolvedTheme, setTheme } = useTheme();
   const reduceMotion = useReducedMotion();
@@ -88,15 +125,15 @@ export function Nav({ initialSignedIn = false }: NavProps) {
   }, []);
 
   useEffect(() => {
-    if (!utilitiesOpen) return;
+    if (!activeDesktopMenu) return;
 
     const closeOnPointerDown = (event: PointerEvent) => {
-      if (!utilityMenuRef.current?.contains(event.target as Node)) {
-        setUtilitiesOpen(false);
+      if (!navGroupsRef.current?.contains(event.target as Node)) {
+        setActiveDesktopMenu(null);
       }
     };
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setUtilitiesOpen(false);
+      if (event.key === "Escape") setActiveDesktopMenu(null);
     };
 
     document.addEventListener("pointerdown", closeOnPointerDown);
@@ -105,7 +142,7 @@ export function Nav({ initialSignedIn = false }: NavProps) {
       document.removeEventListener("pointerdown", closeOnPointerDown);
       document.removeEventListener("keydown", closeOnEscape);
     };
-  }, [utilitiesOpen]);
+  }, [activeDesktopMenu]);
 
   useEffect(() => {
     if (!searchOpen) return;
@@ -126,12 +163,12 @@ export function Nav({ initialSignedIn = false }: NavProps) {
 
   const closeMobileMenu = () => {
     setOpen(false);
-    setMobileUtilitiesOpen(false);
+    setActiveMobileMenu(null);
   };
 
   const openSearch = () => {
     closeMobileMenu();
-    setUtilitiesOpen(false);
+    setActiveDesktopMenu(null);
     setSearchOpen(true);
   };
 
@@ -147,9 +184,6 @@ export function Nav({ initialSignedIn = false }: NavProps) {
     const firstResult = filteredSearchItems[0];
     if (firstResult) window.location.assign(firstResult.href);
   };
-
-  const featureLink = NAV_LINKS[0];
-  const remainingLinks = NAV_LINKS.slice(1);
 
   return (
     <motion.header
@@ -172,57 +206,64 @@ export function Nav({ initialSignedIn = false }: NavProps) {
           <span>Velora Vault</span>
         </motion.a>
 
-        <ul className={styles.links}>
-          <motion.li whileHover={reduceMotion ? undefined : { y: -1 }}>
-            <a href={featureLink.href}>{featureLink.label}</a>
-          </motion.li>
-          <motion.li
-            ref={utilityMenuRef}
-            className={styles.utilityMenu}
-            whileHover={reduceMotion ? undefined : { y: -1 }}
-          >
-            <button
-              type="button"
-              className={styles.utilityTrigger}
-              aria-haspopup="menu"
-              aria-expanded={utilitiesOpen}
-              aria-controls="utilities-menu"
-              onClick={() => setUtilitiesOpen((current) => !current)}
-            >
-              Utilities
-              <ChevronDownIcon data-open={utilitiesOpen} aria-hidden="true" />
-            </button>
-            <AnimatePresence initial={false}>
-              {utilitiesOpen && (
-                <motion.ul
-                  id="utilities-menu"
-                  className={styles.utilityDropdown}
-                  role="menu"
-                  initial={reduceMotion ? false : { opacity: 0, y: -6, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={reduceMotion ? undefined : { opacity: 0, y: -4, scale: 0.98 }}
-                  transition={{ duration: 0.16 }}
-                >
-                  {UTILITY_LINKS.map((link) => (
-                    <li key={link.href} role="none">
-                      <a
-                        href={link.href}
-                        role="menuitem"
-                        onClick={() => setUtilitiesOpen(false)}
-                      >
-                        {link.label}
-                      </a>
-                    </li>
-                  ))}
-                </motion.ul>
-              )}
-            </AnimatePresence>
-          </motion.li>
-          {remainingLinks.map((link) => (
+        <ul ref={navGroupsRef} className={styles.links}>
+          {NAV_GROUPS.map((group) => (
             <motion.li
-              key={link.label}
+              key={group.id}
+              className={styles.navGroup}
               whileHover={reduceMotion ? undefined : { y: -1 }}
             >
+              <button
+                type="button"
+                className={styles.navGroupTrigger}
+                aria-expanded={activeDesktopMenu === group.id}
+                aria-controls={`desktop-${group.id}-menu`}
+                onClick={() => setActiveDesktopMenu((current) => current === group.id ? null : group.id)}
+              >
+                {group.label}
+                <ChevronDownIcon data-open={activeDesktopMenu === group.id} aria-hidden="true" />
+              </button>
+              <AnimatePresence initial={false}>
+                {activeDesktopMenu === group.id && (
+                  <motion.div
+                    id={`desktop-${group.id}-menu`}
+                    className={styles.dropdownPanel}
+                    data-menu={group.id}
+                    aria-label={`${group.label} navigation`}
+                    initial={reduceMotion ? false : { opacity: 0, y: -7, scale: 0.985 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={reduceMotion ? undefined : { opacity: 0, y: -5, scale: 0.985 }}
+                    transition={{ duration: 0.16 }}
+                  >
+                    <div className={styles.dropdownGrid}>
+                      {group.links.map((link) => {
+                        const Icon = NAV_ICONS[link.icon];
+                        const featured = "featured" in link && link.featured;
+                        return (
+                          <a
+                            key={link.href}
+                            href={link.href}
+                            className={styles.dropdownLink}
+                            data-featured={featured || undefined}
+                            onClick={() => setActiveDesktopMenu(null)}
+                          >
+                            <span className={styles.dropdownIcon}><Icon aria-hidden="true" /></span>
+                            <span className={styles.dropdownCopy}>
+                              <strong>{link.label}</strong>
+                              <small>{link.description}</small>
+                            </span>
+                            <ArrowUpRightIcon className={styles.dropdownArrow} aria-hidden="true" />
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.li>
+          ))}
+          {PRIMARY_NAV_LINKS.map((link) => (
+            <motion.li key={link.href} whileHover={reduceMotion ? undefined : { y: -1 }}>
               <a href={link.href}>{link.label}</a>
             </motion.li>
           ))}
@@ -293,7 +334,7 @@ export function Nav({ initialSignedIn = false }: NavProps) {
             aria-label="Toggle menu"
             aria-expanded={open}
             onClick={() => {
-              if (open) setMobileUtilitiesOpen(false);
+              if (open) setActiveMobileMenu(null);
               setOpen(!open);
             }}
           >
@@ -313,41 +354,44 @@ export function Nav({ initialSignedIn = false }: NavProps) {
           transition={{ duration: 0.24 }}
           viewport={LANDING_VIEWPORT}
         >
-          <a href={featureLink.href} onClick={closeMobileMenu}>
-            {featureLink.label}
-          </a>
-          <div className={styles.mobileUtilityGroup}>
-            <button
-              type="button"
-              className={styles.mobileUtilityTrigger}
-              aria-expanded={mobileUtilitiesOpen}
-              aria-controls="mobile-utilities-menu"
-              onClick={() => setMobileUtilitiesOpen((current) => !current)}
-            >
-              Utilities
-              <ChevronDownIcon data-open={mobileUtilitiesOpen} aria-hidden="true" />
-            </button>
-            <AnimatePresence initial={false}>
-              {mobileUtilitiesOpen && (
-                <motion.div
-                  id="mobile-utilities-menu"
-                  className={styles.mobileUtilityLinks}
-                  initial={reduceMotion ? false : { opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={reduceMotion ? undefined : { opacity: 0, height: 0 }}
-                  transition={{ duration: 0.18 }}
-                >
-                  {UTILITY_LINKS.map((link) => (
-                    <a key={link.href} href={link.href} onClick={closeMobileMenu}>
-                      {link.label}
-                    </a>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-          {remainingLinks.map((link) => (
-            <a key={link.label} href={link.href} onClick={closeMobileMenu}>
+          {NAV_GROUPS.map((group) => (
+            <div className={styles.mobileNavGroup} key={group.id}>
+              <button
+                type="button"
+                className={styles.mobileNavTrigger}
+                aria-expanded={activeMobileMenu === group.id}
+                aria-controls={`mobile-${group.id}-menu`}
+                onClick={() => setActiveMobileMenu((current) => current === group.id ? null : group.id)}
+              >
+                {group.label}
+                <ChevronDownIcon data-open={activeMobileMenu === group.id} aria-hidden="true" />
+              </button>
+              <AnimatePresence initial={false}>
+                {activeMobileMenu === group.id && (
+                  <motion.div
+                    id={`mobile-${group.id}-menu`}
+                    className={styles.mobileSubmenu}
+                    initial={reduceMotion ? false : { opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={reduceMotion ? undefined : { opacity: 0, height: 0 }}
+                    transition={{ duration: 0.18 }}
+                  >
+                    {group.links.map((link) => {
+                      const Icon = NAV_ICONS[link.icon];
+                      return (
+                        <a key={link.href} href={link.href} onClick={closeMobileMenu}>
+                          <span><Icon aria-hidden="true" /></span>
+                          <span><strong>{link.label}</strong><small>{link.description}</small></span>
+                        </a>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))}
+          {PRIMARY_NAV_LINKS.map((link) => (
+            <a key={link.href} href={link.href} onClick={closeMobileMenu}>
               {link.label}
             </a>
           ))}

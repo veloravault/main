@@ -1,19 +1,124 @@
 // All copy + content for the Velora Vault landing page, kept in one place so
 // the section components stay presentational.
 
-export const NAV_LINKS = [
-  { label: "Features", href: "/password-manager" },
-  { label: "Security", href: "/security" },
-  { label: "Blog", href: "/blog" },
-  { label: "Pricing", href: "/pricing" },
-  { label: "Contact", href: "/contact" },
-];
+export type PublicNavIcon =
+  | "bank-card"
+  | "contact"
+  | "document"
+  | "help"
+  | "import"
+  | "journal"
+  | "password"
+  | "passphrase"
+  | "security"
+  | "strength"
+  | "username"
+  | "workflow";
+
+type PublicNavLink = {
+  label: string;
+  href: string;
+  description: string;
+  icon: PublicNavIcon;
+  featured?: boolean;
+};
+
+export const PRODUCT_LINKS = [
+  {
+    label: "Password Manager",
+    href: "/password-manager",
+    description: "Create, organize, and unlock your private vault.",
+    icon: "password",
+    featured: true,
+  },
+  {
+    label: "How it works",
+    href: "/how-it-works",
+    description: "Understand accounts, encryption, and unlocking.",
+    icon: "workflow",
+  },
+  {
+    label: "Secure Documents",
+    href: "/features/secure-documents",
+    description: "Protect important files beside their details.",
+    icon: "document",
+  },
+  {
+    label: "Digital Wallet",
+    href: "/features/digital-wallet",
+    description: "Keep cards and bank records clearly organized.",
+    icon: "bank-card",
+  },
+  {
+    label: "Magic Import",
+    href: "/features/magic-import",
+    description: "Turn submitted source text into reviewable records.",
+    icon: "import",
+  },
+] as const satisfies readonly PublicNavLink[];
 
 export const UTILITY_LINKS = [
-  { label: "Password Generator", href: "/utilities/password-generator" },
-  { label: "Passphrase Generator", href: "/utilities/passphrase-generator" },
-  { label: "Username Generator", href: "/utilities/username-generator" },
-  { label: "Password Strength Tester", href: "/utilities/password-strength" },
+  {
+    label: "Password Generator",
+    href: "/utilities/password-generator",
+    description: "Create a strong random password locally.",
+    icon: "password",
+  },
+  {
+    label: "Passphrase Generator",
+    href: "/utilities/passphrase-generator",
+    description: "Build a memorable multi-word passphrase.",
+    icon: "passphrase",
+  },
+  {
+    label: "Username Generator",
+    href: "/utilities/username-generator",
+    description: "Generate a readable or random username.",
+    icon: "username",
+  },
+  {
+    label: "Password Strength Tester",
+    href: "/utilities/password-strength",
+    description: "Assess password length and variety locally.",
+    icon: "strength",
+  },
+] as const satisfies readonly PublicNavLink[];
+
+export const RESOURCE_LINKS = [
+  {
+    label: "Security",
+    href: "/security",
+    description: "Read the boundaries behind Velora encryption.",
+    icon: "security",
+  },
+  {
+    label: "Help Center",
+    href: "/help",
+    description: "Find setup, unlocking, and recovery guidance.",
+    icon: "help",
+  },
+  {
+    label: "Blog",
+    href: "/blog",
+    description: "Explore practical password and privacy guides.",
+    icon: "journal",
+  },
+  {
+    label: "Contact",
+    href: "/contact",
+    description: "Send a question to the Velora team.",
+    icon: "contact",
+  },
+] as const satisfies readonly PublicNavLink[];
+
+export const NAV_GROUPS = [
+  { id: "products", label: "Products", links: PRODUCT_LINKS },
+  { id: "utilities", label: "Utilities", links: UTILITY_LINKS },
+  { id: "resources", label: "Resources", links: RESOURCE_LINKS },
+] as const;
+
+export const PRIMARY_NAV_LINKS = [
+  { label: "Pricing", href: "/pricing" },
 ] as const;
 
 export const SEARCH_ITEMS = [

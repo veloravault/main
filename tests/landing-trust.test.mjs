@@ -57,37 +57,58 @@ test("landing removes unfinished editorial content and unsupported availability 
   assert.doesNotMatch(combined, /nothing's ever out of date/i);
 });
 
-test("public navigation exposes all utilities through responsive submenus", () => {
+test("public navigation separates products, utilities, resources, and pricing", () => {
   const nav = read("src/components/dreelio/Nav.tsx");
   const data = read("src/components/dreelio/data.ts");
   const css = read("src/components/dreelio/Nav.module.css");
 
   assert.doesNotMatch(data, /label:\s*["']Benefits["']/);
+  assert.match(data, /export const PRODUCT_LINKS/);
   assert.match(data, /export const UTILITY_LINKS/);
+  assert.match(data, /export const RESOURCE_LINKS/);
+  assert.match(data, /export const NAV_GROUPS/);
+  assert.match(data, /export const PRIMARY_NAV_LINKS/);
 
   for (const [label, href] of [
+    ["Password Manager", "/password-manager"],
+    ["How it works", "/how-it-works"],
+    ["Secure Documents", "/features/secure-documents"],
+    ["Digital Wallet", "/features/digital-wallet"],
+    ["Magic Import", "/features/magic-import"],
     ["Password Generator", "/utilities/password-generator"],
     ["Passphrase Generator", "/utilities/passphrase-generator"],
     ["Username Generator", "/utilities/username-generator"],
     ["Password Strength Tester", "/utilities/password-strength"],
+    ["Security", "/security"],
+    ["Help Center", "/help"],
+    ["Blog", "/blog"],
+    ["Contact", "/contact"],
+    ["Pricing", "/pricing"],
   ]) {
     assert.match(data, new RegExp(`label: ["']${label}["'][\\s\\S]*href: ["']${href}["']`));
   }
 
-  assert.match(nav, /aria-haspopup="menu"/);
-  assert.match(nav, /aria-controls="utilities-menu"/);
-  assert.match(nav, /id="utilities-menu"/);
-  assert.match(nav, /role="menu"/);
+  assert.match(data, /description:/);
+  assert.match(nav, /type NavMenuId/);
+  assert.match(nav, /activeDesktopMenu/);
+  assert.match(nav, /activeMobileMenu/);
+  assert.match(nav, /NAV_GROUPS\.map/);
+  assert.match(nav, /aria-expanded=\{activeDesktopMenu === group\.id\}/);
+  assert.match(nav, /aria-controls=\{`desktop-\$\{group\.id\}-menu`\}/);
+  assert.match(nav, /aria-controls=\{`mobile-\$\{group\.id\}-menu`\}/);
+  assert.doesNotMatch(nav, /role="menu"/);
   assert.match(nav, /event\.key === "Escape"/);
   assert.match(nav, /pointerdown/);
-  assert.match(nav, /aria-controls="mobile-utilities-menu"/);
-  assert.match(nav, /id="mobile-utilities-menu"/);
 
   for (const className of [
-    "utilityTrigger",
-    "utilityDropdown",
-    "mobileUtilityTrigger",
-    "mobileUtilityLinks",
+    "navGroup",
+    "navGroupTrigger",
+    "dropdownPanel",
+    "dropdownGrid",
+    "dropdownLink",
+    "mobileNavGroup",
+    "mobileNavTrigger",
+    "mobileSubmenu",
   ]) {
     assert.match(css, new RegExp(`\\.${className}\\b`));
   }
@@ -102,8 +123,8 @@ test("mobile navigation and homepage cards keep nested content inside the viewpo
   const previewCss = read("src/components/dreelio/VeloraProductPreview.module.css");
 
   assert.match(navCss, /\.mobileMenu\s*>\s*a:not\(\[class\]\)/);
-  assert.doesNotMatch(navCss, /\.mobileUtilityLinks a\s*\{[^}]*border-left:/s);
-  assert.match(navCss, /\.mobileUtilityLinks\s*\{[^}]*border-radius:/s);
+  assert.doesNotMatch(navCss, /\.mobileSubmenu a\s*\{[^}]*border-left:/s);
+  assert.match(navCss, /\.mobileSubmenu\s*\{[^}]*border-radius:/s);
 
   assert.match(featuresCss, /\.bigCard\s*\{[^}]*min-width:\s*0;/s);
   assert.match(featuresCss, /@media \(max-width:\s*560px\)[\s\S]*\.bigCard\s*\{[^}]*padding:/s);

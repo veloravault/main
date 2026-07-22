@@ -99,7 +99,7 @@ test("new public pages are discoverable through navigation, search, footer, and 
   const data = read("src/components/dreelio/data.ts");
   const sitemap = read("src/app/sitemap.ts");
 
-  assert.match(data, /label:\s*["']Features["'],\s*href:\s*["']\/password-manager["']/);
+  assert.match(data, /label:\s*["']Password Manager["'],\s*href:\s*["']\/password-manager["']/);
   for (const [route] of ROUTES) {
     const href = `/${route}`;
     assert.match(data, new RegExp(`href:\\s*["']${href.replaceAll("/", "\\/")}["']`));
