@@ -82,9 +82,11 @@ export function ChangeMasterPasswordSheet({ open, onOpenChange }: { open: boolea
     // The vault is now re-encrypted with the new password server-side -
     // everything below is local, best-effort cleanup. A failure here must
     // never be reported as "nothing was changed."
+    const hadPinLock = hasPinLock(authenticatedUserId);
+    const hadBiometrics = hasBiometricsEnabled(authenticatedUserId);
     try {
-      if (hasPinLock(authenticatedUserId)) clearPinLock();
-      if (hasBiometricsEnabled(authenticatedUserId)) disableBiometrics(authenticatedUserId);
+      if (hadPinLock) clearPinLock();
+      if (hadBiometrics) disableBiometrics(authenticatedUserId);
     } catch {
       // Best-effort - stale PIN/biometric wrappers will just fail to unlock
       // next time, and the user can redo setup from Settings.
@@ -99,7 +101,12 @@ export function ChangeMasterPasswordSheet({ open, onOpenChange }: { open: boolea
       toast("Master key changed, but your session changed during the process - sign in again to continue.", "error");
       return;
     }
-    toast("Master key changed. PIN and Face ID / Touch ID were turned off - set them up again from Settings if you'd like.", "success");
+    toast(
+      hadPinLock || hadBiometrics
+        ? "Master key changed. PIN and Face ID / Touch ID were turned off - set them up again from Settings if you'd like."
+        : "Master key changed.",
+      "success",
+    );
   };
 
   return (

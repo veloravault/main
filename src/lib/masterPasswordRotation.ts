@@ -103,7 +103,7 @@ export async function rotateMasterPassword(
     if (rpcError.code === "P0001") {
       throw new MasterPasswordRotationError("Your vault changed while this was running. Nothing was changed - try again.");
     }
-    throw new MasterPasswordRotationError("The change could not be saved. Nothing was changed.");
+    throw new MasterPasswordRotationError("The change could not be confirmed. If your vault won't open with your old master key afterward, try the new one instead.");
   }
 
   onProgress?.({ stage: "cleanup", completed: totalRows, total: totalRows });
