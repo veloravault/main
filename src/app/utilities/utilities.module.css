@@ -7,14 +7,15 @@
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(260px, 0.68fr) minmax(0, 1.32fr);
-  gap: clamp(40px, 6vw, 80px);
+  min-height: min(760px, calc(100svh - 150px));
+  grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
+  gap: clamp(48px, 8vw, 112px);
   align-items: center;
-  padding-bottom: 80px;
+  padding: 48px 0 96px;
 }
 
 .heroCopy,
-.heroWorkbench,
+.heroVisual,
 .workbenchHeader > div,
 .workbenchBody > *,
 .educationCopy,
@@ -76,10 +77,63 @@
   transform: translateX(3px);
 }
 
-.heroWorkbench,
 .workbench {
   width: 100%;
   max-width: 100%;
+}
+
+.heroVisual {
+  position: relative;
+  width: 100%;
+  min-height: clamp(360px, 42vw, 520px);
+}
+
+.heroVisualFrame {
+  position: absolute;
+  inset: 8% 0 4% 8%;
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
+  border-radius: 34px;
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface-alt-soft));
+  box-shadow: 0 32px 80px -56px rgba(0, 0, 0, 0.55);
+}
+
+.heroVisualInset {
+  position: absolute;
+  inset: 38px 38px 72px;
+  border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--line));
+  border-radius: 24px;
+  background: var(--card-white);
+}
+
+.heroVisualResult {
+  position: absolute;
+  right: 8%;
+  bottom: 8%;
+  left: -10%;
+  display: flex;
+  min-height: 76px;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 24px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--card-white);
+  box-shadow: 0 24px 56px -38px rgba(0, 0, 0, 0.55);
+}
+
+.heroVisualResult span {
+  height: 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 22%, var(--line));
+}
+
+.heroVisualResult span:nth-child(1) { width: 18%; }
+.heroVisualResult span:nth-child(2) { width: 42%; }
+.heroVisualResult span:nth-child(3) { width: 24%; }
+
+.workbenchSection {
+  scroll-margin-top: 124px;
+  padding-bottom: 88px;
 }
 
 .workbench {
@@ -722,8 +776,8 @@
 
 @media (max-width: 960px) {
   .hero {
-    grid-template-columns: minmax(230px, 0.6fr) minmax(0, 1.4fr);
-    gap: 32px;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr);
+    gap: 40px;
   }
 
   .workbenchBody {
@@ -748,9 +802,10 @@
   }
 
   .hero {
+    min-height: auto;
     grid-template-columns: 1fr;
-    gap: 36px;
-    padding-bottom: 64px;
+    gap: 28px;
+    padding: 24px 0 72px;
   }
 
   .hero h1 {
@@ -761,8 +816,30 @@
     font-size: 16px;
   }
 
-  .heroWorkbench {
-    width: 100%;
+  .heroVisual {
+    min-height: 300px;
+  }
+
+  .heroVisualFrame {
+    inset: 4% 0 4% 6%;
+    border-radius: 26px;
+  }
+
+  .heroVisualInset {
+    inset: 24px 24px 62px;
+    border-radius: 18px;
+  }
+
+  .heroVisualResult {
+    right: 6%;
+    bottom: 7%;
+    left: 0;
+    min-height: 64px;
+    padding: 16px 18px;
+  }
+
+  .workbenchSection {
+    padding-bottom: 64px;
   }
 
   .workbench {

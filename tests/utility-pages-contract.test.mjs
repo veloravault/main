@@ -92,6 +92,16 @@ test("utility styles define responsive, focus, overflow, and reduced-motion safe
   assert.match(css, /overflow-wrap:\s*anywhere/);
   assert.match(css, /min-height:\s*44px/);
   assert.doesNotMatch(css, /\.hero[\s\S]{0,300}min-height:\s*650px/);
+  assert.match(css, /\.hero\s*\{[^}]*min-height:\s*min\(/);
+  assert.match(css, /\.heroVisual\b/);
+  assert.match(css, /\.heroVisualFrame\b/);
+  assert.match(css, /\.heroVisualInset\b/);
+  assert.match(css, /\.heroVisualResult\b/);
+  assert.match(css, /\.workbenchSection\s*\{[^}]*scroll-margin-top:/);
+  assert.match(
+    css,
+    /@media \(max-width: 767px\)[\s\S]*?\.hero\s*\{[^}]*min-height:\s*auto/,
+  );
 
   for (const className of [
     "workbenchBody",
