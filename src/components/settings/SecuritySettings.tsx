@@ -257,10 +257,12 @@ export function SecuritySettings({ masterPassword, onLock }: { masterPassword: s
       </div>
 
       <div className="settings-section-label">Master password</div>
-      <button type="button" className="settings-action-row system-interactive" onClick={() => setIsChangingMasterPassword(true)}>
-        <LockIcon aria-hidden="true" />
-        <span><strong>Change master password</strong><small>Re-encrypts your entire vault with a new key.</small></span>
-      </button>
+      <div className="settings-group">
+        <button type="button" className="settings-action-row system-interactive" onClick={() => setIsChangingMasterPassword(true)}>
+          <LockIcon aria-hidden="true" />
+          <span><strong>Change master password</strong><small>Re-encrypts your entire vault with a new key.</small></span>
+        </button>
+      </div>
 
       <div className="settings-section-label">Sessions</div>
       <div className="settings-group">
