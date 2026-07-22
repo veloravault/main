@@ -26,11 +26,27 @@
   border-radius: var(--radius-pill);
   padding: 10px 14px 10px 22px;
   box-shadow: 0 14px 34px -18px rgba(0, 0, 0, 0.22);
+  transition: border-radius 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
 }
 
 :global(.dark) .nav {
   background: rgba(28, 28, 30, 0.82);
   border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* When a mega menu is open, flatten the pill's bottom edge so the header
+   reads as one continuous shape with the dropdown panel below. The top
+   corners are pinned to 33px (the pill's already-rendered cap radius: half
+   of the nav's fixed 66px height) instead of left on the 100px token -
+   zeroing only the bottom radius would otherwise trip the border-radius
+   corner-overlap algorithm and inflate the top corners along with it. */
+.nav:has(.navGroup[open]) {
+  border-top-left-radius: 33px;
+  border-top-right-radius: 33px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-color: transparent;
+  box-shadow: none;
 }
 
 .brand {
@@ -131,12 +147,11 @@
 }
 
 .dropdownPanel {
-  --dropdown-inset: clamp(12px, 1.4vw, 24px);
   display: none;
   position: fixed;
   top: 85px;
-  left: calc(var(--pad) + var(--dropdown-inset));
-  right: calc(var(--pad) + var(--dropdown-inset));
+  left: var(--pad);
+  right: var(--pad);
   z-index: 1;
   width: auto;
   padding: 0;
@@ -150,17 +165,11 @@
 
 .navGroup[open] .dropdownPanel {
   display: block;
-  animation: mega-menu-in 160ms ease-out both;
 }
 
-@keyframes mega-menu-in {
-  from {
-    opacity: 0;
-    transform: translateY(-7px) scale(0.985);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+@media (prefers-reduced-motion: reduce) {
+  .nav {
+    transition: none;
   }
 }
 

@@ -2,7 +2,7 @@
 
 import type { FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer-motion";
 import {
   ArrowUpRightIcon,
   ChevronDownIcon,
@@ -30,6 +30,7 @@ import { VeloraBrandMark } from "./VeloraBrand";
 import type { PublicNavIcon } from "./data";
 import { NAV_GROUPS, PRIMARY_NAV_LINKS, SEARCH_ITEMS } from "./data";
 import {
+  APPLE_EASE,
   HOVER_LIFT,
   TAP_PRESS,
   revealVariants,
@@ -86,6 +87,102 @@ function ThemeToggle({
         </motion.span>
       </AnimatePresence>
     </motion.button>
+  );
+}
+
+type DesktopNavGroupProps = {
+  group: (typeof NAV_GROUPS)[number];
+  reduceMotion: boolean | null;
+};
+
+function DesktopNavGroup({ group, reduceMotion }: DesktopNavGroupProps) {
+  // The native <details>/<summary> stays the source of truth for open/closed
+  // so the mega menu still works before React hydrates. `open` here only
+  // switches which Framer Motion variant the (always-mounted) panel targets -
+  // it never gates whether the panel renders, and it never remounts the
+  // panel. Remounting on toggle (e.g. via a changing `key`) raced against the
+  // browser's own synchronous <details> toggle: the old, fully-visible
+  // content would flash in for a frame before React swapped in a fresh,
+  // invisible element to animate from - that flash-then-reset is what read
+  // as jitter. A persistent element with a variant switch has no such race:
+  // its current (hidden) inline style is already applied the instant the
+  // browser reveals it, so it only ever animates forward, never flashes.
+  const [open, setOpen] = useState(false);
+
+  const panelTransition = {
+    duration: reduceMotion ? 0 : 0.22,
+    ease: APPLE_EASE,
+    staggerChildren: reduceMotion ? 0 : 0.045,
+    delayChildren: reduceMotion ? 0 : 0.05,
+  };
+  const sectionTransition = { duration: reduceMotion ? 0 : 0.22, ease: APPLE_EASE };
+
+  const dropdownPanelVariants: Variants = {
+    hidden: { opacity: 0, y: -8 },
+    show: { opacity: 1, y: 0, transition: panelTransition },
+  };
+  const megaMenuSectionVariants: Variants = {
+    hidden: { opacity: 0, y: 8 },
+    show: { opacity: 1, y: 0, transition: sectionTransition },
+  };
+
+  return (
+    <li className={styles.navItem}>
+      <details
+        className={styles.navGroup}
+        name="desktop-primary-navigation"
+        onToggle={(event) => setOpen(event.currentTarget.open)}
+      >
+        <summary className={styles.navGroupTrigger}>
+          {group.label}
+          <ChevronDownIcon aria-hidden="true" />
+        </summary>
+        <motion.div
+          id={`desktop-${group.id}-menu`}
+          className={styles.dropdownPanel}
+          data-menu={group.id}
+          aria-label={`${group.label} navigation`}
+          initial={false}
+          animate={open ? "show" : "hidden"}
+          variants={dropdownPanelVariants}
+        >
+          <div className={styles.dropdownGrid}>
+            {group.sections.map((section) => (
+              <motion.section
+                key={section.heading}
+                className={styles.megaMenuSection}
+                data-highlight={("highlight" in section && section.highlight) || undefined}
+                variants={megaMenuSectionVariants}
+              >
+                <h2>{section.heading}</h2>
+                <div className={styles.megaMenuLinks}>
+                  {section.links.map((link) => {
+                    const Icon = NAV_ICONS[link.icon];
+
+                    return (
+                      <a
+                        key={link.href}
+                        href={link.href}
+                        className={styles.dropdownLink}
+                      >
+                        <span className={styles.desktopMenuIcon}>
+                          <Icon aria-hidden="true" />
+                        </span>
+                        <span>{link.label}</span>
+                        <ChevronRightIcon
+                          className={styles.desktopMenuArrow}
+                          aria-hidden="true"
+                        />
+                      </a>
+                    );
+                  })}
+                </div>
+              </motion.section>
+            ))}
+          </div>
+        </motion.div>
+      </details>
+    </li>
   );
 }
 
@@ -176,54 +273,7 @@ export function Nav({ initialSignedIn = false }: NavProps) {
 
         <ul className={styles.links}>
           {NAV_GROUPS.map((group) => (
-            <li key={group.id} className={styles.navItem}>
-              <details className={styles.navGroup} name="desktop-primary-navigation">
-                <summary className={styles.navGroupTrigger}>
-                  {group.label}
-                  <ChevronDownIcon aria-hidden="true" />
-                </summary>
-                <div
-                  id={`desktop-${group.id}-menu`}
-                  className={styles.dropdownPanel}
-                  data-menu={group.id}
-                  aria-label={`${group.label} navigation`}
-                >
-                    <div className={styles.dropdownGrid}>
-                      {group.sections.map((section) => (
-                        <section
-                          key={section.heading}
-                          className={styles.megaMenuSection}
-                          data-highlight={("highlight" in section && section.highlight) || undefined}
-                        >
-                          <h2>{section.heading}</h2>
-                          <div className={styles.megaMenuLinks}>
-                            {section.links.map((link) => {
-                              const Icon = NAV_ICONS[link.icon];
-
-                              return (
-                                <a
-                                  key={link.href}
-                                  href={link.href}
-                                  className={styles.dropdownLink}
-                                >
-                                  <span className={styles.desktopMenuIcon}>
-                                    <Icon aria-hidden="true" />
-                                  </span>
-                                  <span>{link.label}</span>
-                                  <ChevronRightIcon
-                                    className={styles.desktopMenuArrow}
-                                    aria-hidden="true"
-                                  />
-                                </a>
-                              );
-                            })}
-                          </div>
-                        </section>
-                      ))}
-                    </div>
-                </div>
-              </details>
-            </li>
+            <DesktopNavGroup key={group.id} group={group} reduceMotion={reduceMotion} />
           ))}
           {PRIMARY_NAV_LINKS.map((link) => (
             <motion.li key={link.href} whileHover={reduceMotion ? undefined : { y: -1 }}>

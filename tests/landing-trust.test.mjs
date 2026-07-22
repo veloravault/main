@@ -113,7 +113,7 @@ test("public navigation separates products, utilities, resources, and pricing", 
   assert.match(css, /:focus-visible/);
 });
 
-test("desktop navigation uses an inset icon-led mega panel", () => {
+test("desktop navigation uses a full-width icon-led mega panel", () => {
   const nav = read("src/components/dreelio/Nav.tsx");
   const data = read("src/components/dreelio/data.ts");
   const css = read("src/components/dreelio/Nav.module.css");
@@ -142,8 +142,8 @@ test("desktop navigation uses an inset icon-led mega panel", () => {
   assert.match(nav, /ChevronRightIcon/);
 
   assert.match(css, /\.dropdownPanel\s*\{[^}]*position:\s*fixed;/s);
-  assert.match(css, /\.dropdownPanel\s*\{[^}]*left:\s*calc\(var\(--pad\) \+ var\(--dropdown-inset\)\);/s);
-  assert.match(css, /\.dropdownPanel\s*\{[^}]*right:\s*calc\(var\(--pad\) \+ var\(--dropdown-inset\)\);/s);
+  assert.match(css, /\.dropdownPanel\s*\{[^}]*left:\s*var\(--pad\);/s);
+  assert.match(css, /\.dropdownPanel\s*\{[^}]*right:\s*var\(--pad\);/s);
   assert.match(css, /\.dropdownPanel\s*\{[^}]*border-radius:\s*0\s+0\s+24px\s+24px;/s);
   assert.match(css, /\.dropdownGrid\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s);
   assert.match(css, /\.dropdownLink\s*\{[^}]*grid-template-columns:\s*36px\s+minmax\(0,\s*1fr\)\s+16px;/s);
