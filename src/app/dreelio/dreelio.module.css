@@ -258,3 +258,35 @@
      small text. Dark ink clears 4.5:1 against all three pill colors. */
   color: #1d1d1f;
 }
+
+@media (max-width: 600px) {
+  .root {
+    --pad: 16px;
+    --radius-card: 22px;
+    --radius-lg: 18px;
+  }
+
+  .section {
+    padding-block: 72px;
+  }
+
+  .sectionTight {
+    padding-block: 48px;
+  }
+
+  .sectionHead {
+    margin-bottom: 38px;
+  }
+
+  .eyebrow {
+    margin-bottom: 14px;
+  }
+
+  .h2 {
+    font-size: clamp(32px, 10vw, 42px);
+  }
+
+  .lead {
+    font-size: 16px;
+  }
+}

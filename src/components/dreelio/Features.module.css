@@ -9,6 +9,7 @@
 }
 
 .bigCard {
+  min-width: 0;
   background: var(--card-cream);
   border-radius: var(--radius-card);
   padding: 40px;
@@ -27,6 +28,7 @@
 }
 
 .cardMedia {
+  min-width: 0;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -88,10 +90,12 @@
 
 .toggleRow {
   display: flex;
+  min-width: 0;
   gap: 12px;
 }
 
 .brandingToggle {
+  min-width: 0;
   flex: 1;
   display: flex;
   align-items: center;
@@ -319,6 +323,7 @@
 
 /* --- found logins preview --- */
 .foundPanel {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -344,6 +349,7 @@
 
 .foundRow {
   display: flex;
+  min-width: 0;
   align-items: center;
   gap: 10px;
 }
@@ -373,6 +379,8 @@
 
 .foundDots {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
   font-size: 13px;
   letter-spacing: 2px;
   color: var(--ink-muted);
@@ -420,5 +428,50 @@
 @media (max-width: 900px) {
   .topRow {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .bigCard {
+    padding: 24px;
+    border-radius: 22px;
+  }
+
+  .cardTitle {
+    font-size: 23px;
+  }
+
+  .cardMedia {
+    padding-block: 30px;
+  }
+
+  .pinPad,
+  .foundPanel {
+    padding: 16px;
+  }
+
+  .pinRow {
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .toggleRow {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .brandingToggle {
+    width: 100%;
+    padding: 13px 14px;
+    font-size: 14px;
+  }
+
+  .themeToggle {
+    align-self: flex-start;
+  }
+
+  .foundName {
+    width: 62px;
+    font-size: 13px;
   }
 }

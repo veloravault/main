@@ -294,13 +294,17 @@
   display: grid;
   gap: 2px;
   overflow: hidden;
-  padding: 2px 0 8px 14px;
+  margin: 2px 0 6px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-alt-soft);
 }
 
 .mobileUtilityLinks a {
   min-height: 44px;
   padding: 11px 12px;
-  border-left: 2px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-radius: 10px;
   color: var(--ink-body);
   font-size: 15px;
   font-weight: 500;
@@ -345,13 +349,16 @@
     border-radius: 20px;
     border: 1px solid var(--line);
     box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.25);
+    max-height: calc(100dvh - 106px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   :global(.dark) .mobileMenu {
     background: rgba(28, 28, 30, 0.92);
   }
 
-  .mobileMenu a:not([class]) {
+  .mobileMenu > a:not([class]) {
     padding: 12px 8px;
     font-size: 17px;
     font-weight: 500;
@@ -360,11 +367,11 @@
     border-radius: 10px;
   }
 
-  .mobileMenu a:not([class]):hover {
+  .mobileMenu > a:not([class]):hover {
     background: rgba(0, 0, 0, 0.04);
   }
 
-  :global(.dark) .mobileMenu a:not([class]):hover {
+  :global(.dark) .mobileMenu > a:not([class]):hover {
     background: rgba(255, 255, 255, 0.08);
   }
 
@@ -397,5 +404,27 @@
   .mobileMenu > a[class],
   .mobileMenu > button[class] {
     margin-top: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    top: max(12px, env(safe-area-inset-top));
+  }
+
+  .nav {
+    gap: 10px;
+    padding: 7px 8px 7px 16px;
+  }
+
+  .brand {
+    font-size: 18px;
+  }
+
+  .mobileMenu {
+    margin-top: 8px;
+    padding: 12px;
+    border-radius: 18px;
+    max-height: calc(100dvh - 88px - env(safe-area-inset-top));
   }
 }

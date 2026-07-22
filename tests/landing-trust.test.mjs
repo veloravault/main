@@ -75,6 +75,28 @@ test("public navigation exposes all utilities through responsive submenus", () =
   assert.match(css, /:focus-visible/);
 });
 
+test("mobile navigation and homepage cards keep nested content inside the viewport", () => {
+  const navCss = read("src/components/dreelio/Nav.module.css");
+  const sharedCss = read("src/app/dreelio/dreelio.module.css");
+  const featuresCss = read("src/components/dreelio/Features.module.css");
+  const previewCss = read("src/components/dreelio/VeloraProductPreview.module.css");
+
+  assert.match(navCss, /\.mobileMenu\s*>\s*a:not\(\[class\]\)/);
+  assert.doesNotMatch(navCss, /\.mobileUtilityLinks a\s*\{[^}]*border-left:/s);
+  assert.match(navCss, /\.mobileUtilityLinks\s*\{[^}]*border-radius:/s);
+
+  assert.match(featuresCss, /\.bigCard\s*\{[^}]*min-width:\s*0;/s);
+  assert.match(featuresCss, /@media \(max-width:\s*560px\)[\s\S]*\.bigCard\s*\{[^}]*padding:/s);
+
+  assert.match(sharedCss, /@media \(max-width:\s*600px\)[\s\S]*--pad:\s*16px;/s);
+  assert.match(sharedCss, /@media \(max-width:\s*600px\)[\s\S]*\.section\s*\{[^}]*padding-block:/s);
+
+  assert.match(previewCss, /@media \(max-width:\s*520px\)/);
+  assert.match(previewCss, /\.preview\[data-variant="passwords"\][\s\S]*\.sidebar/);
+  assert.match(previewCss, /\.masterDetail\s*\{[^}]*grid-template-columns:\s*1fr;/s);
+  assert.match(previewCss, /\.detailCard\s*\{[^}]*display:\s*none;/s);
+});
+
 test("public footer closes the page with identity, navigation, and payment trust", () => {
   const footer = read("src/components/dreelio/Footer.tsx");
   const css = read("src/components/dreelio/Footer.module.css");

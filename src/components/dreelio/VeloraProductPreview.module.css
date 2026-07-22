@@ -155,4 +155,43 @@
   .mobileStage { display: grid; grid-template-columns: 1fr; }
   .mobileCaption { display: none; }
   .phone { width: min(100%, 260px); margin: auto; }
+
+  .preview[data-variant="passwords"],
+  .preview[data-variant="documents"],
+  .preview[data-variant="wallet"] {
+    min-height: 0;
+    aspect-ratio: .92;
+  }
+
+  .preview[data-variant="passwords"] .sidebar,
+  .preview[data-variant="documents"] .sidebar,
+  .preview[data-variant="wallet"] .sidebar {
+    display: none;
+  }
+
+  .preview[data-variant="passwords"] .previewInner,
+  .preview[data-variant="documents"] .previewInner,
+  .preview[data-variant="wallet"] .previewInner {
+    grid-template-columns: 1fr;
+  }
+
+  .masterDetail {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 12px;
+  }
+
+  .detailCard {
+    display: none;
+  }
+
+  .walletBody {
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .walletCard {
+    min-height: 150px;
+    padding: 16px;
+  }
 }
