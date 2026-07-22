@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   ArrowUpRightIcon,
   ChevronDownIcon,
+  ChevronRightIcon,
   CircleHelpIcon,
   ContactRoundIcon,
   CreditCardIcon,
@@ -236,26 +237,28 @@ export function Nav({ initialSignedIn = false }: NavProps) {
                     transition={{ duration: 0.16 }}
                   >
                     <div className={styles.dropdownGrid}>
-                      {group.links.map((link) => {
-                        const Icon = NAV_ICONS[link.icon];
-                        const featured = "featured" in link && link.featured;
-                        return (
-                          <a
-                            key={link.href}
-                            href={link.href}
-                            className={styles.dropdownLink}
-                            data-featured={featured || undefined}
-                            onClick={() => setActiveDesktopMenu(null)}
-                          >
-                            <span className={styles.dropdownIcon}><Icon aria-hidden="true" /></span>
-                            <span className={styles.dropdownCopy}>
-                              <strong>{link.label}</strong>
-                              <small>{link.description}</small>
-                            </span>
-                            <ArrowUpRightIcon className={styles.dropdownArrow} aria-hidden="true" />
-                          </a>
-                        );
-                      })}
+                      {group.sections.map((section) => (
+                        <section
+                          key={section.heading}
+                          className={styles.megaMenuSection}
+                          data-highlight={("highlight" in section && section.highlight) || undefined}
+                        >
+                          <h2>{section.heading}</h2>
+                          <div className={styles.megaMenuLinks}>
+                            {section.links.map((link) => (
+                              <a
+                                key={link.href}
+                                href={link.href}
+                                className={styles.dropdownLink}
+                                onClick={() => setActiveDesktopMenu(null)}
+                              >
+                                <span>{link.label}</span>
+                                <ChevronRightIcon aria-hidden="true" />
+                              </a>
+                            ))}
+                          </div>
+                        </section>
+                      ))}
                     </div>
                   </motion.div>
                 )}

@@ -11,6 +11,8 @@
 }
 
 .nav {
+  position: relative;
+  z-index: 2;
   width: 100%;
   max-width: none;
   display: flex;
@@ -72,10 +74,11 @@
 }
 
 .navGroup {
-  position: relative;
+  position: static;
 }
 
 .navGroupTrigger {
+  position: relative;
   display: inline-flex;
   min-height: 44px;
   align-items: center;
@@ -91,6 +94,22 @@
   cursor: pointer;
 }
 
+.navGroupTrigger[aria-expanded="true"] {
+  color: var(--accent);
+  opacity: 1;
+}
+
+.navGroupTrigger[aria-expanded="true"]::after {
+  position: absolute;
+  right: 0;
+  bottom: -10px;
+  left: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  content: "";
+}
+
 .navGroupTrigger svg,
 .mobileNavTrigger svg {
   width: 15px;
@@ -104,116 +123,94 @@
 }
 
 .dropdownPanel {
-  position: absolute;
-  top: calc(100% + 12px);
-  left: 50%;
-  z-index: 4;
-  width: min(530px, calc(100vw - (var(--pad) * 2)));
-  padding: 10px;
-  translate: -50% 0;
+  position: fixed;
+  top: 85px;
+  left: var(--pad);
+  right: var(--pad);
+  z-index: 1;
+  width: auto;
+  padding: 0;
   border: 1px solid var(--line);
-  border-radius: 24px;
-  background: color-mix(in srgb, var(--surface) 96%, transparent);
-  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.42);
-  backdrop-filter: saturate(160%) blur(24px);
-  -webkit-backdrop-filter: saturate(160%) blur(24px);
-}
-
-.dropdownPanel[data-menu="products"] {
-  left: 0;
-  width: min(700px, calc(100vw - (var(--pad) * 2)));
-  translate: 0 0;
-}
-
-.dropdownPanel[data-menu="resources"] {
-  left: auto;
-  right: 0;
-  translate: 0 0;
+  border-top: 0;
+  border-radius: 0 0 24px 24px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: 0 30px 70px -28px rgba(0, 0, 0, 0.38);
 }
 
 .dropdownGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.megaMenuSection {
+  min-width: 0;
+  min-height: 280px;
+  padding: clamp(30px, 3vw, 46px);
+  border-right: 1px solid var(--line);
+}
+
+.megaMenuSection:last-child {
+  border-right: 0;
+}
+
+.megaMenuSection[data-highlight="true"] {
+  background: var(--surface-alt-soft);
+}
+
+.megaMenuSection h2 {
+  margin: 0 0 22px;
+  color: var(--ink);
+  font-size: clamp(20px, 1.7vw, 25px);
+  font-weight: 680;
+  letter-spacing: -0.035em;
+}
+
+.megaMenuLinks {
+  display: grid;
+  align-content: start;
   gap: 4px;
 }
 
 .dropdownLink {
-  display: grid;
+  display: flex;
   min-width: 0;
-  min-height: 86px;
-  grid-template-columns: 38px minmax(0, 1fr) 16px;
+  min-height: 44px;
   align-items: center;
-  gap: 12px;
-  padding: 14px;
-  border-radius: 16px;
-  color: var(--ink);
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 8px 0;
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 650;
   text-decoration: none;
   opacity: 1;
-  transition: background-color 160ms ease, transform 160ms ease;
-}
-
-.dropdownLink[data-featured="true"] {
-  grid-column: 1 / -1;
-  min-height: 92px;
-  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
-}
-
-.dropdownLink:hover {
-  background: var(--surface-alt-soft);
-  opacity: 1;
-  transform: translateY(-1px);
-}
-
-.dropdownIcon {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  place-items: center;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-  color: var(--accent);
-}
-
-.dropdownIcon svg {
-  width: 18px;
-  height: 18px;
-}
-
-.dropdownCopy {
-  display: grid;
-  min-width: 0;
-  gap: 3px;
-}
-
-.dropdownCopy strong {
-  font-size: 14px;
-  font-weight: 650;
-  letter-spacing: -.01em;
-}
-
-.dropdownCopy small {
-  color: var(--ink-muted);
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
-.dropdownArrow {
-  width: 14px;
-  height: 14px;
-  color: var(--ink-muted);
-  opacity: 0;
   transition: opacity 160ms ease, transform 160ms ease;
 }
 
-.dropdownLink:hover .dropdownArrow,
-.dropdownLink:focus-visible .dropdownArrow {
-  opacity: 1;
-  transform: translate(2px, -2px);
+.dropdownLink:hover {
+  opacity: 0.66;
+  transform: translateX(2px);
 }
 
 :global(.dark) .dropdownPanel {
-  background: color-mix(in srgb, #111113 94%, transparent);
+  background: #000;
+}
+
+:global(.dark) .megaMenuSection[data-highlight="true"] {
+  background: #111;
+}
+
+.dropdownLink svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  transition: transform 160ms ease;
+}
+
+.dropdownLink:hover svg,
+.dropdownLink:focus-visible svg {
+  transform: translateX(2px);
 }
 
 .navGroupTrigger:focus-visible,

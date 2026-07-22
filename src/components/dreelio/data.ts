@@ -23,6 +23,12 @@ type PublicNavLink = {
   featured?: boolean;
 };
 
+type PublicNavSection = {
+  heading: string;
+  links: readonly { label: string; href: string }[];
+  highlight?: boolean;
+};
+
 export const PRODUCT_LINKS = [
   {
     label: "Password Manager",
@@ -111,10 +117,69 @@ export const RESOURCE_LINKS = [
   },
 ] as const satisfies readonly PublicNavLink[];
 
+export const PRODUCT_NAV_SECTIONS = [
+  {
+    heading: "Password Manager",
+    links: [PRODUCT_LINKS[0], PRODUCT_LINKS[1]],
+  },
+  {
+    heading: "Vault features",
+    links: [PRODUCT_LINKS[2], PRODUCT_LINKS[3]],
+  },
+  {
+    heading: "Explore Velora",
+    highlight: true,
+    links: [
+      PRODUCT_LINKS[4],
+      { label: "Security", href: "/security" },
+      { label: "Pricing", href: "/pricing" },
+    ],
+  },
+] as const satisfies readonly PublicNavSection[];
+
+export const UTILITY_NAV_SECTIONS = [
+  {
+    heading: "Create credentials",
+    links: [UTILITY_LINKS[0], UTILITY_LINKS[1]],
+  },
+  {
+    heading: "Create an identity",
+    links: [UTILITY_LINKS[2]],
+  },
+  {
+    heading: "Check security",
+    highlight: true,
+    links: [
+      UTILITY_LINKS[3],
+      { label: "Security overview", href: "/security" },
+    ],
+  },
+] as const satisfies readonly PublicNavSection[];
+
+export const RESOURCE_NAV_SECTIONS = [
+  {
+    heading: "Learn",
+    links: [RESOURCE_LINKS[1], RESOURCE_LINKS[2]],
+  },
+  {
+    heading: "Trust and privacy",
+    links: [
+      RESOURCE_LINKS[0],
+      { label: "Privacy policy", href: "/privacy" },
+      { label: "Terms of use", href: "/terms" },
+    ],
+  },
+  {
+    heading: "Connect",
+    highlight: true,
+    links: [RESOURCE_LINKS[3], { label: "Get started free", href: "/signup" }],
+  },
+] as const satisfies readonly PublicNavSection[];
+
 export const NAV_GROUPS = [
-  { id: "products", label: "Products", links: PRODUCT_LINKS },
-  { id: "utilities", label: "Utilities", links: UTILITY_LINKS },
-  { id: "resources", label: "Resources", links: RESOURCE_LINKS },
+  { id: "products", label: "Products", links: PRODUCT_LINKS, sections: PRODUCT_NAV_SECTIONS },
+  { id: "utilities", label: "Utilities", links: UTILITY_LINKS, sections: UTILITY_NAV_SECTIONS },
+  { id: "resources", label: "Resources", links: RESOURCE_LINKS, sections: RESOURCE_NAV_SECTIONS },
 ] as const;
 
 export const PRIMARY_NAV_LINKS = [

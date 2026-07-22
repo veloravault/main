@@ -116,6 +116,44 @@ test("public navigation separates products, utilities, resources, and pricing", 
   assert.match(css, /:focus-visible/);
 });
 
+test("desktop navigation uses an attached full-width mega panel", () => {
+  const nav = read("src/components/dreelio/Nav.tsx");
+  const data = read("src/components/dreelio/data.ts");
+  const css = read("src/components/dreelio/Nav.module.css");
+
+  assert.match(data, /export const PRODUCT_NAV_SECTIONS/);
+  assert.match(data, /export const UTILITY_NAV_SECTIONS/);
+  assert.match(data, /export const RESOURCE_NAV_SECTIONS/);
+  for (const heading of [
+    "Password Manager",
+    "Vault features",
+    "Explore Velora",
+    "Create credentials",
+    "Check security",
+    "Learn",
+    "Trust and privacy",
+    "Connect",
+  ]) {
+    assert.match(data, new RegExp(`heading: ["']${heading}["']`));
+  }
+
+  assert.match(nav, /group\.sections\.map/);
+  assert.match(nav, /className=\{styles\.megaMenuSection\}/);
+  assert.match(nav, /<h2>\{section\.heading\}<\/h2>/);
+  assert.match(nav, /ChevronRightIcon/);
+  assert.doesNotMatch(nav, /className=\{styles\.dropdownIcon\}/);
+  assert.doesNotMatch(nav, /className=\{styles\.dropdownCopy\}/);
+
+  assert.match(css, /\.dropdownPanel\s*\{[^}]*position:\s*fixed;/s);
+  assert.match(css, /\.dropdownPanel\s*\{[^}]*left:\s*var\(--pad\);/s);
+  assert.match(css, /\.dropdownPanel\s*\{[^}]*right:\s*var\(--pad\);/s);
+  assert.match(css, /\.dropdownPanel\s*\{[^}]*border-radius:\s*0\s+0\s+24px\s+24px;/s);
+  assert.match(css, /\.dropdownGrid\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s);
+  assert.match(css, /\.megaMenuSection\s*\{/);
+  assert.match(css, /\.megaMenuSection\[data-highlight="true"\]/);
+  assert.match(css, /\.navGroupTrigger\[aria-expanded="true"\]/);
+});
+
 test("mobile navigation and homepage cards keep nested content inside the viewport", () => {
   const navCss = read("src/components/dreelio/Nav.module.css");
   const sharedCss = read("src/app/dreelio/dreelio.module.css");
