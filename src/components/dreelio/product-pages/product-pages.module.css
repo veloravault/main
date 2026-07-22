@@ -665,15 +665,44 @@
 .audienceRail {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1px;
-  border-block: 1px solid var(--line);
-  background: var(--line) !important;
+  gap: clamp(12px, 1.5vw, 22px);
+  padding-top: 22px;
+  padding-bottom: 22px;
+  background: #fff !important;
+}
+
+:global(.dark) .audienceRail {
+  background: #000 !important;
 }
 
 .audienceRail article {
-  min-height: 174px;
-  padding: 32px;
-  background: var(--surface);
+  display: flex;
+  min-width: 0;
+  min-height: 192px;
+  flex-direction: column;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: clamp(26px, 2.5vw, 38px);
+  background: var(--surface-alt-soft);
+  box-shadow: 0 22px 54px -46px rgba(0, 0, 0, .55);
+}
+
+.audienceLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 24px;
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.audienceLabel svg {
+  width: 14px;
+  height: 14px;
 }
 
 .audienceRail strong {
@@ -706,6 +735,11 @@
   gap: clamp(50px, 8vw, 140px);
   padding-top: clamp(88px, 10vw, 150px);
   padding-bottom: clamp(88px, 10vw, 150px);
+}
+
+.problemSection {
+  padding-top: clamp(72px, 7vw, 112px);
+  padding-bottom: clamp(88px, 9vw, 132px);
 }
 
 .problemSection h2,
@@ -1256,12 +1290,19 @@
 
   .audienceRail {
     grid-template-columns: 1fr;
-    padding-inline: 0 !important;
+    gap: 10px;
+    padding-top: 12px;
+    padding-bottom: 12px;
   }
 
   .audienceRail article {
     min-height: 0;
-    padding: 26px 16px;
+    border-radius: 20px;
+    padding: 24px;
+  }
+
+  .audienceLabel {
+    margin-bottom: 18px;
   }
 
   .problemSection,

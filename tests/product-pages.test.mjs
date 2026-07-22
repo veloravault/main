@@ -66,6 +66,19 @@ test("product page styles remain full width, responsive, accessible, and dark-mo
   assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)/);
 });
 
+test("product audience rail uses contained cards without colored page gutters", () => {
+  const content = read("src/components/dreelio/product-pages/ProductPageContent.tsx");
+  const css = read("src/components/dreelio/product-pages/product-pages.module.css");
+
+  assert.match(content, /className=\{styles\.audienceLabel\}/);
+  assert.match(css, /\.audienceRail\s*\{[^}]*gap:\s*clamp\(/s);
+  assert.match(css, /\.audienceRail\s*\{[^}]*background:\s*#fff\s*!important/s);
+  assert.match(css, /:global\(\.dark\)\s+\.audienceRail\s*\{[^}]*background:\s*#000\s*!important/s);
+  assert.match(css, /\.audienceRail article\s*\{[^}]*border:\s*1px solid var\(--line\)/s);
+  assert.match(css, /\.audienceRail article\s*\{[^}]*border-radius:/s);
+  assert.match(css, /\.problemSection\s*\{[^}]*padding-top:\s*clamp\(72px,\s*7vw,\s*112px\)/s);
+});
+
 test("help hub offers local filtering, topic navigation, and recovery guidance", () => {
   const page = read("src/app/help/page.tsx");
   const content = read("src/components/dreelio/help/HelpPageContent.tsx");

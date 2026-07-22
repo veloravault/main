@@ -56,7 +56,11 @@ export function ProductPageContent({ page }: { page: ProductPageId }) {
 
       <section className={styles.audienceRail} aria-label="Who this is for">
         {content.audience.map((item) => (
-          <article key={item.title}><strong>{item.title}</strong><p>{item.body}</p></article>
+          <article key={item.title}>
+            <span className={styles.audienceLabel}><CheckIcon aria-hidden="true" />Use case</span>
+            <strong>{item.title}</strong>
+            <p>{item.body}</p>
+          </article>
         ))}
       </section>
 
@@ -157,4 +161,3 @@ export function ProductPageContent({ page }: { page: ProductPageId }) {
     </main>
   );
 }
-
