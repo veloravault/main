@@ -112,4 +112,12 @@ test("ChangeMasterPasswordSheet verifies the current password locally, and only 
 
   // Double-submit guard while a rotation is in flight.
   assert.match(source, /if \(isRotating\) return;/);
+
+  // Cancel must reset the form, not just close it - otherwise stale
+  // password material can persist in state until the sheet reopens.
+  assert.match(source, /onClick=\{\(\) => \{ onOpenChange\(false\); reset\(\); \}\}/);
+
+  // noValidate disables the browser's own minLength enforcement, so an
+  // explicit length check is required in code, not just the strength meter.
+  assert.match(source, /newPassword\.length < 8/);
 });

@@ -507,6 +507,14 @@ test("ChangeMasterPasswordSheet verifies the current password locally, and only 
 
   // Double-submit guard while a rotation is in flight.
   assert.match(source, /if \(isRotating\) return;/);
+
+  // Cancel must reset the form, not just close it - otherwise stale
+  // password material can persist in state until the sheet reopens.
+  assert.match(source, /onClick=\{\(\) => \{ onOpenChange\(false\); reset\(\); \}\}/);
+
+  // noValidate disables the browser's own minLength enforcement, so an
+  // explicit length check is required in code, not just the strength meter.
+  assert.match(source, /newPassword\.length < 8/);
 });
 ```
 
@@ -571,6 +579,10 @@ export function ChangeMasterPasswordSheet({ open, onOpenChange }: { open: boolea
       setError("That's not your current master key.");
       return;
     }
+    if (newPassword.length < 8) {
+      setError("Your new master key must be at least 8 characters long.");
+      return;
+    }
     if (strength.level === "weak") {
       setError("Choose a stronger master key - it's the only thing protecting your vault.");
       return;
@@ -591,19 +603,33 @@ export function ChangeMasterPasswordSheet({ open, onOpenChange }: { open: boolea
     setIsRotating(true);
     try {
       await rotateMasterPassword(currentPassword, newPassword, setProgress);
-
-      if (hasPinLock(authenticatedUserId)) clearPinLock();
-      if (hasBiometricsEnabled(authenticatedUserId)) disableBiometrics(authenticatedUserId);
-      setMasterKey(newPassword, authenticatedUserId);
-
-      toast("Master key changed. PIN and Face ID / Touch ID were turned off - set them up again from Settings if you'd like.", "success");
-      reset();
-      onOpenChange(false);
     } catch (err) {
       setError(err instanceof MasterPasswordRotationError ? err.message : "The change could not be completed. Nothing was changed.");
-    } finally {
       setIsRotating(false);
+      return;
     }
+
+    // The vault is now re-encrypted with the new password server-side -
+    // everything below is local, best-effort cleanup. A failure here must
+    // never be reported as "nothing was changed."
+    try {
+      if (hasPinLock(authenticatedUserId)) clearPinLock();
+      if (hasBiometricsEnabled(authenticatedUserId)) disableBiometrics(authenticatedUserId);
+    } catch {
+      // Best-effort - stale PIN/biometric wrappers will just fail to unlock
+      // next time, and the user can redo setup from Settings.
+    }
+
+    const committed = setMasterKey(newPassword, authenticatedUserId);
+    setIsRotating(false);
+    reset();
+    onOpenChange(false);
+
+    if (!committed) {
+      toast("Master key changed, but your session changed during the process - sign in again to continue.", "error");
+      return;
+    }
+    toast("Master key changed. PIN and Face ID / Touch ID were turned off - set them up again from Settings if you'd like.", "success");
   };
 
   return (
@@ -646,7 +672,7 @@ export function ChangeMasterPasswordSheet({ open, onOpenChange }: { open: boolea
           )}
         </AdaptiveSheetBody>
         <AdaptiveSheetFooter>
-          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={isRotating}>Cancel</Button>
+          <Button type="button" variant="ghost" onClick={() => { onOpenChange(false); reset(); }} disabled={isRotating}>Cancel</Button>
           <Button type="submit" className="import-primary-action" disabled={isRotating}>
             {isRotating ? "Changing…" : "Change master password"}
           </Button>
