@@ -41,7 +41,7 @@
 .stage {
   position: relative;
   width: 100%;
-  max-width: 1040px;
+  max-width: none;
   margin: 66px auto 0;
   perspective: 2200px;
 }

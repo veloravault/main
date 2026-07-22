@@ -36,6 +36,20 @@ test("analytics only loads gtag after consent, and stays limited to initializati
   assert.doesNotMatch(bootstrap, /password|master|vault|document|contact|message|email|payment/i);
 });
 
+test("cookie consent uses a full-width responsive preference bar", () => {
+  const analytics = read("src/components/Analytics.tsx");
+  const css = read("src/components/Analytics.module.css");
+
+  assert.match(analytics, /import styles from ["']\.\/Analytics\.module\.css["']/);
+  assert.match(analytics, />Reject all</);
+  assert.match(analytics, />Customize settings</);
+  assert.match(analytics, />Accept all</);
+  assert.match(analytics, /aria-label="Cookie preferences"/);
+  assert.match(analytics, /type="checkbox"/);
+  assert.match(css, /\.consentBar\s*\{[^}]*position:\s*fixed;[^}]*left:\s*0;[^}]*right:\s*0;/s);
+  assert.match(css, /@media \(max-width:\s*720px\)/);
+});
+
 test("CSP permits only the Google origins needed by gtag", () => {
   const proxy = read("src/proxy.ts");
 

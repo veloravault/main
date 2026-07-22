@@ -16,6 +16,23 @@ export const UTILITY_LINKS = [
   { label: "Password Strength Tester", href: "/utilities/password-strength" },
 ] as const;
 
+export const SEARCH_ITEMS = [
+  { label: "Home", href: "/", keywords: "velora vault password manager", popular: true },
+  { label: "Sign in", href: "/login", keywords: "login account access", popular: true },
+  { label: "Create an account", href: "/signup", keywords: "signup register free", popular: true },
+  { label: "Features", href: "/#features", keywords: "passwords documents wallet autofill", popular: true },
+  { label: "Security", href: "/security", keywords: "encryption privacy master key", popular: true },
+  { label: "Pricing", href: "/pricing", keywords: "free plus plans cost", popular: true },
+  { label: "Password Generator", href: "/utilities/password-generator", keywords: "random strong password", popular: true },
+  { label: "Passphrase Generator", href: "/utilities/passphrase-generator", keywords: "memorable words", popular: false },
+  { label: "Username Generator", href: "/utilities/username-generator", keywords: "anonymous handle", popular: false },
+  { label: "Password Strength Tester", href: "/utilities/password-strength", keywords: "check score security", popular: true },
+  { label: "Blog", href: "/blog", keywords: "guides articles updates", popular: false },
+  { label: "Contact", href: "/contact", keywords: "help support question", popular: false },
+  { label: "Privacy policy", href: "/privacy", keywords: "data analytics cookies", popular: false },
+  { label: "Terms of use", href: "/terms", keywords: "legal conditions", popular: false },
+] as const;
+
 export const PROJECT_PILLS = ["Saved logins", "Auto-lock timer", "Secure notes", "Password health"] as const;
 export const DOCUMENT_PILLS = ["Identity files", "Protected uploads", "Expiry details", "Fast search"] as const;
 export const FINANCE_PILLS = ["Cards", "Bank details", "Encrypted CVV", "Magic import"] as const;

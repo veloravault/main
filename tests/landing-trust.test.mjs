@@ -71,7 +71,7 @@ test("public navigation exposes all utilities through responsive submenus", () =
   ]) {
     assert.match(css, new RegExp(`\\.${className}\\b`));
   }
-  assert.match(css, /@media \(max-width: 900px\)/);
+  assert.match(css, /@media \(max-width: 1180px\)/);
   assert.match(css, /:focus-visible/);
 });
 
@@ -108,6 +108,52 @@ test("homepage sections use pure white and black canvases without changing the f
   assert.doesNotMatch(featuresCss, /\.section\s*\{[^}]*background:\s*var\(--surface-alt\)/s);
   assert.doesNotMatch(pricingCss, /\.section\s*\{[^}]*background:\s*var\(--surface-alt\)/s);
   assert.match(footerCss, /#0b0b0d/i);
+});
+
+test("homepage includes the two password-manager education structures", () => {
+  const page = read("src/app/page.tsx");
+  for (const path of [
+    "src/components/dreelio/WhyPasswordManager.tsx",
+    "src/components/dreelio/PasswordManagerEssentials.tsx",
+    "src/components/dreelio/WhyPasswordManager.module.css",
+    "src/components/dreelio/PasswordManagerEssentials.module.css",
+  ]) {
+    assert.equal(exists(path), true, `missing ${path}`);
+  }
+  const why = read("src/components/dreelio/WhyPasswordManager.tsx");
+  const essentials = read("src/components/dreelio/PasswordManagerEssentials.tsx");
+  const whyCss = read("src/components/dreelio/WhyPasswordManager.module.css");
+  const essentialsCss = read("src/components/dreelio/PasswordManagerEssentials.module.css");
+
+  assert.match(page, /<WhyPasswordManager\s*\/>/);
+  assert.match(page, /<PasswordManagerEssentials\s*\/>/);
+  assert.ok(page.indexOf("<WhyPasswordManager") < page.indexOf("<FeatureSplit"));
+  assert.match(why, /Why you need a password manager/);
+  assert.match(why, /aria-expanded=\{openIndex === index\}/);
+  assert.match(why, /Placeholder visual/);
+  assert.match(essentials, /Everything you need in a password manager/);
+  assert.match(essentials, /Placeholder image/);
+  assert.match(whyCss, /@media \(max-width:\s*800px\)/);
+  assert.match(essentialsCss, /@media \(max-width:\s*800px\)/);
+});
+
+test("public layout and header span the viewport with a functional site search", () => {
+  const sharedCss = read("src/app/dreelio/dreelio.module.css");
+  const nav = read("src/components/dreelio/Nav.tsx");
+  const navCss = read("src/components/dreelio/Nav.module.css");
+  const data = read("src/components/dreelio/data.ts");
+
+  assert.match(sharedCss, /--maxw:\s*none;/);
+  assert.match(navCss, /\.nav\s*\{[^}]*max-width:\s*none;/s);
+  assert.match(nav, /SearchIcon/);
+  assert.match(nav, /aria-label="Search Velora Vault"/);
+  assert.match(nav, /role="dialog"/);
+  assert.match(nav, /aria-modal="true"/);
+  assert.match(nav, /<form[^>]*onSubmit=\{handleSearchSubmit\}/);
+  assert.match(nav, /SEARCH_ITEMS\.filter/);
+  assert.match(data, /export const SEARCH_ITEMS/);
+  assert.match(navCss, /\.searchOverlay\s*\{/);
+  assert.match(navCss, /@media \(max-width:\s*1180px\)/);
 });
 
 test("public footer closes the page with identity, navigation, and payment trust", () => {

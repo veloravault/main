@@ -10,6 +10,8 @@ import { Highlights } from "@/components/dreelio/Highlights";
 import { SecurityArchitecture } from "@/components/dreelio/SecurityArchitecture";
 import { Pricing } from "@/components/dreelio/Pricing";
 import { FinalCTA } from "@/components/dreelio/FinalCTA";
+import { WhyPasswordManager } from "@/components/dreelio/WhyPasswordManager";
+import { PasswordManagerEssentials } from "@/components/dreelio/PasswordManagerEssentials";
 import { DOCUMENT_PILLS, PROJECT_PILLS, FINANCE_PILLS } from "@/components/dreelio/data";
 
 const TITLE = "Velora Vault — One private vault for everything that matters";
@@ -31,6 +33,9 @@ export default function HomePage() {
         <Hero />
 
         <Devices />
+
+        <WhyPasswordManager />
+        <PasswordManagerEssentials />
 
         <FeatureSplit
           eyebrow="Password vault"

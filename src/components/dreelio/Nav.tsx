@@ -1,12 +1,13 @@
 "use client";
 
+import type { FormEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ChevronDownIcon, MoonIcon, SunIcon } from "lucide-react";
+import { ArrowUpRightIcon, ChevronDownIcon, MoonIcon, SearchIcon, SunIcon, XIcon } from "lucide-react";
 import shared from "@/app/dreelio/dreelio.module.css";
 import styles from "./Nav.module.css";
 import { VeloraBrandMark } from "./VeloraBrand";
-import { NAV_LINKS, UTILITY_LINKS } from "./data";
+import { NAV_LINKS, SEARCH_ITEMS, UTILITY_LINKS } from "./data";
 import {
   HOVER_LIFT,
   LANDING_VIEWPORT,
@@ -64,8 +65,11 @@ export function Nav({ initialSignedIn = false }: NavProps) {
   const [open, setOpen] = useState(false);
   const [utilitiesOpen, setUtilitiesOpen] = useState(false);
   const [mobileUtilitiesOpen, setMobileUtilitiesOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [signedIn, setSignedIn] = useState(initialSignedIn);
   const utilityMenuRef = useRef<HTMLLIElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const { resolvedTheme, setTheme } = useTheme();
   const reduceMotion = useReducedMotion();
 
@@ -103,9 +107,45 @@ export function Nav({ initialSignedIn = false }: NavProps) {
     };
   }, [utilitiesOpen]);
 
+  useEffect(() => {
+    if (!searchOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.requestAnimationFrame(() => searchInputRef.current?.focus());
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSearchOpen(false);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [searchOpen]);
+
   const closeMobileMenu = () => {
     setOpen(false);
     setMobileUtilitiesOpen(false);
+  };
+
+  const openSearch = () => {
+    closeMobileMenu();
+    setUtilitiesOpen(false);
+    setSearchOpen(true);
+  };
+
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const filteredSearchItems = SEARCH_ITEMS.filter((item) =>
+    normalizedSearch
+      ? `${item.label} ${item.keywords}`.toLowerCase().includes(normalizedSearch)
+      : item.popular,
+  ).slice(0, 8);
+
+  const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const firstResult = filteredSearchItems[0];
+    if (firstResult) window.location.assign(firstResult.href);
   };
 
   const featureLink = NAV_LINKS[0];
@@ -189,6 +229,14 @@ export function Nav({ initialSignedIn = false }: NavProps) {
         </ul>
 
         <div className={styles.authActions}>
+          <button
+            type="button"
+            className={styles.searchTrigger}
+            aria-label="Search Velora Vault"
+            onClick={openSearch}
+          >
+            <SearchIcon aria-hidden="true" />
+          </button>
           {signedIn ? (
             <motion.a
               href="/vault"
@@ -226,6 +274,14 @@ export function Nav({ initialSignedIn = false }: NavProps) {
         </div>
 
         <div className={styles.mobileControls}>
+          <button
+            type="button"
+            className={styles.mobileSearchTrigger}
+            aria-label="Search Velora Vault"
+            onClick={openSearch}
+          >
+            <SearchIcon aria-hidden="true" />
+          </button>
           <ThemeToggle
             className={styles.mobileThemeToggle}
             isDark={resolvedTheme === "dark"}
@@ -322,6 +378,65 @@ export function Nav({ initialSignedIn = false }: NavProps) {
             </>
           )}
         </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence initial={false}>
+        {searchOpen && (
+          <motion.div
+            className={styles.searchOverlay}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Search Velora Vault"
+            initial={reduceMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reduceMotion ? undefined : { opacity: 0 }}
+          >
+            <button
+              type="button"
+              className={styles.searchClose}
+              aria-label="Close search"
+              onClick={() => setSearchOpen(false)}
+            >
+              <XIcon aria-hidden="true" />
+            </button>
+            <motion.div
+              className={styles.searchPanel}
+              initial={reduceMotion ? false : { opacity: 0, y: -12, scale: 0.99 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={reduceMotion ? undefined : { opacity: 0, y: -8, scale: 0.99 }}
+            >
+              <form className={styles.searchForm} onSubmit={handleSearchSubmit}>
+                <SearchIcon aria-hidden="true" />
+                <input
+                  ref={searchInputRef}
+                  type="search"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="What are you looking for?"
+                  aria-label="Search pages"
+                  autoComplete="off"
+                />
+                <button type="submit" aria-label="Open first search result">
+                  <ArrowUpRightIcon aria-hidden="true" />
+                </button>
+              </form>
+              <p className={styles.searchLabel}>
+                {normalizedSearch ? "Search results" : "Popular searches"}
+              </p>
+              <div className={styles.searchResults}>
+                {filteredSearchItems.length > 0 ? filteredSearchItems.map((item) => (
+                  <a key={item.href} href={item.href} onClick={() => setSearchOpen(false)}>
+                    <SearchIcon aria-hidden="true" />
+                    <span>{item.label}</span>
+                    <ArrowUpRightIcon aria-hidden="true" />
+                  </a>
+                )) : (
+                  <p className={styles.noResults}>No matching page found. Try “password” or “security”.</p>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </motion.header>

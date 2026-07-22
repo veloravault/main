@@ -37,8 +37,8 @@
   --radius-lg: 22px;
   --radius-pill: 100px;
 
-  --maxw: 1200px;
-  --pad: 24px;
+  --maxw: none;
+  --pad: clamp(20px, 4vw, 72px);
 
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
     "Helvetica Neue", Helvetica, Arial, sans-serif;

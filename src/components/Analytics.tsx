@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Script from "next/script";
+import styles from "./Analytics.module.css";
 
 const CONSENT_KEY = "velora-analytics-consent";
 const GA_MEASUREMENT_ID = "G-GKGJ4QD0E5";
@@ -28,6 +29,8 @@ export function Analytics({ nonce }: { nonce?: string }) {
   const pathname = usePathname();
   const [consent, setConsent] = useState<Consent | null>(null);
   const [promptVisible, setPromptVisible] = useState(false);
+  const [customizing, setCustomizing] = useState(false);
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -45,6 +48,7 @@ export function Analytics({ nonce }: { nonce?: string }) {
     }
     setConsent(next);
     setPromptVisible(false);
+    setCustomizing(false);
   };
 
   // The privacy policy promises analytics never runs on the unlocked vault
@@ -70,34 +74,67 @@ export function Analytics({ nonce }: { nonce?: string }) {
         </>
       )}
       {promptVisible && (
-        <div
-          role="dialog"
-          aria-label="Cookie consent"
-          aria-describedby="velora-consent-copy"
-          className="fixed z-[9998] bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:max-w-sm p-4 rounded-2xl border border-border/60 bg-background/95 backdrop-blur-xl shadow-[0_20px_50px_rgb(0,0,0,0.18)]"
-        >
-          <p id="velora-consent-copy" className="text-[13px] leading-relaxed text-foreground">
-            We&rsquo;d like to use Google Analytics to understand site usage.
-            This never includes your vault contents.{" "}
-            <a href="/privacy" className="underline underline-offset-2">Privacy policy</a>
-          </p>
-          <div className="mt-3 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => decide("denied")}
-              className="text-[13px] font-semibold px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Decline
-            </button>
-            <button
-              type="button"
-              onClick={() => decide("granted")}
-              className="text-[13px] font-semibold px-3 py-1.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              Accept
-            </button>
+        <>
+          {customizing && (
+            <div className={styles.preferences} role="dialog" aria-modal="true" aria-label="Cookie preferences">
+              <div className={styles.preferencesHead}>
+                <div>
+                  <p>Privacy controls</p>
+                  <h2>Customize cookie settings</h2>
+                </div>
+                <button type="button" onClick={() => setCustomizing(false)} aria-label="Close cookie settings">×</button>
+              </div>
+              <div className={styles.preferenceRow}>
+                <div><strong>Essential storage</strong><span>Required for theme and security preferences.</span></div>
+                <span className={styles.alwaysOn}>Always on</span>
+              </div>
+              <label className={styles.preferenceRow}>
+                <div><strong>Analytics</strong><span>Helps us understand public-site usage. Vault contents are never included.</span></div>
+                <input
+                  type="checkbox"
+                  checked={analyticsEnabled}
+                  onChange={(event) => setAnalyticsEnabled(event.target.checked)}
+                />
+              </label>
+              <div className={styles.preferenceActions}>
+                <button type="button" className={styles.secondaryButton} onClick={() => setCustomizing(false)}>Cancel</button>
+                <button type="button" className={styles.primaryButton} onClick={() => decide(analyticsEnabled ? "granted" : "denied")}>Save choices</button>
+              </div>
+            </div>
+          )}
+
+          <div
+            role="dialog"
+            aria-label="Cookie consent"
+            aria-describedby="velora-consent-copy"
+            className={styles.consentBar}
+          >
+            <p id="velora-consent-copy">
+              We use essential storage for site functionality and optional analytics to understand public-site usage. Analytics never includes vault contents.{" "}
+              <a href="/privacy">Privacy policy</a>
+            </p>
+            <div className={styles.actions}>
+              <button
+                type="button"
+                onClick={() => decide("denied")}
+                className={styles.secondaryButton}
+              >Reject all</button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAnalyticsEnabled(consent === "granted");
+                  setCustomizing(true);
+                }}
+                className={styles.secondaryButton}
+              >Customize settings</button>
+              <button
+                type="button"
+                onClick={() => decide("granted")}
+                className={styles.primaryButton}
+              >Accept all</button>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </>
   );

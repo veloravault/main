@@ -13,7 +13,7 @@
 
 .inner {
   display: grid;
-  width: min(100%, 1200px);
+  width: 100%;
   gap: 0;
   margin-inline: auto;
   padding: clamp(64px, 8vw, 104px) 24px max(28px, env(safe-area-inset-bottom));
