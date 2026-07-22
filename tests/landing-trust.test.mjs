@@ -89,16 +89,13 @@ test("public navigation separates products, utilities, resources, and pricing", 
   }
 
   assert.match(data, /description:/);
-  assert.match(nav, /type NavMenuId/);
-  assert.match(nav, /activeDesktopMenu/);
-  assert.match(nav, /activeMobileMenu/);
   assert.match(nav, /NAV_GROUPS\.map/);
-  assert.match(nav, /aria-expanded=\{activeDesktopMenu === group\.id\}/);
-  assert.match(nav, /aria-controls=\{`desktop-\$\{group\.id\}-menu`\}/);
-  assert.match(nav, /aria-controls=\{`mobile-\$\{group\.id\}-menu`\}/);
+  assert.match(nav, /name="desktop-primary-navigation"/);
+  assert.match(nav, /name="mobile-primary-navigation"/);
+  assert.match(nav, /id=\{`desktop-\$\{group\.id\}-menu`\}/);
+  assert.match(nav, /id=\{`mobile-\$\{group\.id\}-menu`\}/);
   assert.doesNotMatch(nav, /role="menu"/);
   assert.match(nav, /event\.key === "Escape"/);
-  assert.match(nav, /pointerdown/);
 
   for (const className of [
     "navGroup",
@@ -151,7 +148,27 @@ test("desktop navigation uses an attached full-width mega panel", () => {
   assert.match(css, /\.dropdownGrid\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s);
   assert.match(css, /\.megaMenuSection\s*\{/);
   assert.match(css, /\.megaMenuSection\[data-highlight="true"\]/);
-  assert.match(css, /\.navGroupTrigger\[aria-expanded="true"\]/);
+  assert.match(css, /\.navGroup\[open\] \.navGroupTrigger/);
+});
+
+test("desktop and mobile navigation open without waiting for client hydration", () => {
+  const nav = read("src/components/dreelio/Nav.tsx");
+  const css = read("src/components/dreelio/Nav.module.css");
+
+  assert.match(nav, /<details[^>]*className=\{styles\.navGroup\}/);
+  assert.match(nav, /<summary className=\{styles\.navGroupTrigger\}>/);
+  assert.match(nav, /<details className=\{styles\.mobileMenuDisclosure\}>/);
+  assert.match(nav, /<summary className=\{styles\.burger\}/);
+  assert.match(nav, /<details className=\{styles\.mobileNavGroup\}/);
+  assert.match(nav, /<summary className=\{styles\.mobileNavTrigger\}>/);
+  assert.doesNotMatch(nav, /useState<NavMenuId/);
+  assert.doesNotMatch(nav, /setActiveDesktopMenu/);
+  assert.doesNotMatch(nav, /setActiveMobileMenu/);
+
+  assert.match(css, /\.navGroup\[open\] \.dropdownPanel/);
+  assert.match(css, /\.navGroup\[open\] \.navGroupTrigger/);
+  assert.match(css, /\.mobileMenuDisclosure\[open\] \.mobileMenu/);
+  assert.match(css, /\.mobileNavGroup\[open\] \.mobileSubmenu/);
 });
 
 test("mobile navigation and homepage cards keep nested content inside the viewport", () => {

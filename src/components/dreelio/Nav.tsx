@@ -31,14 +31,11 @@ import type { PublicNavIcon } from "./data";
 import { NAV_GROUPS, PRIMARY_NAV_LINKS, SEARCH_ITEMS } from "./data";
 import {
   HOVER_LIFT,
-  LANDING_VIEWPORT,
   TAP_PRESS,
   revealVariants,
 } from "./motion";
 import { useTheme } from "@/components/ThemeProvider";
 import { supabase } from "@/lib/supabase";
-
-type NavMenuId = (typeof NAV_GROUPS)[number]["id"];
 
 const NAV_ICONS: Record<PublicNavIcon, typeof KeyRoundIcon> = {
   "bank-card": CreditCardIcon,
@@ -100,13 +97,9 @@ type NavProps = {
 };
 
 export function Nav({ initialSignedIn = false }: NavProps) {
-  const [open, setOpen] = useState(false);
-  const [activeDesktopMenu, setActiveDesktopMenu] = useState<NavMenuId | null>(null);
-  const [activeMobileMenu, setActiveMobileMenu] = useState<NavMenuId | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [signedIn, setSignedIn] = useState(initialSignedIn);
-  const navGroupsRef = useRef<HTMLUListElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { resolvedTheme, setTheme } = useTheme();
   const reduceMotion = useReducedMotion();
@@ -126,26 +119,6 @@ export function Nav({ initialSignedIn = false }: NavProps) {
   }, []);
 
   useEffect(() => {
-    if (!activeDesktopMenu) return;
-
-    const closeOnPointerDown = (event: PointerEvent) => {
-      if (!navGroupsRef.current?.contains(event.target as Node)) {
-        setActiveDesktopMenu(null);
-      }
-    };
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setActiveDesktopMenu(null);
-    };
-
-    document.addEventListener("pointerdown", closeOnPointerDown);
-    document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("pointerdown", closeOnPointerDown);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [activeDesktopMenu]);
-
-  useEffect(() => {
     if (!searchOpen) return;
 
     const previousOverflow = document.body.style.overflow;
@@ -162,14 +135,8 @@ export function Nav({ initialSignedIn = false }: NavProps) {
     };
   }, [searchOpen]);
 
-  const closeMobileMenu = () => {
-    setOpen(false);
-    setActiveMobileMenu(null);
-  };
-
   const openSearch = () => {
-    closeMobileMenu();
-    setActiveDesktopMenu(null);
+    document.querySelectorAll("details[open]").forEach((details) => details.removeAttribute("open"));
     setSearchOpen(true);
   };
 
@@ -207,35 +174,20 @@ export function Nav({ initialSignedIn = false }: NavProps) {
           <span>Velora Vault</span>
         </motion.a>
 
-        <ul ref={navGroupsRef} className={styles.links}>
+        <ul className={styles.links}>
           {NAV_GROUPS.map((group) => (
-            <motion.li
-              key={group.id}
-              className={styles.navGroup}
-              whileHover={reduceMotion ? undefined : { y: -1 }}
-            >
-              <button
-                type="button"
-                className={styles.navGroupTrigger}
-                aria-expanded={activeDesktopMenu === group.id}
-                aria-controls={`desktop-${group.id}-menu`}
-                onClick={() => setActiveDesktopMenu((current) => current === group.id ? null : group.id)}
-              >
-                {group.label}
-                <ChevronDownIcon data-open={activeDesktopMenu === group.id} aria-hidden="true" />
-              </button>
-              <AnimatePresence initial={false}>
-                {activeDesktopMenu === group.id && (
-                  <motion.div
-                    id={`desktop-${group.id}-menu`}
-                    className={styles.dropdownPanel}
-                    data-menu={group.id}
-                    aria-label={`${group.label} navigation`}
-                    initial={reduceMotion ? false : { opacity: 0, y: -7, scale: 0.985 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={reduceMotion ? undefined : { opacity: 0, y: -5, scale: 0.985 }}
-                    transition={{ duration: 0.16 }}
-                  >
+            <li key={group.id} className={styles.navItem}>
+              <details className={styles.navGroup} name="desktop-primary-navigation">
+                <summary className={styles.navGroupTrigger}>
+                  {group.label}
+                  <ChevronDownIcon aria-hidden="true" />
+                </summary>
+                <div
+                  id={`desktop-${group.id}-menu`}
+                  className={styles.dropdownPanel}
+                  data-menu={group.id}
+                  aria-label={`${group.label} navigation`}
+                >
                     <div className={styles.dropdownGrid}>
                       {group.sections.map((section) => (
                         <section
@@ -250,7 +202,6 @@ export function Nav({ initialSignedIn = false }: NavProps) {
                                 key={link.href}
                                 href={link.href}
                                 className={styles.dropdownLink}
-                                onClick={() => setActiveDesktopMenu(null)}
                               >
                                 <span>{link.label}</span>
                                 <ChevronRightIcon aria-hidden="true" />
@@ -260,10 +211,9 @@ export function Nav({ initialSignedIn = false }: NavProps) {
                         </section>
                       ))}
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.li>
+                </div>
+              </details>
+            </li>
           ))}
           {PRIMARY_NAV_LINKS.map((link) => (
             <motion.li key={link.href} whileHover={reduceMotion ? undefined : { y: -1 }}>
@@ -332,101 +282,54 @@ export function Nav({ initialSignedIn = false }: NavProps) {
             onToggle={toggleTheme}
             reduceMotion={reduceMotion}
           />
-          <button
-            className={styles.burger}
-            aria-label="Toggle menu"
-            aria-expanded={open}
-            onClick={() => {
-              if (open) setActiveMobileMenu(null);
-              setOpen(!open);
-            }}
-          >
-            <span data-open={open} />
-            <span data-open={open} />
-          </button>
-        </div>
-      </nav>
-
-      <AnimatePresence initial={false}>
-        {open && (
-        <motion.div
-          className={styles.mobileMenu}
-          initial={reduceMotion ? false : { opacity: 0, y: -8, scale: 0.99 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={reduceMotion ? undefined : { opacity: 0, y: -6, scale: 0.99 }}
-          transition={{ duration: 0.24 }}
-          viewport={LANDING_VIEWPORT}
-        >
-          {NAV_GROUPS.map((group) => (
-            <div className={styles.mobileNavGroup} key={group.id}>
-              <button
-                type="button"
-                className={styles.mobileNavTrigger}
-                aria-expanded={activeMobileMenu === group.id}
-                aria-controls={`mobile-${group.id}-menu`}
-                onClick={() => setActiveMobileMenu((current) => current === group.id ? null : group.id)}
-              >
-                {group.label}
-                <ChevronDownIcon data-open={activeMobileMenu === group.id} aria-hidden="true" />
-              </button>
-              <AnimatePresence initial={false}>
-                {activeMobileMenu === group.id && (
-                  <motion.div
-                    id={`mobile-${group.id}-menu`}
-                    className={styles.mobileSubmenu}
-                    initial={reduceMotion ? false : { opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={reduceMotion ? undefined : { opacity: 0, height: 0 }}
-                    transition={{ duration: 0.18 }}
-                  >
+          <details className={styles.mobileMenuDisclosure}>
+            <summary className={styles.burger} aria-label="Toggle menu">
+              <span />
+              <span />
+            </summary>
+            <div className={styles.mobileMenu}>
+              {NAV_GROUPS.map((group) => (
+                <details className={styles.mobileNavGroup} name="mobile-primary-navigation" key={group.id}>
+                  <summary className={styles.mobileNavTrigger}>
+                    {group.label}
+                    <ChevronDownIcon aria-hidden="true" />
+                  </summary>
+                  <div id={`mobile-${group.id}-menu`} className={styles.mobileSubmenu}>
                     {group.links.map((link) => {
                       const Icon = NAV_ICONS[link.icon];
                       return (
-                        <a key={link.href} href={link.href} onClick={closeMobileMenu}>
+                        <a key={link.href} href={link.href}>
                           <span><Icon aria-hidden="true" /></span>
                           <span><strong>{link.label}</strong><small>{link.description}</small></span>
                         </a>
                       );
                     })}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  </div>
+                </details>
+              ))}
+              {PRIMARY_NAV_LINKS.map((link) => (
+                <a key={link.href} href={link.href}>
+                  {link.label}
+                </a>
+              ))}
+              {signedIn ? (
+                <a href="/vault" className={`${shared.btn} ${shared.btnDark}`}>
+                  Open vault
+                </a>
+              ) : (
+                <>
+                  <a href="/login" className={styles.mobileSignIn}>
+                    Sign in
+                  </a>
+                  <a href="/signup" className={`${shared.btn} ${shared.btnDark}`}>
+                    Get started free
+                  </a>
+                </>
+              )}
             </div>
-          ))}
-          {PRIMARY_NAV_LINKS.map((link) => (
-            <a key={link.href} href={link.href} onClick={closeMobileMenu}>
-              {link.label}
-            </a>
-          ))}
-          {signedIn ? (
-            <a
-              href="/vault"
-              className={`${shared.btn} ${shared.btnDark}`}
-              onClick={closeMobileMenu}
-            >
-              Open vault
-            </a>
-          ) : (
-            <>
-              <a
-                href="/login"
-                className={styles.mobileSignIn}
-                onClick={closeMobileMenu}
-              >
-                Sign in
-              </a>
-              <a
-                href="/signup"
-                className={`${shared.btn} ${shared.btnDark}`}
-                onClick={closeMobileMenu}
-              >
-                Get started free
-              </a>
-            </>
-          )}
-        </motion.div>
-        )}
-      </AnimatePresence>
+          </details>
+        </div>
+      </nav>
 
       <AnimatePresence initial={false}>
         {searchOpen && (
