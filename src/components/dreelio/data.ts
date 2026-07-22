@@ -5,6 +5,7 @@ export type PublicNavIcon =
   | "bank-card"
   | "contact"
   | "document"
+  | "faq"
   | "help"
   | "import"
   | "journal"
@@ -115,6 +116,12 @@ export const RESOURCE_LINKS = [
     description: "Send a question to the Velora team.",
     icon: "contact",
   },
+  {
+    label: "FAQ",
+    href: "/faq",
+    description: "Quick answers before you get started.",
+    icon: "faq",
+  },
 ] as const satisfies readonly PublicNavLink[];
 
 export const PRODUCT_NAV_SECTIONS = [
@@ -159,7 +166,7 @@ export const UTILITY_NAV_SECTIONS = [
 export const RESOURCE_NAV_SECTIONS = [
   {
     heading: "Learn",
-    links: [RESOURCE_LINKS[1], RESOURCE_LINKS[2]],
+    links: [RESOURCE_LINKS[1], RESOURCE_LINKS[2], RESOURCE_LINKS[4]],
   },
   {
     heading: "Trust and privacy",
@@ -199,6 +206,7 @@ export const SEARCH_ITEMS = [
   { label: "Digital wallet", href: "/features/digital-wallet", keywords: "cards bank accounts financial records", popular: false },
   { label: "Magic Import", href: "/features/magic-import", keywords: "ai extract migrate paste review", popular: false },
   { label: "Help center", href: "/help", keywords: "support recovery setup answers", popular: true },
+  { label: "FAQ", href: "/faq", keywords: "frequently asked questions answers", popular: true },
   { label: "Security", href: "/security", keywords: "encryption privacy master key", popular: true },
   { label: "Pricing", href: "/pricing", keywords: "free plus plans cost", popular: true },
   { label: "Password Generator", href: "/utilities/password-generator", keywords: "random strong password", popular: true },
@@ -277,6 +285,7 @@ export const FOOTER_COLUMNS = [
     links: [
       { label: "Contact", href: "/contact" },
       { label: "Help center", href: "/help" },
+      { label: "FAQ", href: "/faq" },
       { label: "Privacy", href: "/privacy" },
       { label: "Terms of use", href: "/terms" },
       { label: "Sign in", href: "/login" },

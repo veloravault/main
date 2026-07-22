@@ -22,6 +22,7 @@ const LAST_MODIFIED = {
   digitalWallet: "2026-07-22",
   magicImport: "2026-07-22",
   help: "2026-07-22",
+  faq: "2026-07-22",
 } as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -35,6 +36,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/features/digital-wallet`, lastModified: LAST_MODIFIED.digitalWallet, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE_URL}/features/magic-import`, lastModified: LAST_MODIFIED.magicImport, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE_URL}/help`, lastModified: LAST_MODIFIED.help, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE_URL}/faq`, lastModified: LAST_MODIFIED.faq, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE_URL}/blog`, lastModified: LAST_MODIFIED.blogIndex, changeFrequency: "weekly", priority: 0.6 },
     { url: `${BASE_URL}/contact`, lastModified: LAST_MODIFIED.contact, changeFrequency: "yearly", priority: 0.4 },
     { url: `${BASE_URL}/login`, lastModified: LAST_MODIFIED.login, changeFrequency: "yearly", priority: 0.2 },
