@@ -57,10 +57,25 @@ export function UtilityPageLayout(props: {
             Use the tool <ArrowRightIcon aria-hidden="true" />
           </a>
         </motion.div>
-        <motion.div className={styles.heroWorkbench} variants={staggerItem}>
-          {props.workbench}
+        <motion.div
+          className={styles.heroVisual}
+          variants={staggerItem}
+          aria-hidden="true"
+        >
+          <div className={styles.heroVisualFrame}>
+            <div className={styles.heroVisualInset} />
+            <div className={styles.heroVisualResult}>
+              <span />
+              <span />
+              <span />
+            </div>
+          </div>
         </motion.div>
       </motion.section>
+
+      <section className={styles.workbenchSection}>
+        {props.workbench}
+      </section>
 
       <section className={styles.benefitGrid} aria-label={`${props.title} benefits`}>
         {props.benefits.map((benefit) => (

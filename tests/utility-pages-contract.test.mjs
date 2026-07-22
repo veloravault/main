@@ -4,6 +4,21 @@ import test from "node:test";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
+test("utility hero precedes a separate workbench section", () => {
+  const source = read("src/app/utilities/UtilityPageLayout.tsx");
+  const heroStart = source.indexOf("className={styles.hero}");
+  const placeholder = source.indexOf("className={styles.heroVisual}");
+  const workbenchSection = source.indexOf("className={styles.workbenchSection}");
+  const workbench = source.indexOf("{props.workbench}");
+
+  assert.ok(heroStart >= 0, "shared hero exists");
+  assert.ok(placeholder > heroStart, "placeholder belongs to the hero");
+  assert.ok(workbenchSection > placeholder, "workbench section follows the hero");
+  assert.ok(workbench > workbenchSection, "workbench renders inside its own section");
+  assert.match(source, /className=\{styles\.heroVisual\}[\s\S]*aria-hidden="true"/);
+  assert.equal(source.match(/\{props\.workbench\}/g)?.length, 1);
+});
+
 test("utility pages stay server-rendered metadata boundaries", () => {
   for (const route of [
     "password-generator",
