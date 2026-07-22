@@ -43,6 +43,8 @@ test("presentational step components exist and stay logic-free", () => {
   const masterKey = read(steps.masterKey);
   assert.match(masterKey, /id="onboarding-master-key"/);
   assert.match(masterKey, /id="onboarding-master-key-confirmation"/);
+  assert.match(masterKey, /id="onboarding-master-key-hint"/);
+  assert.match(masterKey, /maxLength=\{50\}/);
   assert.doesNotMatch(masterKey, /onSubmit|masterKeyConfirmation\s*!==|preventDefault/);
   // AvatarStep offers both preset kinds and a clear (skip) affordance.
   const avatar = read(steps.avatar);
@@ -67,6 +69,10 @@ test("orchestrator preserves the onboarding security contract", () => {
   assert.match(source, /setMasterKey\(masterKey,\s*userId\)/);
   assert.match(source, /setMasterKeyValue\(["']{2}\)/);
   assert.match(source, /setMasterKeyConfirmation\(["']{2}\)/);
+  assert.match(source, /masterKeyHint/);
+  assert.match(source, /master_key_hint:\s*normalizedHint\s*\|\|\s*null/);
+  assert.match(source, /setMasterKeyHint\(["']{2}\)/);
+  assert.doesNotMatch(source, /JSON\.stringify\([^)]*masterKeyHint/s);
 
   // Plan-intent destination is preserved, but navigation waits for the user's
   // explicit action on the completion screen.
@@ -83,6 +89,19 @@ test("orchestrator preserves the onboarding security contract", () => {
   const keyIndex = source.indexOf("setMasterKey(masterKey");
   assert.ok(liveRecheckIndex >= 0 && liveRecheckIndex < activationIndex, "identity must be checked before activation");
   assert.ok(activationIndex < keyIndex, "activation must precede the local key handoff");
+});
+
+test("the optional master key hint is retrievable without exposing the key", () => {
+  const onboarding = read("src/components/auth/onboarding-steps/MasterKeyStep.tsx");
+  const auth = read("src/components/Auth.tsx");
+  const vault = read("src/components/VaultApp.tsx");
+
+  assert.match(onboarding, /Never include your master key itself/);
+  assert.match(vault, /master_key_hint/);
+  assert.match(vault, /<Auth[^>]*masterKeyHint=/s);
+  assert.match(auth, /Show master key hint/);
+  assert.match(auth, /Hide master key hint/);
+  assert.match(auth, /masterKeyHint/);
 });
 
 test("completion screen is an actionable final state", () => {

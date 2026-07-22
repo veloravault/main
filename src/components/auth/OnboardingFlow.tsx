@@ -36,6 +36,7 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
   const [avatarKind, setAvatarKind] = useState<AvatarKind | null>(null);
   const [masterKey, setMasterKeyValue] = useState("");
   const [masterKeyConfirmation, setMasterKeyConfirmation] = useState("");
+  const [masterKeyHint, setMasterKeyHint] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [destination, setDestination] = useState("/vault");
@@ -70,6 +71,15 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
       setError("The master key confirmation does not match.");
       return;
     }
+    const normalizedHint = masterKeyHint.trim();
+    if (normalizedHint.length > 50) {
+      setError("Keep your master key hint within 50 characters.");
+      return;
+    }
+    if (normalizedHint && normalizedHint.toLocaleLowerCase().includes(masterKey.toLocaleLowerCase())) {
+      setError("Your hint cannot contain your master key.");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -78,13 +88,16 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
         throw new Error("Your secure session changed. Sign in again to continue.");
       }
 
-      // Persist the avatar choice (skippable → initials fallback). Non-fatal.
-      if (avatarKind) {
-        const { error: metadataError } = await supabase.auth.updateUser({ data: { avatar_kind: avatarKind } });
-        if (metadataError) {
-          console.error("Could not save avatar choice:", metadataError.message);
-          toast("Your avatar choice couldn't be saved. You can pick one later in Settings.", "info");
-        }
+      const { error: metadataError } = await supabase.auth.updateUser({
+        data: {
+          ...(avatarKind ? { avatar_kind: avatarKind } : {}),
+          master_key_hint: normalizedHint || null,
+        },
+      });
+      if (metadataError) {
+        if (normalizedHint) throw new Error("Your master key hint could not be saved. Please try again.");
+        console.error("Could not save avatar choice:", metadataError.message);
+        toast("Your avatar choice couldn't be saved. You can pick one later in Settings.", "info");
       }
 
       const response = await fetch("/api/onboarding/complete", {
@@ -101,6 +114,7 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
 
       setMasterKeyValue("");
       setMasterKeyConfirmation("");
+      setMasterKeyHint("");
 
       // If they picked a paid plan on the pricing page before signing up,
       // preserve that destination for the explicit completion action.
@@ -220,8 +234,10 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
                 <MasterKeyStep
                   masterKey={masterKey}
                   confirmation={masterKeyConfirmation}
+                  hint={masterKeyHint}
                   onMasterKeyChange={setMasterKeyValue}
                   onConfirmationChange={setMasterKeyConfirmation}
+                  onHintChange={setMasterKeyHint}
                   strength={masterKeyStrength}
                   submitting={submitting}
                 />

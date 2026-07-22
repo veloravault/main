@@ -473,7 +473,7 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1024px) {
   .links,
   .authActions,
   .themeToggle {

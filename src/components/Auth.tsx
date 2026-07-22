@@ -9,11 +9,18 @@ import { savePinForMaster, hasPinLock } from "@/components/PinLock";
 import { isBiometricsSupported, hasBiometricsEnabled, enableBiometrics, unlockWithBiometrics } from "@/lib/biometrics";
 import { useVaultKey } from "@/components/auth/VaultKeyProvider";
 
-export function Auth({ onLogin }: { onLogin: (masterPass: string, expectedUserId: string) => boolean }) {
+export function Auth({
+  onLogin,
+  masterKeyHint = null,
+}: {
+  onLogin: (masterPass: string, expectedUserId: string) => boolean;
+  masterKeyHint?: string | null;
+}) {
   const { authenticatedUserId, isAuthenticatedUserCurrent } = useVaultKey();
   const [loading, setLoading] = useState(false);
   const [masterPassword, setMasterPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [showMasterKeyHint, setShowMasterKeyHint] = useState(false);
   const { setTheme, resolvedTheme } = useTheme();
 
   const themeToggleButton = (
@@ -367,6 +374,24 @@ export function Auth({ onLogin }: { onLogin: (masterPass: string, expectedUserId
               </button>
             </div>
           </div>
+
+          {masterKeyHint && (
+            <div className="text-center -mt-2">
+              <button
+                type="button"
+                onClick={() => setShowMasterKeyHint((visible) => !visible)}
+                aria-expanded={showMasterKeyHint}
+                className="min-h-11 px-3 text-[13px] font-medium text-primary hover:opacity-70 transition-opacity"
+              >
+                {showMasterKeyHint ? "Hide master key hint" : "Show master key hint"}
+              </button>
+              {showMasterKeyHint && (
+                <p className="mt-1 rounded-xl border border-border bg-card px-4 py-3 text-[14px] leading-relaxed text-foreground" role="status">
+                  {masterKeyHint}
+                </p>
+              )}
+            </div>
+          )}
           
           <AnimatePresence>
             {error && (

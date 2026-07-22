@@ -71,7 +71,7 @@ test("public navigation exposes all utilities through responsive submenus", () =
   ]) {
     assert.match(css, new RegExp(`\\.${className}\\b`));
   }
-  assert.match(css, /@media \(max-width: 1180px\)/);
+  assert.match(css, /@media \(max-width: 1024px\)/);
   assert.match(css, /:focus-visible/);
 });
 
@@ -153,7 +153,7 @@ test("public layout and header span the viewport with a functional site search",
   assert.match(nav, /SEARCH_ITEMS\.filter/);
   assert.match(data, /export const SEARCH_ITEMS/);
   assert.match(navCss, /\.searchOverlay\s*\{/);
-  assert.match(navCss, /@media \(max-width:\s*1180px\)/);
+  assert.match(navCss, /@media \(max-width:\s*1024px\)/);
 });
 
 test("public footer closes the page with identity, navigation, and payment trust", () => {

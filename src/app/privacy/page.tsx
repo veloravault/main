@@ -16,7 +16,7 @@ export default function PrivacyPage() {
       <article className={styles.article}>
         <div className={rootStyles.container}>
           <h1 className={styles.title}>Privacy Policy</h1>
-          <p className={styles.updated}>Last updated: July 19, 2026</p>
+          <p className={styles.updated}>Last updated: July 22, 2026</p>
           <p className={styles.intro}>
             Velora Vault is a private, encrypted home for your passwords,
             documents, notes, and financial essentials. This policy explains
@@ -29,8 +29,10 @@ export default function PrivacyPage() {
             <p>We collect the minimum needed to run your account:</p>
             <ul>
               <li>
-                <strong>Account information</strong> — your email address and
-                account status. Supabase Auth handles your sign-in password;
+                <strong>Account information</strong> — your email address,
+                account status, profile choices, and any optional master key
+                hint you choose to save. A hint is readable account metadata,
+                so it must never contain the master key itself. Supabase Auth handles your sign-in password;
                 Velora Vault does not store the raw password in its application database.
               </li>
               <li>

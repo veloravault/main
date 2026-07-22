@@ -240,7 +240,9 @@ export default function VaultApp() {
   }
 
   if (!masterPassword) {
-    return <Auth key={authenticatedUserId} onLogin={handleLogin} />;
+    const storedHint = sessionUser.user_metadata?.master_key_hint;
+    const masterKeyHint = typeof storedHint === "string" ? storedHint.slice(0, 50) : null;
+    return <Auth key={authenticatedUserId} onLogin={handleLogin} masterKeyHint={masterKeyHint} />;
   }
 
   const sharedProps = { masterPassword, focusedItemId, onNavigate: handleNavigate };
