@@ -2,7 +2,7 @@
 // the section components stay presentational.
 
 export const NAV_LINKS = [
-  { label: "Features", href: "/#features" },
+  { label: "Features", href: "/password-manager" },
   { label: "Security", href: "/security" },
   { label: "Blog", href: "/blog" },
   { label: "Pricing", href: "/pricing" },
@@ -20,7 +20,12 @@ export const SEARCH_ITEMS = [
   { label: "Home", href: "/", keywords: "velora vault password manager", popular: true },
   { label: "Sign in", href: "/login", keywords: "login account access", popular: true },
   { label: "Get started free", href: "/signup", keywords: "signup register free", popular: true },
-  { label: "Features", href: "/#features", keywords: "passwords documents wallet autofill", popular: true },
+  { label: "Password manager", href: "/password-manager", keywords: "features passwords notes encrypted vault", popular: true },
+  { label: "How it works", href: "/how-it-works", keywords: "account encryption unlock master key", popular: true },
+  { label: "Secure documents", href: "/features/secure-documents", keywords: "files upload identity storage", popular: false },
+  { label: "Digital wallet", href: "/features/digital-wallet", keywords: "cards bank accounts financial records", popular: false },
+  { label: "Magic Import", href: "/features/magic-import", keywords: "ai extract migrate paste review", popular: false },
+  { label: "Help center", href: "/help", keywords: "support recovery setup answers", popular: true },
   { label: "Security", href: "/security", keywords: "encryption privacy master key", popular: true },
   { label: "Pricing", href: "/pricing", keywords: "free plus plans cost", popular: true },
   { label: "Password Generator", href: "/utilities/password-generator", keywords: "random strong password", popular: true },
@@ -87,7 +92,8 @@ export const FOOTER_COLUMNS = [
     heading: "Pages",
     links: [
       { label: "Home", href: "/" },
-      { label: "Features", href: "/#features" },
+      { label: "Password manager", href: "/password-manager" },
+      { label: "How it works", href: "/how-it-works" },
       { label: "Pricing", href: "/pricing" },
       { label: "Security", href: "/security" },
       { label: "Blog", href: "/blog" },
@@ -97,9 +103,18 @@ export const FOOTER_COLUMNS = [
     heading: "Information",
     links: [
       { label: "Contact", href: "/contact" },
+      { label: "Help center", href: "/help" },
       { label: "Privacy", href: "/privacy" },
       { label: "Terms of use", href: "/terms" },
       { label: "Sign in", href: "/login" },
+    ],
+  },
+  {
+    heading: "Product",
+    links: [
+      { label: "Secure documents", href: "/features/secure-documents" },
+      { label: "Digital wallet", href: "/features/digital-wallet" },
+      { label: "Magic Import", href: "/features/magic-import" },
     ],
   },
   {

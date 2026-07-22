@@ -284,7 +284,7 @@ test("security explainer uses the public shell and an accessible motion story", 
   assert.match(shell, /<Nav[^>]*\/>/);
   assert.match(shell, /<Footer\s*\/>/);
   assert.doesNotMatch(page, /LegalHeader/);
-  assert.match(navigation, /href: "\/#features"/);
+  assert.match(navigation, /href: "\/password-manager"/);
   assert.match(navigation, /href: "\/security"/);
   assert.match(navigation, /href: "\/pricing"/);
 
