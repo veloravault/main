@@ -167,14 +167,6 @@ export function UsernameGeneratorClient() {
       description="Choose readable words or a compact random string. Both are generated locally with secure browser randomness."
     >
       <div className={styles.workbenchBody}>
-        <UtilityOutput
-          value={username || "Generating…"}
-          label="Generated username"
-          outputRef={clipboard.outputRef}
-          onCopy={clipboard.copy}
-          onRegenerate={regenerate}
-          status={clipboard.status}
-        />
         <div className={styles.controlsPanel}>
           <UtilitySegments
             label="Username mode"
@@ -248,6 +240,14 @@ export function UsernameGeneratorClient() {
             </>
           )}
         </div>
+        <UtilityOutput
+          value={username || "Generating…"}
+          label="Generated username"
+          outputRef={clipboard.outputRef}
+          onCopy={clipboard.copy}
+          onRegenerate={regenerate}
+          status={clipboard.status}
+        />
       </div>
     </UtilityWorkbench>
   );

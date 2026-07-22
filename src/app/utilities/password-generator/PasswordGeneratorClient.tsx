@@ -93,14 +93,6 @@ export function PasswordGeneratorClient() {
       description="Adjust the settings, then copy a password generated entirely in this browser."
     >
       <div className={styles.workbenchBody}>
-        <UtilityOutput
-          value={password || "Generating…"}
-          label="Generated password"
-          outputRef={clipboard.outputRef}
-          onCopy={clipboard.copy}
-          onRegenerate={regenerate}
-          status={clipboard.status}
-        />
         <div className={styles.controlsPanel}>
           <UtilityRange
             id="password-length"
@@ -137,6 +129,14 @@ export function PasswordGeneratorClient() {
             <p aria-live="polite">{optionHint}</p>
           </div>
         </div>
+        <UtilityOutput
+          value={password || "Generating…"}
+          label="Generated password"
+          outputRef={clipboard.outputRef}
+          onCopy={clipboard.copy}
+          onRegenerate={regenerate}
+          status={clipboard.status}
+        />
       </div>
     </UtilityWorkbench>
   );

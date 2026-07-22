@@ -195,7 +195,7 @@
 
 .workbenchBody {
   display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(280px, 0.88fr);
+  grid-template-columns: 1fr;
   gap: 1px;
   background: var(--line);
 }
@@ -211,6 +211,7 @@
 
 .outputValue {
   display: block;
+  width: 100%;
   max-width: 100%;
   margin-top: 18px;
   overflow-wrap: anywhere;
@@ -220,12 +221,14 @@
   font-weight: 620;
   letter-spacing: -0.035em;
   line-height: 1.2;
+  text-align: center;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 .outputActions {
   display: flex;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 28px;
@@ -272,14 +275,29 @@
   white-space: nowrap;
 }
 
-.controlsPanel,
+.controlsPanel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+  align-content: start;
+  gap: 0;
+  column-gap: 32px;
+  padding: 32px;
+  background: var(--surface-alt-soft);
+}
+
 .analysisPanel {
   display: grid;
+  grid-template-columns: 1fr;
   min-width: 0;
   align-content: start;
   gap: 0;
   padding: 32px;
   background: var(--surface-alt-soft);
+}
+
+.controlsPanel > .feedbackPanel {
+  grid-column: 1 / -1;
 }
 
 .rangeControl {
@@ -781,10 +799,6 @@
     gap: 40px;
   }
 
-  .workbenchBody {
-    grid-template-columns: 1fr;
-  }
-
   .benefitGrid,
   .relatedGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -852,6 +866,10 @@
   .controlsPanel,
   .analysisPanel {
     padding: 20px;
+  }
+
+  .controlsPanel {
+    grid-template-columns: 1fr;
   }
 
   .workbenchHeader {

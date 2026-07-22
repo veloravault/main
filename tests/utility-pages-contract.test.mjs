@@ -118,6 +118,34 @@ test("utility styles define responsive, focus, overflow, and reduced-motion safe
   }
 });
 
+test("generator workbenches use controls-first vertical hierarchy", () => {
+  for (const path of [
+    "src/app/utilities/password-generator/PasswordGeneratorClient.tsx",
+    "src/app/utilities/passphrase-generator/PassphraseGeneratorClient.tsx",
+    "src/app/utilities/username-generator/UsernameGeneratorClient.tsx",
+  ]) {
+    const source = read(path);
+    const bodyStart = source.indexOf("<div className={styles.workbenchBody}>");
+    const bodyEnd = source.indexOf("</UtilityWorkbench>", bodyStart);
+    assert.ok(bodyStart >= 0 && bodyEnd > bodyStart, `${path} exposes the shared workbench body`);
+    const body = source.slice(bodyStart, bodyEnd);
+    assert.ok(
+      body.indexOf("styles.controlsPanel") < body.indexOf("<UtilityOutput"),
+      `${path} renders controls before output`,
+    );
+  }
+
+  const css = read("src/app/utilities/utilities.module.css");
+  assert.match(css, /\.workbenchBody\s*\{[^}]*grid-template-columns:\s*1fr/);
+  assert.match(css, /\.controlsPanel\s*\{[^}]*grid-template-columns:\s*repeat\(2,/);
+  assert.match(css, /\.outputValue\s*\{[^}]*text-align:\s*center/);
+  assert.match(css, /\.outputActions\s*\{[^}]*justify-content:\s*center/);
+  assert.match(
+    css,
+    /@media \(max-width: 767px\)[\s\S]*?\.controlsPanel\s*\{[^}]*grid-template-columns:\s*1fr/,
+  );
+});
+
 test("utility page establishes the Geist Sans content role", () => {
   const css = read("src/app/utilities/utilities.module.css");
   assert.match(

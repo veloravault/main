@@ -115,14 +115,6 @@ export function PassphraseGeneratorClient() {
       description="Combine unrelated words locally, then choose the format that fits the account."
     >
       <div className={styles.workbenchBody}>
-        <UtilityOutput
-          value={passphrase || "Generating…"}
-          label="Generated passphrase"
-          outputRef={clipboard.outputRef}
-          onCopy={clipboard.copy}
-          onRegenerate={regenerate}
-          status={clipboard.status}
-        />
         <div className={styles.controlsPanel}>
           <UtilityRange
             id="passphrase-word-count"
@@ -153,6 +145,14 @@ export function PassphraseGeneratorClient() {
             onChange={changeIncludeNumber}
           />
         </div>
+        <UtilityOutput
+          value={passphrase || "Generating…"}
+          label="Generated passphrase"
+          outputRef={clipboard.outputRef}
+          onCopy={clipboard.copy}
+          onRegenerate={regenerate}
+          status={clipboard.status}
+        />
       </div>
     </UtilityWorkbench>
   );
