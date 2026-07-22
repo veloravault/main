@@ -14,7 +14,7 @@ import {
   SparklesIcon,
   SunIcon,
 } from "lucide-react";
-import shared from "@/app/dreelio/dreelio.module.css";
+import shared from "@/app/velora/velora.module.css";
 import styles from "./Features.module.css";
 import {
   APPLE_EASE,

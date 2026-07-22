@@ -20,8 +20,8 @@ const MOTION_COMPONENTS = [
 ];
 
 test("landing motion foundation centralizes restrained motion tokens", () => {
-  const motionPath = "src/components/dreelio/motion.ts";
-  const parallaxPath = "src/components/dreelio/ParallaxMedia.tsx";
+  const motionPath = "src/components/velora/motion.ts";
+  const parallaxPath = "src/components/velora/ParallaxMedia.tsx";
 
   assert.equal(exists(motionPath), true, "missing shared landing motion tokens");
   assert.equal(exists(parallaxPath), true, "missing parallax media component");
@@ -47,13 +47,13 @@ test("landing motion foundation centralizes restrained motion tokens", () => {
   assert.match(parallax, /useScroll/);
   assert.match(parallax, /useTransform/);
   assert.match(parallax, /reduceMotion \? 0 : y/);
-  assert.equal(exists("src/components/dreelio/VaultSeal.tsx"), true, "missing Velora vault seal");
-  assert.match(read("src/components/dreelio/VaultSeal.tsx"), /useReducedMotion/);
+  assert.equal(exists("src/components/velora/VaultSeal.tsx"), true, "missing Velora vault seal");
+  assert.match(read("src/components/velora/VaultSeal.tsx"), /useReducedMotion/);
 });
 
 test("every landing section uses the shared motion language and reduced motion", () => {
   for (const component of MOTION_COMPONENTS) {
-    const source = read(`src/components/dreelio/${component}.tsx`);
+    const source = read(`src/components/velora/${component}.tsx`);
     assert.match(source, /^"use client";/, `${component} must be a client motion boundary`);
     assert.match(
       source,
@@ -65,7 +65,7 @@ test("every landing section uses the shared motion language and reduced motion",
 });
 
 test("landing interactions stay restrained", () => {
-  const motionPath = "src/components/dreelio/motion.ts";
+  const motionPath = "src/components/velora/motion.ts";
   assert.equal(exists(motionPath), true, "missing shared landing motion tokens");
   const motion = read(motionPath);
 

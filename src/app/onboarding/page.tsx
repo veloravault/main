@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { OnboardingFlow } from "@/components/auth/OnboardingFlow";
-import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
+import { PublicPageShell } from "@/components/velora/PublicPageShell";
 import { AuthorizationError, getMembershipForUser, requireUser } from "@/lib/server/access";
 
 export const metadata: Metadata = {

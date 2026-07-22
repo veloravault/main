@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
-import { PricingPageContent } from "@/components/dreelio/PricingPageContent";
-import { PRICING_FAQ } from "@/components/dreelio/pricing-data";
+import { PublicPageShell } from "@/components/velora/PublicPageShell";
+import { PricingPageContent } from "@/components/velora/PricingPageContent";
+import { PRICING_FAQ } from "@/components/velora/pricing-data";
 import { getInitialSignedIn } from "@/lib/server/auth";
 import { pageMetadata } from "@/lib/seo";
 

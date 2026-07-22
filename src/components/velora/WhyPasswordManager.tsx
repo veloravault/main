@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDownIcon, ShieldCheckIcon } from "lucide-react";
-import shared from "@/app/dreelio/dreelio.module.css";
+import shared from "@/app/velora/velora.module.css";
 import styles from "./WhyPasswordManager.module.css";
 
 const REASONS = [

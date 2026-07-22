@@ -30,23 +30,23 @@ test("landing uses the current Velora public composition", () => {
   assert.doesNotMatch(page, /zero knowledge/i);
 });
 
-test("landing product media depicts Velora rather than imported Dreelio screenshots", () => {
+test("landing product media depicts Velora rather than leftover template screenshots", () => {
   const files = [
     "src/app/page.tsx",
-    "src/components/dreelio/Hero.tsx",
-    "src/components/dreelio/Devices.tsx",
-    "src/components/dreelio/FeatureSplit.tsx",
+    "src/components/velora/Hero.tsx",
+    "src/components/velora/Devices.tsx",
+    "src/components/velora/FeatureSplit.tsx",
   ].map(read).join("\n");
 
-  assert.doesNotMatch(files, /\/dreelio\/img\//);
+  assert.doesNotMatch(files, /\/velora\/img\//);
   assert.doesNotMatch(files, /hero-dashboard|project-ui|budget-ui|mobile-app\.png|devices\.png/);
   assert.match(files, /VeloraProductPreview/);
 });
 
 test("every product story uses a matching deterministic vault preview", () => {
   const page = read("src/app/page.tsx");
-  const split = read("src/components/dreelio/FeatureSplit.tsx");
-  const preview = read("src/components/dreelio/VeloraProductPreview.tsx");
+  const split = read("src/components/velora/FeatureSplit.tsx");
+  const preview = read("src/components/velora/VeloraProductPreview.tsx");
 
   assert.match(page, /eyebrow="Password vault"[\s\S]*?preview="passwords"/);
   assert.match(page, /eyebrow="Document vault"[\s\S]*?preview="documents"/);
@@ -58,10 +58,10 @@ test("every product story uses a matching deterministic vault preview", () => {
 });
 
 test("hero walkthrough is poster-first and respects motion and data preferences", () => {
-  const mediaPath = "src/components/dreelio/HeroVaultMedia.tsx";
+  const mediaPath = "src/components/velora/HeroVaultMedia.tsx";
   assert.equal(exists(mediaPath), true, "missing resilient hero media component");
 
-  const hero = read("src/components/dreelio/Hero.tsx");
+  const hero = read("src/components/velora/Hero.tsx");
   const media = read(mediaPath);
   assert.match(hero, /import \{ HeroVaultMedia \}/);
   assert.match(hero, /<HeroVaultMedia\s*\/>/);
@@ -78,7 +78,7 @@ test("hero walkthrough is poster-first and respects motion and data preferences"
 });
 
 test("landing palette keeps body text and actions accessible", () => {
-  const css = read("src/app/dreelio/dreelio.module.css");
+  const css = read("src/app/velora/velora.module.css");
 
   assert.match(css, /--ink: #1d1d1f/);
   assert.match(css, /--ink-body: #424245/);
@@ -91,9 +91,9 @@ test("landing palette keeps body text and actions accessible", () => {
 });
 
 test("security architecture is semantic, static, and reduced-motion safe", () => {
-  const architecture = read("src/components/dreelio/SecurityArchitecture.tsx");
-  const seal = read("src/components/dreelio/VaultSeal.tsx");
-  const sealCss = read("src/components/dreelio/VaultSeal.module.css");
+  const architecture = read("src/components/velora/SecurityArchitecture.tsx");
+  const seal = read("src/components/velora/VaultSeal.tsx");
+  const sealCss = read("src/components/velora/VaultSeal.module.css");
 
   assert.match(architecture, /id="security"/);
   assert.match(architecture, /SECURITY_PRINCIPLES\.map/);
@@ -107,7 +107,7 @@ test("security architecture is semantic, static, and reduced-motion safe", () =>
 });
 
 test("fixed landing navigation leaves anchored section headings visible", () => {
-  const css = read("src/app/dreelio/dreelio.module.css");
+  const css = read("src/app/velora/velora.module.css");
 
   for (const anchor of ["features", "benefits", "security", "pricing", "contact"]) {
     assert.match(css, new RegExp(`:global\\(#${anchor}\\)`));

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AuthGateway } from "@/components/auth/AuthGateway";
-import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
+import { PublicPageShell } from "@/components/velora/PublicPageShell";
 import { parseSafeNextPath } from "@/lib/access/validation";
 import { pageMetadata } from "@/lib/seo";
 

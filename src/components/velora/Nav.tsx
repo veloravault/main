@@ -25,7 +25,7 @@ import {
   WorkflowIcon,
   XIcon,
 } from "lucide-react";
-import shared from "@/app/dreelio/dreelio.module.css";
+import shared from "@/app/velora/velora.module.css";
 import styles from "./Nav.module.css";
 import { VeloraBrandMark } from "./VeloraBrand";
 import type { PublicNavIcon } from "./data";

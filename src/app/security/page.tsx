@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
-import { SecurityPageContent } from "@/components/dreelio/SecurityPageContent";
+import { PublicPageShell } from "@/components/velora/PublicPageShell";
+import { SecurityPageContent } from "@/components/velora/SecurityPageContent";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({

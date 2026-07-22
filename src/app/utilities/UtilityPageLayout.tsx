@@ -9,7 +9,7 @@ import {
   revealVariants,
   staggerContainer,
   staggerItem,
-} from "@/components/dreelio/motion";
+} from "@/components/velora/motion";
 import { relatedUtilities, type UtilitySlug } from "./utilityData";
 import styles from "./utilities.module.css";
 

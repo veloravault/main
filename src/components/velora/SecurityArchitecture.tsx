@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import shared from "@/app/dreelio/dreelio.module.css";
+import shared from "@/app/velora/velora.module.css";
 import styles from "./SecurityArchitecture.module.css";
 import { SECURITY_PRINCIPLES } from "./data";
 import { VaultSeal } from "./VaultSeal";

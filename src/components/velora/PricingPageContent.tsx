@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { CheckIcon } from "lucide-react";
-import shared from "@/app/dreelio/dreelio.module.css";
+import shared from "@/app/velora/velora.module.css";
 import styles from "@/app/pricing/pricing.module.css";
 import { supabase } from "@/lib/supabase";
 import { setPlanIntentCookie } from "@/lib/planIntent";

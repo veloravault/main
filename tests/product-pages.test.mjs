@@ -25,9 +25,9 @@ test("six product and help routes use the public shell and unique metadata paths
 });
 
 test("shared product pages expose a complete Bitwarden-inspired hierarchy with Velora content", () => {
-  const content = read("src/components/dreelio/product-pages/ProductPageContent.tsx");
-  const data = read("src/components/dreelio/product-pages/product-page-data.ts");
-  const visual = read("src/components/dreelio/product-pages/ProductPageVisual.tsx");
+  const content = read("src/components/velora/product-pages/ProductPageContent.tsx");
+  const data = read("src/components/velora/product-pages/product-page-data.ts");
+  const visual = read("src/components/velora/product-pages/ProductPageVisual.tsx");
 
   for (const landmark of [
     "hero",
@@ -55,7 +55,7 @@ test("shared product pages expose a complete Bitwarden-inspired hierarchy with V
 });
 
 test("product page styles remain full width, responsive, accessible, and dark-mode aware", () => {
-  const css = read("src/components/dreelio/product-pages/product-pages.module.css");
+  const css = read("src/components/velora/product-pages/product-pages.module.css");
 
   assert.match(css, /\.page\s*\{[^}]*width:\s*100%;/s);
   assert.match(css, /overflow-x:\s*clip/);
@@ -67,8 +67,8 @@ test("product page styles remain full width, responsive, accessible, and dark-mo
 });
 
 test("product audience rail uses contained cards without colored page gutters", () => {
-  const content = read("src/components/dreelio/product-pages/ProductPageContent.tsx");
-  const css = read("src/components/dreelio/product-pages/product-pages.module.css");
+  const content = read("src/components/velora/product-pages/ProductPageContent.tsx");
+  const css = read("src/components/velora/product-pages/product-pages.module.css");
 
   assert.match(content, /className=\{styles\.audienceLabel\}/);
   assert.match(css, /\.audienceRail\s*\{[^}]*gap:\s*clamp\(/s);
@@ -81,8 +81,8 @@ test("product audience rail uses contained cards without colored page gutters", 
 
 test("help hub offers local filtering, topic navigation, and recovery guidance", () => {
   const page = read("src/app/help/page.tsx");
-  const content = read("src/components/dreelio/help/HelpPageContent.tsx");
-  const css = read("src/components/dreelio/help/help-page.module.css");
+  const content = read("src/components/velora/help/HelpPageContent.tsx");
+  const css = read("src/components/velora/help/help-page.module.css");
 
   assert.match(page, /HelpPageContent/);
   assert.match(content, /useState/);
@@ -96,7 +96,7 @@ test("help hub offers local filtering, topic navigation, and recovery guidance",
 });
 
 test("new public pages are discoverable through navigation, search, footer, and sitemap", () => {
-  const data = read("src/components/dreelio/data.ts");
+  const data = read("src/components/velora/data.ts");
   const sitemap = read("src/app/sitemap.ts");
 
   assert.match(data, /label:\s*["']Password Manager["'],\s*href:\s*["']\/password-manager["']/);
@@ -110,11 +110,11 @@ test("new public pages are discoverable through navigation, search, footer, and 
 test("new public page copy contains no em dash characters or entities", () => {
   const files = [
     ...ROUTES.map(([, file]) => file),
-    "src/components/dreelio/product-pages/ProductPageContent.tsx",
-    "src/components/dreelio/product-pages/ProductPageVisual.tsx",
-    "src/components/dreelio/product-pages/product-page-data.ts",
-    "src/components/dreelio/help/HelpPageContent.tsx",
-    "src/components/dreelio/data.ts",
+    "src/components/velora/product-pages/ProductPageContent.tsx",
+    "src/components/velora/product-pages/ProductPageVisual.tsx",
+    "src/components/velora/product-pages/product-page-data.ts",
+    "src/components/velora/help/HelpPageContent.tsx",
+    "src/components/velora/data.ts",
   ];
 
   for (const file of files) {

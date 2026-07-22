@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRightIcon } from "lucide-react";
 import { AuthShell } from "@/components/auth/AuthShell";
-import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
+import { PublicPageShell } from "@/components/velora/PublicPageShell";
 import styles from "@/components/auth/auth-shell.module.css";
 
 export const metadata: Metadata = {

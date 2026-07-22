@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { BlogListContent } from "@/components/dreelio/BlogListContent";
-import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
+import { BlogListContent } from "@/components/velora/BlogListContent";
+import { PublicPageShell } from "@/components/velora/PublicPageShell";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({

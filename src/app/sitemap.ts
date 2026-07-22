@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { BLOG_POSTS } from "@/components/dreelio/blog-data";
+import { BLOG_POSTS } from "@/components/velora/blog-data";
 
 const BASE_URL = "https://veloravault.in";
 

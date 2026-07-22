@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowLeftIcon } from "lucide-react";
-import shared from "@/app/dreelio/dreelio.module.css";
+import shared from "@/app/velora/velora.module.css";
 import styles from "@/app/blog/[slug]/blog-post.module.css";
 import { CATEGORY_COLORS, type BlogPost } from "./blog-data";
 import { HOVER_LIFT, TAP_PRESS, revealVariants, staggerContainer, staggerItem } from "./motion";

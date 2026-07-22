@@ -56,7 +56,7 @@ test("the complete account journey shares presentation and preserves secure hand
 });
 
 test("public authentication uses dedicated single-purpose pages under the standard site chrome", () => {
-  const shell = read("src/components/dreelio/PublicPageShell.tsx");
+  const shell = read("src/components/velora/PublicPageShell.tsx");
   const login = read("src/app/login/page.tsx");
   const signup = read("src/app/signup/page.tsx");
   const gateway = read("src/components/auth/AuthGateway.tsx");
@@ -70,7 +70,7 @@ test("public authentication uses dedicated single-purpose pages under the standa
     "BlogListContent.tsx",
     "BlogPostContent.tsx",
     "SecurityPageContent.tsx",
-  ].map((name) => read(`src/components/dreelio/${name}`)).join("\n");
+  ].map((name) => read(`src/components/velora/${name}`)).join("\n");
 
   assert.equal(existsSync(new URL("../src/components/auth/AuthModalProvider.tsx", import.meta.url)), false);
   assert.equal(existsSync(new URL("../src/components/auth/AccountFrame.tsx", import.meta.url)), false);

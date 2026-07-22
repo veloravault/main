@@ -5,7 +5,7 @@ import { test } from "node:test";
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("SmoothAnchorScroll is mounted once, site-wide, in the public shell", () => {
-  const shell = read("src/components/dreelio/PublicPageShell.tsx");
+  const shell = read("src/components/velora/PublicPageShell.tsx");
   assert.match(shell, /import \{ SmoothAnchorScroll \}/);
   assert.match(shell, /<SmoothAnchorScroll \/>/);
 });
@@ -17,7 +17,7 @@ test("scroll-behavior: smooth is enabled globally with a reduced-motion fallback
 });
 
 test("smooth anchor scroll uses tween easing, not spring, and reads each target's own scroll-margin-top", () => {
-  const content = read("src/components/dreelio/SmoothAnchorScroll.tsx");
+  const content = read("src/components/velora/SmoothAnchorScroll.tsx");
 
   assert.match(content, /"use client"/);
   assert.match(content, /from "framer-motion"/);

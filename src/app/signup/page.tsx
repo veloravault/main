@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AuthGateway } from "@/components/auth/AuthGateway";
-import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
+import { PublicPageShell } from "@/components/velora/PublicPageShell";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({

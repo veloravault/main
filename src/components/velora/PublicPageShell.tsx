@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import rootStyles from "@/app/dreelio/dreelio.module.css";
+import rootStyles from "@/app/velora/velora.module.css";
 import { getInitialSignedIn } from "@/lib/server/auth";
 import { Footer } from "./Footer";
 import { Nav } from "./Nav";

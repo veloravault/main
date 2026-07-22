@@ -11,8 +11,8 @@ test("the product offers only Free and Plus", () => {
     "src/lib/planIntent.ts",
     "src/lib/server/razorpay.ts",
     "src/app/api/payments/create-subscription/route.ts",
-    "src/components/dreelio/pricing-data.ts",
-    "src/components/dreelio/PricingPageContent.tsx",
+    "src/components/velora/pricing-data.ts",
+    "src/components/velora/PricingPageContent.tsx",
     "src/components/settings/PlanSettings.tsx",
     "src/components/settings/settings-types.ts",
     "src/components/VaultApp.tsx",
@@ -22,7 +22,7 @@ test("the product offers only Free and Plus", () => {
 
   assert.doesNotMatch(combined, /family/i);
   assert.match(read("src/lib/plans.ts"), /export type PlanId = "free" \| "plus"/);
-  const pricing = read("src/components/dreelio/pricing-data.ts");
+  const pricing = read("src/components/velora/pricing-data.ts");
   const tiers = pricing.slice(pricing.indexOf("export const PRICING_TIERS"), pricing.indexOf("type ComparisonValue"));
   assert.equal((tiers.match(/id:\s*"(?:free|plus)"/g) ?? []).length, 2);
 });

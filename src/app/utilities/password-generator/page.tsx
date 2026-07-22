@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
+import { PublicPageShell } from "@/components/velora/PublicPageShell";
 import { PasswordGeneratorClient } from "./PasswordGeneratorClient";
 import { pageMetadata } from "@/lib/seo";
 

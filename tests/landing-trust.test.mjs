@@ -6,12 +6,12 @@ const exists = (path) => existsSync(new URL(`../${path}`, import.meta.url));
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("landing tells one open-account story with consistent free-start CTAs", () => {
-  const pricing = read("src/components/dreelio/Pricing.tsx");
-  const hero = read("src/components/dreelio/Hero.tsx");
-  const finalCta = read("src/components/dreelio/FinalCTA.tsx");
+  const pricing = read("src/components/velora/Pricing.tsx");
+  const hero = read("src/components/velora/Hero.tsx");
+  const finalCta = read("src/components/velora/FinalCTA.tsx");
   const gateway = read("src/components/auth/AuthGateway.tsx");
   const signUpForm = read("src/components/auth/SignUpForm.tsx");
-  const data = read("src/components/dreelio/data.ts");
+  const data = read("src/components/velora/data.ts");
   const combined = [pricing, hero, finalCta, gateway, signUpForm, data].join("\n");
 
   assert.doesNotMatch(combined, /private beta/i);
@@ -25,14 +25,14 @@ test("landing tells one open-account story with consistent free-start CTAs", () 
 
 test("public account CTAs consistently say Get started free", () => {
   const sources = [
-    "src/components/dreelio/Nav.tsx",
-    "src/components/dreelio/Hero.tsx",
-    "src/components/dreelio/Pricing.tsx",
-    "src/components/dreelio/PricingPageContent.tsx",
-    "src/components/dreelio/FinalCTA.tsx",
-    "src/components/dreelio/SecurityPageContent.tsx",
-    "src/components/dreelio/BlogListContent.tsx",
-    "src/components/dreelio/BlogPostContent.tsx",
+    "src/components/velora/Nav.tsx",
+    "src/components/velora/Hero.tsx",
+    "src/components/velora/Pricing.tsx",
+    "src/components/velora/PricingPageContent.tsx",
+    "src/components/velora/FinalCTA.tsx",
+    "src/components/velora/SecurityPageContent.tsx",
+    "src/components/velora/BlogListContent.tsx",
+    "src/components/velora/BlogPostContent.tsx",
     "src/app/utilities/UtilityPageLayout.tsx",
     "src/components/auth/AuthGateway.tsx",
     "src/components/auth/SignUpForm.tsx",
@@ -44,9 +44,9 @@ test("public account CTAs consistently say Get started free", () => {
 
 test("landing removes unfinished editorial content and unsupported availability claims", () => {
   const page = read("src/app/page.tsx");
-  const data = read("src/components/dreelio/data.ts");
-  const nav = read("src/components/dreelio/Nav.tsx");
-  const footer = read("src/components/dreelio/Footer.tsx");
+  const data = read("src/components/velora/data.ts");
+  const nav = read("src/components/velora/Nav.tsx");
+  const footer = read("src/components/velora/Footer.tsx");
   const combined = [page, data, nav, footer].join("\n");
 
   assert.doesNotMatch(page, /<Blog\s*\/>/);
@@ -58,9 +58,9 @@ test("landing removes unfinished editorial content and unsupported availability 
 });
 
 test("public navigation separates products, utilities, resources, and pricing", () => {
-  const nav = read("src/components/dreelio/Nav.tsx");
-  const data = read("src/components/dreelio/data.ts");
-  const css = read("src/components/dreelio/Nav.module.css");
+  const nav = read("src/components/velora/Nav.tsx");
+  const data = read("src/components/velora/data.ts");
+  const css = read("src/components/velora/Nav.module.css");
 
   assert.doesNotMatch(data, /label:\s*["']Benefits["']/);
   assert.match(data, /export const PRODUCT_LINKS/);
@@ -114,9 +114,9 @@ test("public navigation separates products, utilities, resources, and pricing", 
 });
 
 test("desktop navigation uses a full-width icon-led mega panel", () => {
-  const nav = read("src/components/dreelio/Nav.tsx");
-  const data = read("src/components/dreelio/data.ts");
-  const css = read("src/components/dreelio/Nav.module.css");
+  const nav = read("src/components/velora/Nav.tsx");
+  const data = read("src/components/velora/data.ts");
+  const css = read("src/components/velora/Nav.module.css");
 
   assert.match(data, /export const PRODUCT_NAV_SECTIONS/);
   assert.match(data, /export const UTILITY_NAV_SECTIONS/);
@@ -155,8 +155,8 @@ test("desktop navigation uses a full-width icon-led mega panel", () => {
 });
 
 test("desktop and mobile navigation open without waiting for client hydration", () => {
-  const nav = read("src/components/dreelio/Nav.tsx");
-  const css = read("src/components/dreelio/Nav.module.css");
+  const nav = read("src/components/velora/Nav.tsx");
+  const css = read("src/components/velora/Nav.module.css");
 
   assert.match(nav, /<details[^>]*className=\{styles\.navGroup\}/);
   assert.match(nav, /<summary className=\{styles\.navGroupTrigger\}>/);
@@ -175,10 +175,10 @@ test("desktop and mobile navigation open without waiting for client hydration", 
 });
 
 test("mobile navigation and homepage cards keep nested content inside the viewport", () => {
-  const navCss = read("src/components/dreelio/Nav.module.css");
-  const sharedCss = read("src/app/dreelio/dreelio.module.css");
-  const featuresCss = read("src/components/dreelio/Features.module.css");
-  const previewCss = read("src/components/dreelio/VeloraProductPreview.module.css");
+  const navCss = read("src/components/velora/Nav.module.css");
+  const sharedCss = read("src/app/velora/velora.module.css");
+  const featuresCss = read("src/components/velora/Features.module.css");
+  const previewCss = read("src/components/velora/VeloraProductPreview.module.css");
 
   assert.match(navCss, /\.mobileMenu\s*>\s*a:not\(\[class\]\)/);
   assert.doesNotMatch(navCss, /\.mobileSubmenu a\s*\{[^}]*border-left:/s);
@@ -197,10 +197,10 @@ test("mobile navigation and homepage cards keep nested content inside the viewpo
 });
 
 test("homepage sections use pure white and black canvases without changing the footer", () => {
-  const sharedCss = read("src/app/dreelio/dreelio.module.css");
-  const featuresCss = read("src/components/dreelio/Features.module.css");
-  const pricingCss = read("src/components/dreelio/Pricing.module.css");
-  const footerCss = read("src/components/dreelio/Footer.module.css");
+  const sharedCss = read("src/app/velora/velora.module.css");
+  const featuresCss = read("src/components/velora/Features.module.css");
+  const pricingCss = read("src/components/velora/Pricing.module.css");
+  const footerCss = read("src/components/velora/Footer.module.css");
 
   assert.match(sharedCss, /\.page\s*>\s*section\s*\{[^}]*background:\s*#fff(?:fff)?;/s);
   assert.match(sharedCss, /:global\(\.dark\)\s+\.page\s*>\s*section\s*\{[^}]*background:\s*#000(?:000)?;/s);
@@ -212,17 +212,17 @@ test("homepage sections use pure white and black canvases without changing the f
 test("homepage includes the two password-manager education structures", () => {
   const page = read("src/app/page.tsx");
   for (const path of [
-    "src/components/dreelio/WhyPasswordManager.tsx",
-    "src/components/dreelio/PasswordManagerEssentials.tsx",
-    "src/components/dreelio/WhyPasswordManager.module.css",
-    "src/components/dreelio/PasswordManagerEssentials.module.css",
+    "src/components/velora/WhyPasswordManager.tsx",
+    "src/components/velora/PasswordManagerEssentials.tsx",
+    "src/components/velora/WhyPasswordManager.module.css",
+    "src/components/velora/PasswordManagerEssentials.module.css",
   ]) {
     assert.equal(exists(path), true, `missing ${path}`);
   }
-  const why = read("src/components/dreelio/WhyPasswordManager.tsx");
-  const essentials = read("src/components/dreelio/PasswordManagerEssentials.tsx");
-  const whyCss = read("src/components/dreelio/WhyPasswordManager.module.css");
-  const essentialsCss = read("src/components/dreelio/PasswordManagerEssentials.module.css");
+  const why = read("src/components/velora/WhyPasswordManager.tsx");
+  const essentials = read("src/components/velora/PasswordManagerEssentials.tsx");
+  const whyCss = read("src/components/velora/WhyPasswordManager.module.css");
+  const essentialsCss = read("src/components/velora/PasswordManagerEssentials.module.css");
 
   assert.match(page, /<WhyPasswordManager\s*\/>/);
   assert.match(page, /<PasswordManagerEssentials\s*\/>/);
@@ -251,7 +251,7 @@ test("public pages use the full viewport shell and the essentials grid has six c
     assert.doesNotMatch(css, /max-width:\s*760px/);
   }
 
-  const essentials = read("src/components/dreelio/PasswordManagerEssentials.tsx");
+  const essentials = read("src/components/velora/PasswordManagerEssentials.tsx");
   assert.equal((essentials.match(/title:\s*"/g) ?? []).length, 6);
   assert.match(essentials, /FingerprintIcon/);
   assert.match(essentials, /SearchIcon/);
@@ -259,15 +259,15 @@ test("public pages use the full viewport shell and the essentials grid has six c
 });
 
 test("header search control has no filled circular background", () => {
-  const css = read("src/components/dreelio/Nav.module.css");
+  const css = read("src/components/velora/Nav.module.css");
   assert.match(css, /\.searchTrigger,\s*\n\.mobileSearchTrigger\s*\{[^}]*background:\s*transparent;/s);
 });
 
 test("public layout and header span the viewport with a functional site search", () => {
-  const sharedCss = read("src/app/dreelio/dreelio.module.css");
-  const nav = read("src/components/dreelio/Nav.tsx");
-  const navCss = read("src/components/dreelio/Nav.module.css");
-  const data = read("src/components/dreelio/data.ts");
+  const sharedCss = read("src/app/velora/velora.module.css");
+  const nav = read("src/components/velora/Nav.tsx");
+  const navCss = read("src/components/velora/Nav.module.css");
+  const data = read("src/components/velora/data.ts");
 
   assert.match(sharedCss, /--maxw:\s*none;/);
   assert.match(navCss, /\.nav\s*\{[^}]*max-width:\s*none;/s);
@@ -283,8 +283,8 @@ test("public layout and header span the viewport with a functional site search",
 });
 
 test("public footer closes the page with identity, navigation, and payment trust", () => {
-  const footer = read("src/components/dreelio/Footer.tsx");
-  const css = read("src/components/dreelio/Footer.module.css");
+  const footer = read("src/components/velora/Footer.tsx");
+  const css = read("src/components/velora/Footer.module.css");
 
   assert.match(footer, /Encrypted before storage\. Yours to unlock\./);
   assert.match(footer, /aria-label=\{col\.heading\}/);
@@ -304,10 +304,10 @@ test("public footer closes the page with identity, navigation, and payment trust
 });
 
 test("security architecture and public explainer match the implemented boundaries", () => {
-  const architecturePath = "src/components/dreelio/SecurityArchitecture.tsx";
+  const architecturePath = "src/components/velora/SecurityArchitecture.tsx";
   const securityPath = "src/app/security/page.tsx";
-  const securityContentPath = "src/components/dreelio/SecurityPageContent.tsx";
-  const sealPath = "src/components/dreelio/VaultSeal.tsx";
+  const securityContentPath = "src/components/velora/SecurityPageContent.tsx";
+  const sealPath = "src/components/velora/VaultSeal.tsx";
 
   assert.equal(exists(architecturePath), true, "missing landing security architecture");
   assert.equal(exists(securityPath), true, "missing public security explainer");
@@ -345,10 +345,10 @@ test("security architecture and public explainer match the implemented boundarie
 
 test("security explainer uses the public shell and an accessible motion story", () => {
   const page = read("src/app/security/page.tsx");
-  const shell = read("src/components/dreelio/PublicPageShell.tsx");
-  const navigation = read("src/components/dreelio/data.ts");
-  const contentPath = "src/components/dreelio/SecurityPageContent.tsx";
-  const visualsPath = "src/components/dreelio/SecurityVisuals.tsx";
+  const shell = read("src/components/velora/PublicPageShell.tsx");
+  const navigation = read("src/components/velora/data.ts");
+  const contentPath = "src/components/velora/SecurityPageContent.tsx";
+  const visualsPath = "src/components/velora/SecurityVisuals.tsx";
 
   assert.equal(exists(contentPath), true, "missing security story client boundary");
   assert.equal(exists(visualsPath), true, "missing security visual explanations");
@@ -384,7 +384,7 @@ test("security explainer uses the public shell and an accessible motion story", 
 });
 
 test("security explainer documents shipped device, access, and billing controls", () => {
-  const content = read("src/components/dreelio/SecurityPageContent.tsx");
+  const content = read("src/components/velora/SecurityPageContent.tsx");
 
   for (const claim of [
     "Protection in practice",
@@ -409,7 +409,7 @@ test("security explainer documents shipped device, access, and billing controls"
 });
 
 test("every public page uses the shared Velora header and footer shell", () => {
-  const shellPath = "src/components/dreelio/PublicPageShell.tsx";
+  const shellPath = "src/components/velora/PublicPageShell.tsx";
   assert.equal(exists(shellPath), true, "missing shared public page shell");
 
   const shell = read(shellPath);

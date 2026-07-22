@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import rootStyles from "../dreelio/dreelio.module.css";
+import rootStyles from "../velora/velora.module.css";
 import { ContactForm } from "@/components/contact/ContactForm";
 import styles from "@/components/contact/Contact.module.css";
-import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
+import { PublicPageShell } from "@/components/velora/PublicPageShell";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({

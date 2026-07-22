@@ -17,7 +17,7 @@ test("FAQ route uses the public shell, unique metadata, and a suppressed-nonce F
 });
 
 test("FAQ content is grouped into categories, each rendered as an accessible native accordion", () => {
-  const content = read("src/components/dreelio/faq/FaqPageContent.tsx");
+  const content = read("src/components/velora/faq/FaqPageContent.tsx");
 
   assert.match(content, /export const FAQ_CATEGORIES/);
   assert.match(content, /<details/);
@@ -43,7 +43,7 @@ test("FAQ content is grouped into categories, each rendered as an accessible nat
 });
 
 test("FAQ page styles are full width, responsive, dark-mode aware, and accessible", () => {
-  const css = read("src/components/dreelio/faq/faq-page.module.css");
+  const css = read("src/components/velora/faq/faq-page.module.css");
 
   assert.match(css, /\.page\s*\{[^}]*width:\s*100%;/s);
   assert.match(css, /overflow-x:\s*clip/);
@@ -56,8 +56,8 @@ test("FAQ page styles are full width, responsive, dark-mode aware, and accessibl
 });
 
 test("FAQ is discoverable through the header nav, site search, footer, and sitemap", () => {
-  const data = read("src/components/dreelio/data.ts");
-  const nav = read("src/components/dreelio/Nav.tsx");
+  const data = read("src/components/velora/data.ts");
+  const nav = read("src/components/velora/Nav.tsx");
   const sitemap = read("src/app/sitemap.ts");
 
   assert.match(data, /label:\s*["']FAQ["'],\s*href:\s*["']\/faq["']/);

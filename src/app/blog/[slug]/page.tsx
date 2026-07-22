@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { BlogPostContent } from "@/components/dreelio/BlogPostContent";
-import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
-import { BLOG_POSTS, getAdjacentPosts, getBlogPost } from "@/components/dreelio/blog-data";
+import { BlogPostContent } from "@/components/velora/BlogPostContent";
+import { PublicPageShell } from "@/components/velora/PublicPageShell";
+import { BLOG_POSTS, getAdjacentPosts, getBlogPost } from "@/components/velora/blog-data";
 import { DEFAULT_OG_IMAGE, SITE_URL, pageMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {

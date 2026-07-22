@@ -1,5 +1,5 @@
 import { ResetPasswordClient } from "@/components/auth/ResetPasswordClient";
-import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
+import { PublicPageShell } from "@/components/velora/PublicPageShell";
 
 export default function ResetPasswordPage() {
   return (

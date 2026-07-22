@@ -9,7 +9,7 @@ import { useToast } from "@/components/Toast";
 import { vaultFetch } from "@/lib/authToken";
 import { openSubscriptionCheckout } from "@/lib/razorpayCheckout";
 import { PLAN_IDS, formatBytes, isPlanId, type PlanId } from "@/lib/plans";
-import { PRICING_TIERS } from "@/components/dreelio/pricing-data";
+import { PRICING_TIERS } from "@/components/velora/pricing-data";
 import type { SettingsAutoUpgrade } from "@/components/settings/settings-types";
 
 type BillingPeriod = "monthly" | "yearly";

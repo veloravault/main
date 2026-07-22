@@ -42,6 +42,6 @@ test("Remotion walkthrough is pinned, deterministic, and renderable", () => {
   const combined = [root, composition].join("\n");
   assert.doesNotMatch(combined, /fetch\(|localStorage|sessionStorage|navigator\.credentials|rzp_|Sakshi/i);
 
-  const preview = read("src/components/dreelio/VeloraProductPreview.tsx");
+  const preview = read("src/components/velora/VeloraProductPreview.tsx");
   assert.doesNotMatch(preview, /from "\.\/VeloraBrand"|from "next\/image"|from "@\//);
 });

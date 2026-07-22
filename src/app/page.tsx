@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
-import styles from "./dreelio/dreelio.module.css";
-import { PublicPageShell } from "@/components/dreelio/PublicPageShell";
-import { Hero } from "@/components/dreelio/Hero";
-import { Devices } from "@/components/dreelio/Devices";
-import { FeatureSplit } from "@/components/dreelio/FeatureSplit";
-import { Features } from "@/components/dreelio/Features";
-import { Highlights } from "@/components/dreelio/Highlights";
-import { SecurityArchitecture } from "@/components/dreelio/SecurityArchitecture";
-import { Pricing } from "@/components/dreelio/Pricing";
-import { FinalCTA } from "@/components/dreelio/FinalCTA";
-import { WhyPasswordManager } from "@/components/dreelio/WhyPasswordManager";
-import { PasswordManagerEssentials } from "@/components/dreelio/PasswordManagerEssentials";
-import { DOCUMENT_PILLS, PROJECT_PILLS, FINANCE_PILLS } from "@/components/dreelio/data";
+import styles from "./velora/velora.module.css";
+import { PublicPageShell } from "@/components/velora/PublicPageShell";
+import { Hero } from "@/components/velora/Hero";
+import { Devices } from "@/components/velora/Devices";
+import { FeatureSplit } from "@/components/velora/FeatureSplit";
+import { Features } from "@/components/velora/Features";
+import { Highlights } from "@/components/velora/Highlights";
+import { SecurityArchitecture } from "@/components/velora/SecurityArchitecture";
+import { Pricing } from "@/components/velora/Pricing";
+import { FinalCTA } from "@/components/velora/FinalCTA";
+import { WhyPasswordManager } from "@/components/velora/WhyPasswordManager";
+import { PasswordManagerEssentials } from "@/components/velora/PasswordManagerEssentials";
+import { DOCUMENT_PILLS, PROJECT_PILLS, FINANCE_PILLS } from "@/components/velora/data";
 
 const TITLE = "Velora Vault - One private vault for everything that matters";
 const DESCRIPTION =

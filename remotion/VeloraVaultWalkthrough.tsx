@@ -8,7 +8,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import { VeloraProductPreview } from "../src/components/dreelio/VeloraProductPreview";
+import { VeloraProductPreview } from "../src/components/velora/VeloraProductPreview";
 import styles from "./VeloraVaultWalkthrough.module.css";
 
 const SCENE_FRAMES = 60;

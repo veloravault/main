@@ -6,7 +6,7 @@ const read = (path) =>
   readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("import preview uses real service logo assets", () => {
-  const features = read("src/components/dreelio/Features.tsx");
+  const features = read("src/components/velora/Features.tsx");
 
   assert.match(features, /assets\.nflxext\.com\/.*nficon2016\.png/);
   assert.match(features, /Spotify_Primary_Logo_RGB_Green\.png/);
@@ -15,8 +15,8 @@ test("import preview uses real service logo assets", () => {
 });
 
 test("footer payment marks are downloaded image assets, never hand-drawn markup", () => {
-  const badges = read("src/components/dreelio/PaymentBadges.tsx");
-  const css = read("src/components/dreelio/PaymentBadges.module.css");
+  const badges = read("src/components/velora/PaymentBadges.tsx");
+  const css = read("src/components/velora/PaymentBadges.module.css");
   for (const network of ["visa", "mastercard", "rupay", "upi"]) {
     const path = `public/payment-logos/${network}.svg`;
     assert.equal(existsSync(new URL(`../${path}`, import.meta.url)), true, `${path} must exist`);

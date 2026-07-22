@@ -6,7 +6,7 @@ import {
   SearchIcon,
   ShieldCheckIcon,
 } from "lucide-react";
-import shared from "@/app/dreelio/dreelio.module.css";
+import shared from "@/app/velora/velora.module.css";
 import styles from "./PasswordManagerEssentials.module.css";
 
 const ESSENTIALS = [
