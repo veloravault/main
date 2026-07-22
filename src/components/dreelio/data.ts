@@ -25,7 +25,7 @@ type PublicNavLink = {
 
 type PublicNavSection = {
   heading: string;
-  links: readonly { label: string; href: string }[];
+  links: readonly { label: string; href: string; icon: PublicNavIcon }[];
   highlight?: boolean;
 };
 
@@ -131,8 +131,8 @@ export const PRODUCT_NAV_SECTIONS = [
     highlight: true,
     links: [
       PRODUCT_LINKS[4],
-      { label: "Security", href: "/security" },
-      { label: "Pricing", href: "/pricing" },
+      { label: "Security", href: "/security", icon: "security" },
+      { label: "Pricing", href: "/pricing", icon: "bank-card" },
     ],
   },
 ] as const satisfies readonly PublicNavSection[];
@@ -151,7 +151,7 @@ export const UTILITY_NAV_SECTIONS = [
     highlight: true,
     links: [
       UTILITY_LINKS[3],
-      { label: "Security overview", href: "/security" },
+      { label: "Security overview", href: "/security", icon: "security" },
     ],
   },
 ] as const satisfies readonly PublicNavSection[];
@@ -165,14 +165,17 @@ export const RESOURCE_NAV_SECTIONS = [
     heading: "Trust and privacy",
     links: [
       RESOURCE_LINKS[0],
-      { label: "Privacy policy", href: "/privacy" },
-      { label: "Terms of use", href: "/terms" },
+      { label: "Privacy policy", href: "/privacy", icon: "security" },
+      { label: "Terms of use", href: "/terms", icon: "document" },
     ],
   },
   {
     heading: "Connect",
     highlight: true,
-    links: [RESOURCE_LINKS[3], { label: "Get started free", href: "/signup" }],
+    links: [
+      RESOURCE_LINKS[3],
+      { label: "Get started free", href: "/signup", icon: "workflow" },
+    ],
   },
 ] as const satisfies readonly PublicNavSection[];
 

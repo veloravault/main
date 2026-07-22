@@ -197,16 +197,26 @@ export function Nav({ initialSignedIn = false }: NavProps) {
                         >
                           <h2>{section.heading}</h2>
                           <div className={styles.megaMenuLinks}>
-                            {section.links.map((link) => (
-                              <a
-                                key={link.href}
-                                href={link.href}
-                                className={styles.dropdownLink}
-                              >
-                                <span>{link.label}</span>
-                                <ChevronRightIcon aria-hidden="true" />
-                              </a>
-                            ))}
+                            {section.links.map((link) => {
+                              const Icon = NAV_ICONS[link.icon];
+
+                              return (
+                                <a
+                                  key={link.href}
+                                  href={link.href}
+                                  className={styles.dropdownLink}
+                                >
+                                  <span className={styles.desktopMenuIcon}>
+                                    <Icon aria-hidden="true" />
+                                  </span>
+                                  <span>{link.label}</span>
+                                  <ChevronRightIcon
+                                    className={styles.desktopMenuArrow}
+                                    aria-hidden="true"
+                                  />
+                                </a>
+                              );
+                            })}
                           </div>
                         </section>
                       ))}

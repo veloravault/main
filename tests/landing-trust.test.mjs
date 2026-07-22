@@ -113,7 +113,7 @@ test("public navigation separates products, utilities, resources, and pricing", 
   assert.match(css, /:focus-visible/);
 });
 
-test("desktop navigation uses an attached full-width mega panel", () => {
+test("desktop navigation uses an inset icon-led mega panel", () => {
   const nav = read("src/components/dreelio/Nav.tsx");
   const data = read("src/components/dreelio/data.ts");
   const css = read("src/components/dreelio/Nav.module.css");
@@ -137,15 +137,18 @@ test("desktop navigation uses an attached full-width mega panel", () => {
   assert.match(nav, /group\.sections\.map/);
   assert.match(nav, /className=\{styles\.megaMenuSection\}/);
   assert.match(nav, /<h2>\{section\.heading\}<\/h2>/);
+  assert.match(nav, /const Icon = NAV_ICONS\[link\.icon\]/);
+  assert.match(nav, /className=\{styles\.desktopMenuIcon\}/);
   assert.match(nav, /ChevronRightIcon/);
-  assert.doesNotMatch(nav, /className=\{styles\.dropdownIcon\}/);
-  assert.doesNotMatch(nav, /className=\{styles\.dropdownCopy\}/);
 
   assert.match(css, /\.dropdownPanel\s*\{[^}]*position:\s*fixed;/s);
-  assert.match(css, /\.dropdownPanel\s*\{[^}]*left:\s*var\(--pad\);/s);
-  assert.match(css, /\.dropdownPanel\s*\{[^}]*right:\s*var\(--pad\);/s);
+  assert.match(css, /\.dropdownPanel\s*\{[^}]*left:\s*calc\(var\(--pad\) \+ var\(--dropdown-inset\)\);/s);
+  assert.match(css, /\.dropdownPanel\s*\{[^}]*right:\s*calc\(var\(--pad\) \+ var\(--dropdown-inset\)\);/s);
   assert.match(css, /\.dropdownPanel\s*\{[^}]*border-radius:\s*0\s+0\s+24px\s+24px;/s);
   assert.match(css, /\.dropdownGrid\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\);/s);
+  assert.match(css, /\.dropdownLink\s*\{[^}]*grid-template-columns:\s*36px\s+minmax\(0,\s*1fr\)\s+16px;/s);
+  assert.match(css, /\.desktopMenuIcon\s*\{/);
+  assert.match(css, /\.links\s*>\s*li\s*>\s*a\s*\{/);
   assert.match(css, /\.megaMenuSection\s*\{/);
   assert.match(css, /\.megaMenuSection\[data-highlight="true"\]/);
   assert.match(css, /\.navGroup\[open\] \.navGroupTrigger/);

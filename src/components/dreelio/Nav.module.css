@@ -59,7 +59,7 @@
   padding: 0;
 }
 
-.links a {
+.links > li > a {
   font-size: 16px;
   font-weight: 500;
   color: var(--ink);
@@ -69,7 +69,7 @@
   transition: opacity 0.2s ease;
 }
 
-.links a:hover {
+.links > li > a:hover {
   opacity: 0.6;
 }
 
@@ -131,11 +131,12 @@
 }
 
 .dropdownPanel {
+  --dropdown-inset: clamp(12px, 1.4vw, 24px);
   display: none;
   position: fixed;
   top: 85px;
-  left: var(--pad);
-  right: var(--pad);
+  left: calc(var(--pad) + var(--dropdown-inset));
+  right: calc(var(--pad) + var(--dropdown-inset));
   z-index: 1;
   width: auto;
   padding: 0;
@@ -170,8 +171,8 @@
 
 .megaMenuSection {
   min-width: 0;
-  min-height: 280px;
-  padding: clamp(30px, 3vw, 46px);
+  min-height: 244px;
+  padding: clamp(24px, 2.4vw, 36px);
   border-right: 1px solid var(--line);
 }
 
@@ -184,7 +185,7 @@
 }
 
 .megaMenuSection h2 {
-  margin: 0 0 22px;
+  margin: 0 0 16px;
   color: var(--ink);
   font-size: clamp(20px, 1.7vw, 25px);
   font-weight: 680;
@@ -194,17 +195,17 @@
 .megaMenuLinks {
   display: grid;
   align-content: start;
-  gap: 4px;
+  gap: 2px;
 }
 
 .dropdownLink {
-  display: flex;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 16px;
   min-width: 0;
-  min-height: 44px;
+  min-height: 52px;
   align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  padding: 8px 0;
+  gap: 12px;
+  padding: 5px 0;
   color: var(--accent);
   font-size: 16px;
   font-weight: 650;
@@ -226,15 +227,29 @@
   background: #111;
 }
 
-.dropdownLink svg {
+.desktopMenuIcon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  color: var(--accent);
+}
+
+.desktopMenuIcon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.desktopMenuArrow {
   width: 16px;
   height: 16px;
-  flex: 0 0 auto;
   transition: transform 160ms ease;
 }
 
-.dropdownLink:hover svg,
-.dropdownLink:focus-visible svg {
+.dropdownLink:hover .desktopMenuArrow,
+.dropdownLink:focus-visible .desktopMenuArrow {
   transform: translateX(2px);
 }
 
