@@ -8,14 +8,22 @@ test("utility hero precedes a separate workbench section", () => {
   const source = read("src/app/utilities/UtilityPageLayout.tsx");
   const heroStart = source.indexOf("className={styles.hero}");
   const placeholder = source.indexOf("className={styles.heroVisual}");
+  const heroClose = source.indexOf("</motion.section>", heroStart);
   const workbenchSection = source.indexOf("className={styles.workbenchSection}");
   const workbench = source.indexOf("{props.workbench}");
+  const heroVisualOpenEnd = source.indexOf(">", placeholder);
 
   assert.ok(heroStart >= 0, "shared hero exists");
   assert.ok(placeholder > heroStart, "placeholder belongs to the hero");
+  assert.ok(heroClose > placeholder, "hero closes after its visual");
+  assert.ok(heroClose < workbenchSection, "workbench section follows the hero closing tag");
   assert.ok(workbenchSection > placeholder, "workbench section follows the hero");
   assert.ok(workbench > workbenchSection, "workbench renders inside its own section");
-  assert.match(source, /className=\{styles\.heroVisual\}[\s\S]*aria-hidden="true"/);
+  assert.ok(heroVisualOpenEnd > placeholder, "hero visual opening tag closes");
+  assert.match(
+    source.slice(placeholder, heroVisualOpenEnd + 1),
+    /aria-hidden="true"/,
+  );
   assert.equal(source.match(/\{props\.workbench\}/g)?.length, 1);
 });
 
@@ -129,8 +137,12 @@ test("generator workbenches use controls-first vertical hierarchy", () => {
     const bodyEnd = source.indexOf("</UtilityWorkbench>", bodyStart);
     assert.ok(bodyStart >= 0 && bodyEnd > bodyStart, `${path} exposes the shared workbench body`);
     const body = source.slice(bodyStart, bodyEnd);
+    const controlsIndex = body.indexOf("styles.controlsPanel");
+    const outputIndex = body.indexOf("<UtilityOutput");
+    assert.ok(controlsIndex >= 0, `${path} renders a controls panel inside the workbench body`);
+    assert.ok(outputIndex >= 0, `${path} renders utility output inside the workbench body`);
     assert.ok(
-      body.indexOf("styles.controlsPanel") < body.indexOf("<UtilityOutput"),
+      controlsIndex < outputIndex,
       `${path} renders controls before output`,
     );
   }
