@@ -41,6 +41,21 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* Smooth in-page scrolling (anchor links, scrollIntoView, scrollTo) site-wide.
+   Every reduced-motion block already scattered through the marketing site's
+   CSS modules forces `scroll-behavior: auto !important` back on for
+   prefers-reduced-motion - this is the base behavior those overrides were
+   written to cancel. */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 /* ─── Light Mode - pure iOS/macOS system palette ─────────────── */
 :root {
   --apple-spring: 300ms cubic-bezier(.22, .88, .36, 1);
