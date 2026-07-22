@@ -746,10 +746,12 @@ Add a new section between the existing `apple-grouped-list` (Auto-lock/Face ID/P
 
 ```tsx
 <div className="settings-section-label">Master password</div>
-<button type="button" className="settings-action-row system-interactive" onClick={() => setIsChangingMasterPassword(true)}>
-  <LockIcon aria-hidden="true" />
-  <span><strong>Change master password</strong><small>Re-encrypts your entire vault with a new key.</small></span>
-</button>
+<div className="settings-group">
+  <button type="button" className="settings-action-row system-interactive" onClick={() => setIsChangingMasterPassword(true)}>
+    <LockIcon aria-hidden="true" />
+    <span><strong>Change master password</strong><small>Re-encrypts your entire vault with a new key.</small></span>
+  </button>
+</div>
 ```
 
 Add the sheet itself right before the closing `</section>` (alongside the existing PIN-setup `<AdaptiveSheet>`):
