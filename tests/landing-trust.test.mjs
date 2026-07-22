@@ -97,6 +97,19 @@ test("mobile navigation and homepage cards keep nested content inside the viewpo
   assert.match(previewCss, /\.detailCard\s*\{[^}]*display:\s*none;/s);
 });
 
+test("homepage sections use pure white and black canvases without changing the footer", () => {
+  const sharedCss = read("src/app/dreelio/dreelio.module.css");
+  const featuresCss = read("src/components/dreelio/Features.module.css");
+  const pricingCss = read("src/components/dreelio/Pricing.module.css");
+  const footerCss = read("src/components/dreelio/Footer.module.css");
+
+  assert.match(sharedCss, /\.page\s*>\s*section\s*\{[^}]*background:\s*#fff(?:fff)?;/s);
+  assert.match(sharedCss, /:global\(\.dark\)\s+\.page\s*>\s*section\s*\{[^}]*background:\s*#000(?:000)?;/s);
+  assert.doesNotMatch(featuresCss, /\.section\s*\{[^}]*background:\s*var\(--surface-alt\)/s);
+  assert.doesNotMatch(pricingCss, /\.section\s*\{[^}]*background:\s*var\(--surface-alt\)/s);
+  assert.match(footerCss, /#0b0b0d/i);
+});
+
 test("public footer closes the page with identity, navigation, and payment trust", () => {
   const footer = read("src/components/dreelio/Footer.tsx");
   const css = read("src/components/dreelio/Footer.module.css");

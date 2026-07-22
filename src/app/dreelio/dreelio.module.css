@@ -83,6 +83,16 @@
   overflow-x: clip;
 }
 
+/* Keep the complete homepage on one uninterrupted canvas. The footer lives
+   outside .page and intentionally retains its own dark closing treatment. */
+.page > section {
+  background: #ffffff;
+}
+
+:global(.dark) .page > section {
+  background: #000000;
+}
+
 .page :global(#features),
 .page :global(#benefits),
 .page :global(#security),
