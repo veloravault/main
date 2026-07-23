@@ -542,10 +542,12 @@ export default function VaultApp() {
                     padding: "14px",
                   }}
                 >
-                  <GlobalSearch onNavigate={handleNavigate} autoFocus />
+                  <div className="sticky top-0 z-10 pb-2" style={{ background: "var(--card)" }}>
+                    <GlobalSearch onNavigate={handleNavigate} autoFocus />
+                  </div>
 
                   {/* Jump to a section */}
-                  <div className="px-1 pt-4">
+                  <div className="px-1 pt-2">
                     <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest px-2 mb-2">
                       Jump to
                     </p>

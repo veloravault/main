@@ -785,12 +785,13 @@ body {
 .vault-header-profile > span.is-active { border-color: var(--system-blue); box-shadow: 0 0 0 3px color-mix(in srgb,var(--system-blue) 22%,transparent); }
 .vault-header-mobile-search,.vault-header-more { display: none; }
 .vault-command-palette { position: fixed; z-index: 50; top: 76px; left: 0; right: 0; margin: 0 auto; width: min(540px,calc(100vw - 32px)); }
-.vault-command-surface { overflow: hidden; border: 1px solid var(--separator); border-radius: 20px; background: var(--elevated-bg); box-shadow: 0 26px 70px rgba(0,0,0,.22); }
+.vault-command-surface { max-height: calc(100dvh - 116px); overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; border: 1px solid var(--separator); border-radius: 20px; background: var(--elevated-bg); box-shadow: 0 26px 70px rgba(0,0,0,.22); }
 
 [data-slot="dialog-content"].responsive-form-sheet > form,
 [data-slot="dialog-content"].responsive-form-sheet > [data-slot="dialog-header"] + div,
 [data-slot="dialog-content"].responsive-import-sheet .magic-import-scroll,
 .wallet-mobile-sheet .wallet-details-body,
+.vault-command-surface,
 .vault-command-surface *,
 .scrollbar-hide {
   scrollbar-width: none;
@@ -801,6 +802,7 @@ body {
 [data-slot="dialog-content"].responsive-form-sheet > [data-slot="dialog-header"] + div::-webkit-scrollbar,
 [data-slot="dialog-content"].responsive-import-sheet .magic-import-scroll::-webkit-scrollbar,
 .wallet-mobile-sheet .wallet-details-body::-webkit-scrollbar,
+.vault-command-surface::-webkit-scrollbar,
 .vault-command-surface *::-webkit-scrollbar,
 .scrollbar-hide::-webkit-scrollbar {
   width: 0;
@@ -852,7 +854,7 @@ body {
   .vault-header-search,.vault-header-import,.vault-header-theme,.vault-header-profile { display: none; }
   .vault-header-mobile-search,.vault-header-more { display: grid; width: 40px; height: 40px; border-radius: 999px; }
   .vault-command-palette { top: calc(68px + env(safe-area-inset-top,0px)); left: 12px; right: 12px; width: auto; transform: none; margin: 0; }
-  .vault-command-surface { border-radius: 22px; }
+  .vault-command-surface { border-radius: 22px; max-height: calc(100dvh - 68px - env(safe-area-inset-top,0px) - 24px); }
 
   [data-slot="dialog-content"].responsive-form-sheet,
   [data-slot="dialog-content"].responsive-import-sheet { --tw-translate-x: 0px !important; --tw-translate-y: 0px !important; top: auto !important; right: 0 !important; bottom: 0 !important; left: 0 !important; display: flex; width: 100% !important; max-width: none !important; max-height: min(82dvh,720px); flex-direction: column; transform: none !important; overflow: hidden; margin: 0 !important; padding: 30px 20px calc(22px + env(safe-area-inset-bottom,0px)); border-radius: 28px 28px 0 0 !important; }
