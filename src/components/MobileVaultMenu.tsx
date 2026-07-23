@@ -4,6 +4,7 @@ import { useState } from "react";
 import { BuildingIcon, CheckIcon, ChevronRightIcon, LockIcon, MoreHorizontalIcon, PaletteIcon, SettingsIcon, Wand2Icon } from "lucide-react";
 import { AdaptiveSheet, AdaptiveSheetBody } from "@/components/ui/adaptive-sheet";
 import type { Theme } from "@/components/ThemeProvider";
+import { CREDENTIAL_TYPE_CONFIGS, type CredentialType } from "@/lib/credentialTypes";
 
 type ThemeChoice = Theme;
 
@@ -11,6 +12,7 @@ export function MobileVaultMenu(props: {
   theme: Theme | undefined;
   setTheme: (theme: Theme) => void;
   onNavigateBanks: () => void;
+  onNavigateCredential: (type: CredentialType) => void;
   onNavigateSettings: () => void;
   onMagicImport: () => void;
   onLock: () => void;
@@ -30,6 +32,9 @@ export function MobileVaultMenu(props: {
       <AdaptiveSheet open={open} onOpenChange={setOpen} title="Vault actions" description="Navigate and control this device." size="sm" className="mobile-vault-menu">
         <AdaptiveSheetBody className="mobile-vault-menu-body">
           <MenuRow icon={BuildingIcon} label="Bank Accounts" detail="Routing and account details" onClick={() => act(props.onNavigateBanks)} />
+          {CREDENTIAL_TYPE_CONFIGS.map((config) => (
+            <MenuRow key={config.type} icon={config.icon} label={config.label} detail={`Manage your ${config.label.toLowerCase()}`} onClick={() => act(() => props.onNavigateCredential(config.type))} />
+          ))}
           <MenuRow icon={SettingsIcon} label="Profile & Settings" detail="Account, security and backup" onClick={() => act(props.onNavigateSettings)} />
           <MenuRow icon={Wand2Icon} label="Magic Import" detail="Review data before saving" onClick={() => act(props.onMagicImport)} />
           <MenuRow icon={PaletteIcon} label="Appearance" detail={activeTheme[0].toUpperCase() + activeTheme.slice(1)} onClick={() => { setOpen(false); window.setTimeout(() => setAppearanceOpen(true), 120); }} />

@@ -12,6 +12,8 @@ import { DocumentVault } from "@/components/DocumentVault";
 import { NotesVault } from "@/components/NotesVault";
 import { WalletVault } from "@/components/WalletVault";
 import { BankVault } from "@/components/BankVault";
+import { CredentialVault } from "@/components/CredentialVault";
+import { CREDENTIAL_TYPE_CONFIGS, type CredentialType } from "@/lib/credentialTypes";
 import { Settings } from "@/components/settings/Settings";
 import { MobileVaultMenu } from "@/components/MobileVaultMenu";
 import { GlobalMagicImport } from "@/components/GlobalMagicImport";
@@ -46,7 +48,7 @@ import { isPlanId, type PlanId } from "@/lib/plans";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { createPortal } from "react-dom";
 
-type Tab = "dashboard" | "passwords" | "documents" | "notes" | "wallet" | "banks" | "profile";
+type Tab = "dashboard" | "passwords" | "documents" | "notes" | "wallet" | "banks" | CredentialType | "profile";
 
 const NAV_SECTIONS = [
   {
@@ -63,9 +65,15 @@ const NAV_SECTIONS = [
       { tab: "notes"     as Tab, icon: FileIcon,        label: "Notes"      },
       { tab: "wallet"    as Tab, icon: CreditCardIcon,  label: "Wallet"     },
       { tab: "banks"     as Tab, icon: BuildingIcon,    label: "Bank Accounts" },
+      ...CREDENTIAL_TYPE_CONFIGS.map((config) => ({ tab: config.type as Tab, icon: config.icon, label: config.label })),
     ],
   },
 ];
+
+// Mobile bottom tab bar has room for a handful of icons - Bank Accounts was
+// already excluded and moved into the "more actions" sheet for the same
+// reason; the five credential tabs join it there instead of the tab bar.
+const MOBILE_TAB_BAR_EXCLUDED: Tab[] = ["banks", ...CREDENTIAL_TYPE_CONFIGS.map((config) => config.type as Tab)];
 
 // All tabs for header title lookup and search (includes profile)
 const ALL_TABS_WITH_PROFILE = [
@@ -492,7 +500,7 @@ export default function VaultApp() {
               <span className={activeTab === "profile" ? "is-active" : ""}><PresetAvatar kind={avatarKind} name={displayName} email={sessionUser.email} title={displayName} /></span>
             </button>
             <button type="button" onClick={() => setSearchOpen(true)} className="vault-header-icon vault-header-mobile-search" aria-label="Search"><SearchIcon /></button>
-            <div className="md:hidden"><MobileVaultMenu theme={theme} setTheme={setTheme} onNavigateBanks={() => handleNavigate("banks")} onNavigateSettings={() => handleNavigate("profile")} onMagicImport={() => setIsGlobalImportOpen(true)} onLock={handleLockVault} /></div>
+            <div className="md:hidden"><MobileVaultMenu theme={theme} setTheme={setTheme} onNavigateBanks={() => handleNavigate("banks")} onNavigateCredential={(type) => handleNavigate(type)} onNavigateSettings={() => handleNavigate("profile")} onMagicImport={() => setIsGlobalImportOpen(true)} onLock={handleLockVault} /></div>
 
           </div>
         </header>
@@ -584,6 +592,11 @@ export default function VaultApp() {
             <div style={{ display: activeTab === "notes"     ? undefined : "none" }}><NotesVault {...refreshableProps} /></div>
             <div style={{ display: activeTab === "wallet"    ? undefined : "none" }}><WalletVault {...refreshableProps} /></div>
             <div style={{ display: activeTab === "banks"     ? undefined : "none" }}><BankVault {...refreshableProps} /></div>
+            {CREDENTIAL_TYPE_CONFIGS.map((config) => (
+              <div key={config.type} style={{ display: activeTab === config.type ? undefined : "none" }}>
+                <CredentialVault config={config} {...refreshableProps} />
+              </div>
+            ))}
             <div style={{ display: activeTab === "profile"   ? undefined : "none" }}><Settings masterPassword={masterPassword} onLock={handleLockVault} initialSection={settingsInitialSection} sectionRequestId={settingsSectionRequestId} autoUpgrade={settingsAutoUpgrade} /></div>
           </div>
         </div>
@@ -600,7 +613,7 @@ export default function VaultApp() {
           className="flex items-end justify-around px-2 pt-2"
           style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom, 12px))" }}
         >
-          {NAV_SECTIONS.flatMap(s => s.items).filter(item => item.tab !== "banks").map(({ tab, icon: Icon, label }) => {
+          {NAV_SECTIONS.flatMap(s => s.items).filter(item => !MOBILE_TAB_BAR_EXCLUDED.includes(item.tab)).map(({ tab, icon: Icon, label }) => {
             const isActive = activeTab === tab;
             return (
               <button
