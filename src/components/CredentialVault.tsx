@@ -110,6 +110,7 @@ export function CredentialVault({ config, masterPassword, focusedItemId, refresh
   const [newTitle, setNewTitle] = useState("");
   const [formValues, setFormValues] = useState<Record<string, string>>(() => emptyValues(config.fields));
   const [addItemError, setAddItemError] = useState<string | null>(null);
+  const [isSavingAdd, setIsSavingAdd] = useState(false);
 
   const [editingItem, setEditingItem] = useState<DecryptedCredential | null>(null);
   const [editTitle, setEditTitle] = useState("");
@@ -189,12 +190,14 @@ export function CredentialVault({ config, masterPassword, focusedItemId, refresh
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSavingAdd) return;
     const missingRequired = config.fields.some((field) => field.required && !formValues[field.key]?.trim());
     if (!newTitle.trim() || missingRequired) {
       setAddItemError("Fill in every required field before saving.");
       return;
     }
     setAddItemError(null);
+    setIsSavingAdd(true);
 
     try {
       const encrypted = await encryptText(JSON.stringify(formValues), masterPassword);
@@ -219,6 +222,8 @@ export function CredentialVault({ config, masterPassword, focusedItemId, refresh
     } catch (err) {
       console.error(`Failed to add ${config.type} item:`, err);
       toast(err instanceof Error ? err.message : `Failed to save the ${config.itemNoun}. Please try again.`, "error");
+    } finally {
+      setIsSavingAdd(false);
     }
   };
 
@@ -365,7 +370,7 @@ export function CredentialVault({ config, masterPassword, focusedItemId, refresh
                 ))}
                 {addItemError && <p className="text-[13px] text-destructive px-1" role="alert">{addItemError}</p>}
               </AdaptiveSheetBody>
-              <AdaptiveSheetFooter><Button type="button" variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button type="submit" className="import-primary-action">Save</Button></AdaptiveSheetFooter>
+              <AdaptiveSheetFooter><Button type="button" variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button type="submit" disabled={isSavingAdd} className="import-primary-action">{isSavingAdd ? "Saving…" : "Save"}</Button></AdaptiveSheetFooter>
             </form>
           </AdaptiveSheet>
 

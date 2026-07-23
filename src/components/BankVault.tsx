@@ -69,6 +69,7 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
   const [bankAccount, setBankAccount] = useState("");
   const [bankName, setBankName] = useState("");
   const [addItemError, setAddItemError] = useState<string | null>(null);
+  const [isSavingAdd, setIsSavingAdd] = useState(false);
 
   // Edit Item State
   const [editingItem, setEditingItem] = useState<DecryptedBank | null>(null);
@@ -216,11 +217,13 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSavingAdd) return;
     if (!title.trim() || !bankRouting.trim() || !bankAccount.trim() || !bankName.trim()) {
       setAddItemError("Fill in every field before saving.");
       return;
     }
     setAddItemError(null);
+    setIsSavingAdd(true);
 
     const payload: BankAccountPayload = {
       routing: bankRouting,
@@ -255,6 +258,8 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
     } catch (err) {
       console.error("Failed to add wallet item:", err);
       toast(err instanceof Error ? err.message : "Failed to save the wallet item. Please try again.", "error");
+    } finally {
+      setIsSavingAdd(false);
     }
   };
 
@@ -472,7 +477,7 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
             </div>
             {addItemError && <p className="text-[13px] text-destructive px-1" role="alert">{addItemError}</p>}
             </AdaptiveSheetBody>
-            <AdaptiveSheetFooter><Button type="button" variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button type="submit" className="import-primary-action">Encrypt & Save</Button></AdaptiveSheetFooter>
+            <AdaptiveSheetFooter><Button type="button" variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button type="submit" disabled={isSavingAdd} className="import-primary-action">{isSavingAdd ? "Saving…" : "Encrypt & Save"}</Button></AdaptiveSheetFooter>
             </form>
           </AdaptiveSheet>
 

@@ -98,6 +98,7 @@ export function WalletVault({ masterPassword, focusedItemId, refreshVersion = 0 
   const [ccUpiPin, setCcUpiPin] = useState("");
   const [cardSubtype, setCardSubtype] = useState<"credit" | "debit">("debit");
   const [addItemError, setAddItemError] = useState<string | null>(null);
+  const [isSavingAdd, setIsSavingAdd] = useState(false);
 
   // Edit Item State
   const [editingItem, setEditingItem] = useState<DecryptedWallet | null>(null);
@@ -240,11 +241,13 @@ export function WalletVault({ masterPassword, focusedItemId, refreshVersion = 0 
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSavingAdd) return;
     if (!title.trim() || !ccNumber.trim() || !ccExpiry.trim() || !ccCvv.trim() || !ccName.trim()) {
       setAddItemError("Fill in every field before saving (PIN and UPI PIN are optional).");
       return;
     }
     setAddItemError(null);
+    setIsSavingAdd(true);
 
     const payload: WalletPayload = {
       number: ccNumber, expiry: ccExpiry, cvv: ccCvv, name: ccName,
@@ -278,6 +281,8 @@ export function WalletVault({ masterPassword, focusedItemId, refreshVersion = 0 
     } catch (err) {
       console.error("Failed to add wallet item:", err);
       toast(err instanceof Error ? err.message : "Failed to save the wallet item. Please try again.", "error");
+    } finally {
+      setIsSavingAdd(false);
     }
   };
 
@@ -546,9 +551,10 @@ export function WalletVault({ masterPassword, focusedItemId, refreshVersion = 0 
 
               <Button
                 type="submit"
+                disabled={isSavingAdd}
                 className="w-full h-12 rounded-xl font-semibold text-[17px] mt-4 bg-primary hover:bg-primary/90 text-primary-foreground"
               >
-                Encrypt & Save
+                {isSavingAdd ? "Saving…" : "Encrypt & Save"}
               </Button>
             </form>
           </DialogContent>

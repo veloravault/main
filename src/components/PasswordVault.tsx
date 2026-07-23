@@ -103,6 +103,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
   const [newNotes, setNewNotes] = useState("");
   const [showNewSecret, setShowNewSecret] = useState(false);
   const [addItemError, setAddItemError] = useState<string | null>(null);
+  const [isSavingAdd, setIsSavingAdd] = useState(false);
 
   // Edit Item State
   const [editingItem, setEditingItem] = useState<DecryptedItem | null>(null);
@@ -227,11 +228,13 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSavingAdd) return;
     if (!newTitle.trim() || !newSecret.trim()) {
       setAddItemError("Add a title and a password before saving.");
       return;
     }
     setAddItemError(null);
+    setIsSavingAdd(true);
 
     try {
       // Same structured shape the edit flow and Magic Import use (username/
@@ -275,6 +278,8 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
     } catch (err) {
       console.error("Failed to add item:", err);
       toast("Failed to encrypt and save the secret.", "error");
+    } finally {
+      setIsSavingAdd(false);
     }
   };
 
@@ -740,7 +745,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
               </div>
               {addItemError && <p className="text-[13px] text-destructive mt-3 px-1" role="alert">{addItemError}</p>}
             </AdaptiveSheetBody>
-            <AdaptiveSheetFooter><Button type="button" variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button type="submit" className="import-primary-action">Save Password</Button></AdaptiveSheetFooter>
+            <AdaptiveSheetFooter><Button type="button" variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button type="submit" disabled={isSavingAdd} className="import-primary-action">{isSavingAdd ? "Saving…" : "Save Password"}</Button></AdaptiveSheetFooter>
             </form>
           </AdaptiveSheet>
 

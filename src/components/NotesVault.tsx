@@ -49,6 +49,7 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
   const [addItemError, setAddItemError] = useState<string | null>(null);
+  const [isSavingAdd, setIsSavingAdd] = useState(false);
 
   // Edit Item State
   const [editingItem, setEditingItem] = useState<DecryptedNote | null>(null);
@@ -138,11 +139,13 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSavingAdd) return;
     if (!newTitle.trim() || !newContent.trim()) {
       setAddItemError("Add a title and some content before saving.");
       return;
     }
     setAddItemError(null);
+    setIsSavingAdd(true);
 
     try {
       const encrypted = await encryptText(newContent, masterPassword);
@@ -171,6 +174,8 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
     } catch (err) {
       console.error("Failed to add note:", err);
       toast("Failed to encrypt and save the note.", "error");
+    } finally {
+      setIsSavingAdd(false);
     }
   };
 
@@ -335,7 +340,7 @@ export function NotesVault({ masterPassword, focusedItemId, refreshVersion = 0 }
                 </div>
                 {addItemError && <p className="text-[13px] text-destructive px-1" role="alert">{addItemError}</p>}
               </AdaptiveSheetBody>
-              <AdaptiveSheetFooter><Button type="button" variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button type="submit" className="import-primary-action">Save Note</Button></AdaptiveSheetFooter>
+              <AdaptiveSheetFooter><Button type="button" variant="ghost" onClick={() => setIsAddOpen(false)}>Cancel</Button><Button type="submit" disabled={isSavingAdd} className="import-primary-action">{isSavingAdd ? "Saving…" : "Save Note"}</Button></AdaptiveSheetFooter>
               </form>
           </AdaptiveSheet>
 
