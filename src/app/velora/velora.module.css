@@ -228,28 +228,42 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-/* ---- feature pill (outlined, icon + label) ---- */
+/* ---- feature pill (icon badge + label, elevated card) ---- */
 .featurePill {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 13px 20px;
-  border-radius: 14px;
+  gap: 12px;
+  padding: 12px 18px 12px 12px;
+  border-radius: 16px;
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.6);
-  font-size: 15px;
-  font-weight: 500;
+  background: var(--card-white);
+  font-size: 14.5px;
+  font-weight: 550;
   color: var(--ink);
+  box-shadow: 0 10px 24px -20px rgba(0, 0, 0, 0.3);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
 }
 
-:global(.dark) .featurePill {
-  background: rgba(255, 255, 255, 0.06);
+.featurePill:hover {
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
+  box-shadow: 0 16px 32px -18px rgba(0, 0, 0, 0.28);
 }
 
-.featurePill svg {
-  width: 18px;
-  height: 18px;
-  opacity: 0.85;
+.featurePillIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+.featurePillIcon svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* ---- category tag ---- */

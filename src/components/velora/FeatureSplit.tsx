@@ -1,9 +1,22 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import {
+  BanknoteIcon,
+  CalendarClockIcon,
+  CreditCardIcon,
+  IdCardIcon,
+  KeyRoundIcon,
+  LockKeyholeIcon,
+  NotebookPenIcon,
+  SearchIcon,
+  ShieldCheckIcon,
+  TimerIcon,
+  UploadCloudIcon,
+  Wand2Icon,
+} from "lucide-react";
 import shared from "@/app/velora/velora.module.css";
 import styles from "./FeatureSplit.module.css";
-import { PILL_ICONS } from "./icons";
 import { ParallaxMedia } from "./ParallaxMedia";
 import {
   HOVER_LIFT,
@@ -14,6 +27,23 @@ import {
   staggerItem,
 } from "./motion";
 import { VeloraProductPreview, type VeloraPreviewVariant } from "./VeloraProductPreview";
+
+// Keys must match the actual pill labels passed in from data.ts
+// (PROJECT_PILLS/DOCUMENT_PILLS/FINANCE_PILLS).
+const PILL_ICONS = {
+  "Saved logins": KeyRoundIcon,
+  "Auto-lock timer": TimerIcon,
+  "Secure notes": NotebookPenIcon,
+  "Password health": ShieldCheckIcon,
+  "Identity files": IdCardIcon,
+  "Protected uploads": UploadCloudIcon,
+  "Expiry details": CalendarClockIcon,
+  "Fast search": SearchIcon,
+  Cards: CreditCardIcon,
+  "Bank details": BanknoteIcon,
+  "Encrypted CVV": LockKeyholeIcon,
+  "Magic import": Wand2Icon,
+} as const;
 
 type Props = {
   id?: string;
@@ -56,9 +86,18 @@ export function FeatureSplit({ id, eyebrow, title, body, pills, preview, reverse
         {pills.map((label) => {
           const Icon = PILL_ICONS[label as keyof typeof PILL_ICONS];
           return (
-            <motion.span key={label} className={shared.featurePill} variants={staggerItem}>
-              {Icon ? <Icon /> : null}
-              {label}
+            <motion.span
+              key={label}
+              className={shared.featurePill}
+              variants={staggerItem}
+              whileHover={reduceMotion ? undefined : { y: -3 }}
+            >
+              {Icon && (
+                <span className={shared.featurePillIcon}>
+                  <Icon aria-hidden="true" />
+                </span>
+              )}
+              <span>{label}</span>
             </motion.span>
           );
         })}
