@@ -585,8 +585,8 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
 
                     <div className={`relative z-10 flex justify-between items-center ${isSelectionMode ? 'ml-8' : ''}`}>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <BuildingIcon strokeWidth={2} className="w-5 h-5 text-primary" />
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-b from-indigo-400 to-indigo-600 flex items-center justify-center shadow-sm">
+                          <BuildingIcon strokeWidth={2} className="w-5 h-5 text-white" />
                         </div>
                         <div><span className={`type-row-title block ${expandedBankId === item.id ? 'text-primary' : ''}`}>{item.title}</span><span className="type-metadata text-muted-foreground">Account suffix ••••{(item.payload.account || "").slice(-4)} · IFSC / Routing {item.payload.routing || " - "}</span></div>
                       </div>
@@ -607,7 +607,7 @@ export function BankVault({ masterPassword, focusedItemId, refreshVersion = 0 }:
             <aside id={`bank-detail-${selectedBank.id}`} className="apple-bank-detail apple-detail-pane min-w-0" role="dialog" aria-labelledby={`bank-detail-title-${selectedBank.id}`}>
               <div className="apple-sheet-grabber" />
               <header className="flex items-center justify-between gap-4 px-1 pb-4">
-                <div className="flex min-w-0 items-center gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10"><BuildingIcon className="h-5 w-5 text-primary" /></span><div className="min-w-0"><p className="type-group-label">Bank account</p><h3 id={`bank-detail-title-${selectedBank.id}`} className="mt-0.5 truncate text-[20px] font-semibold tracking-[-0.025em]">{selectedBank.title}</h3></div></div>
+                <div className="flex min-w-0 items-center gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-b from-indigo-400 to-indigo-600 shadow-sm"><BuildingIcon className="h-5 w-5 text-white" /></span><div className="min-w-0"><p className="type-group-label">Bank account</p><h3 id={`bank-detail-title-${selectedBank.id}`} className="mt-0.5 truncate text-[20px] font-semibold tracking-[-0.025em]">{selectedBank.title}</h3></div></div>
                 <button type="button" aria-label="Close account details" onClick={() => setExpandedBankId(null)} className="grid h-9 w-9 place-items-center rounded-full bg-muted text-muted-foreground hover:text-foreground md:hidden"><XIcon className="h-4 w-4" /></button>
               </header>
               <div className="apple-bank-detail-fields overflow-hidden rounded-2xl border border-border/60 bg-background/55 px-4">
