@@ -85,13 +85,13 @@ export async function backupMatchesMasterKey(backup: EncryptedVaultBackup, maste
 }
 
 export interface RestoreProgress {
-  stage: "documents" | "passwords" | "notes" | "wallet";
+  stage: "documents" | "passwords" | "notes" | "wallet" | "credentials";
   completed: number;
   total: number;
 }
 
 export interface RestoreResult {
-  restored: { passwords: number; documents: number; notes: number; wallet: number };
+  restored: { passwords: number; documents: number; notes: number; wallet: number; credentials: number };
   errors: string[];
 }
 
@@ -108,7 +108,7 @@ export async function restoreVaultBackup(backup: EncryptedVaultBackup, onProgres
   const userId = auth.user.id;
 
   const errors: string[] = [];
-  const restored = { passwords: 0, documents: 0, notes: 0, wallet: 0 };
+  const restored = { passwords: 0, documents: 0, notes: 0, wallet: 0, credentials: 0 };
 
   const documentRows = (backup.records.vault_documents ?? []) as Array<Record<string, unknown>>;
   const blobsByPath = new Map(backup.documentBlobs.map((blob) => [blob.storagePath, blob.base64Ciphertext]));
@@ -195,6 +195,24 @@ export async function restoreVaultBackup(backup: EncryptedVaultBackup, onProgres
     if (error) errors.push(`Wallet item "${String(row.title ?? "untitled")}" could not be restored: ${error.message}`);
     else restored.wallet += 1;
     onProgress?.({ stage: "wallet", completed: index + 1, total: walletRows.length });
+  }
+
+  const credentialRows = (backup.records.secure_credentials ?? []) as Array<Record<string, unknown>>;
+  onProgress?.({ stage: "credentials", completed: 0, total: credentialRows.length });
+  for (let index = 0; index < credentialRows.length; index += 1) {
+    const row = credentialRows[index];
+    const { error } = await supabase.from("secure_credentials").insert({
+      user_id: userId,
+      title: row.title,
+      type: row.type,
+      encrypted_content: row.encrypted_content,
+      iv: row.iv,
+      salt: row.salt,
+      category: row.category ?? "Uncategorized",
+    });
+    if (error) errors.push(`Credential "${String(row.title ?? "untitled")}" could not be restored: ${error.message}`);
+    else restored.credentials += 1;
+    onProgress?.({ stage: "credentials", completed: index + 1, total: credentialRows.length });
   }
 
   return { restored, errors };

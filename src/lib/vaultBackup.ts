@@ -8,7 +8,7 @@ export interface BackupManifest {
   version: 1;
   exportedAt: string;
   appVersion: string;
-  counts: Record<"passwords" | "documents" | "notes" | "wallet", number>;
+  counts: Record<"passwords" | "documents" | "notes" | "wallet" | "credentials", number>;
   sha256: string;
 }
 
@@ -43,13 +43,14 @@ export async function exportEncryptedVaultBackup(onProgress?: (completed: number
   const { data: auth, error: authError } = await supabase.auth.getUser();
   if (authError || !auth.user) throw new BackupExportError("Sign in again before exporting your vault.");
 
-  const [passwords, documents, notes, wallet] = await Promise.all([
+  const [passwords, documents, notes, wallet, credentials] = await Promise.all([
     supabase.from("vault_items").select("*"),
     supabase.from("vault_documents").select("*"),
     supabase.from("secure_notes").select("*"),
     supabase.from("secure_wallet").select("*"),
+    supabase.from("secure_credentials").select("*"),
   ]);
-  const queryError = passwords.error ?? documents.error ?? notes.error ?? wallet.error;
+  const queryError = passwords.error ?? documents.error ?? notes.error ?? wallet.error ?? credentials.error;
   if (queryError) throw new BackupExportError(queryError.message);
 
   const documentRows = (documents.data ?? []) as Array<{ title?: string; storage_path?: string }>;
@@ -74,6 +75,7 @@ export async function exportEncryptedVaultBackup(onProgress?: (completed: number
     vault_documents: documents.data ?? [],
     secure_notes: notes.data ?? [],
     secure_wallet: wallet.data ?? [],
+    secure_credentials: credentials.data ?? [],
   };
   const exportedAt = new Date().toISOString();
   const unsigned: EncryptedVaultBackup = {
@@ -87,6 +89,7 @@ export async function exportEncryptedVaultBackup(onProgress?: (completed: number
         documents: records.vault_documents.length,
         notes: records.secure_notes.length,
         wallet: records.secure_wallet.length,
+        credentials: records.secure_credentials.length,
       },
       sha256: "",
     },

@@ -17,11 +17,12 @@ import {
 import { invalidateCache } from "@/lib/vaultCache";
 import { useToast } from "@/components/Toast";
 
-const RECORD_LABELS: Record<"passwords" | "documents" | "notes" | "wallet", string> = {
+const RECORD_LABELS: Record<"passwords" | "documents" | "notes" | "wallet" | "credentials", string> = {
   passwords: "Passwords",
   documents: "Documents",
   notes: "Notes",
   wallet: "Wallet & bank records",
+  credentials: "Credentials",
 };
 
 export function BackupSettings({ masterPassword }: { masterPassword: string }) {
@@ -84,7 +85,8 @@ export function BackupSettings({ masterPassword }: { masterPassword: string }) {
     setRestoreProgress(null);
     try {
       const result = await restoreVaultBackup(parsedBackup.backup, setRestoreProgress);
-      for (const key of ["vault_items", "vault_documents", "secure_notes", "secure_wallet_cards", "secure_wallet_banks"]) {
+      const credentialCacheKeys = ["secure_credentials:ssh_key", "secure_credentials:crypto_wallet", "secure_credentials:api_credential", "secure_credentials:wifi_credential", "secure_credentials:two_factor_backup"];
+      for (const key of ["vault_items", "vault_documents", "secure_notes", "secure_wallet_cards", "secure_wallet_banks", ...credentialCacheKeys]) {
         invalidateCache(key);
       }
       setRestoreResult(result);
@@ -148,7 +150,7 @@ export function BackupSettings({ masterPassword }: { masterPassword: string }) {
           {parsedBackup && !restoreResult && (
             <>
               <div className="settings-backup-confirm"><ShieldCheckIcon aria-hidden="true" /><p>
-                This will add {parsedBackup.manifest.counts.passwords} passwords, {parsedBackup.manifest.counts.documents} documents, {parsedBackup.manifest.counts.notes} notes, and {parsedBackup.manifest.counts.wallet} wallet &amp; bank records to this vault.
+                This will add {parsedBackup.manifest.counts.passwords} passwords, {parsedBackup.manifest.counts.documents} documents, {parsedBackup.manifest.counts.notes} notes, {parsedBackup.manifest.counts.wallet} wallet &amp; bank records, and {parsedBackup.manifest.counts.credentials} credentials to this vault.
               </p></div>
               {keyMismatchWarning && (
                 <div className="settings-danger-warning"><AlertTriangleIcon aria-hidden="true" /><p>This backup may have been created with a different master key. Restored items could show as undecryptable until re-saved with the correct key.</p></div>
@@ -165,7 +167,7 @@ export function BackupSettings({ masterPassword }: { masterPassword: string }) {
           {restoreResult && (
             <>
               <div className="settings-backup-confirm"><CheckCircleIcon aria-hidden="true" /><p>
-                Restored {restoreResult.restored.passwords} passwords, {restoreResult.restored.documents} documents, {restoreResult.restored.notes} notes, and {restoreResult.restored.wallet} wallet &amp; bank records.
+                Restored {restoreResult.restored.passwords} passwords, {restoreResult.restored.documents} documents, {restoreResult.restored.notes} notes, {restoreResult.restored.wallet} wallet &amp; bank records, and {restoreResult.restored.credentials} credentials.
               </p></div>
               {restoreResult.errors.length > 0 && (
                 <div className="settings-danger-warning">
