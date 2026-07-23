@@ -118,7 +118,7 @@ export function AccountSettings({ masterPassword }: { masterPassword: string }) 
   const currentChoice: AvatarChoice = avatarKind ?? "initials";
 
   return (
-    <section className="settings-detail-section" aria-labelledby="settings-account-title">
+    <section className="settings-detail-section account-settings-section" aria-labelledby="settings-account-title">
       <header><p className="type-group-label">Account</p><h2 id="settings-account-title">Your account</h2><p>Manage the identity shown across Velora Vault.</p></header>
 
       <div className="profile-hero">

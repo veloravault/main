@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Loader2Icon, XCircleIcon } from "lucide-react";
 import { AdaptiveSheet, AdaptiveSheetBody, AdaptiveSheetFooter } from "@/components/ui/adaptive-sheet";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/lib/supabase";
 import { PasswordStrengthMeter } from "@/components/auth/PasswordStrengthMeter";
 import { getStrength } from "@/lib/passwordHealth";
 import { useVaultKey } from "@/components/auth/VaultKeyProvider";
@@ -81,7 +82,7 @@ export function ChangeMasterPasswordSheet({ open, onOpenChange }: { open: boolea
     }
 
     // The vault is now re-encrypted with the new password server-side -
-    // everything below is local, best-effort cleanup. A failure here must
+    // everything below is local/best-effort cleanup. A failure here must
     // never be reported as "nothing was changed."
     const hadPinLock = hasPinLock(authenticatedUserId);
     const hadBiometrics = hasBiometricsEnabled(authenticatedUserId);
@@ -93,6 +94,21 @@ export function ChangeMasterPasswordSheet({ open, onOpenChange }: { open: boolea
       // next time, and the user can redo setup from Settings.
     }
 
+    // The saved hint describes the OLD master key - left in place, it would
+    // describe a secret that no longer exists, which is actively misleading
+    // rather than merely unhelpful. Clear it server-side so Account Settings
+    // reflects reality on next load; a failure here is also best-effort.
+    let hadHint = false;
+    try {
+      const { data } = await supabase.auth.getUser();
+      hadHint = Boolean(data.user?.user_metadata?.master_key_hint);
+      if (hadHint) {
+        await supabase.auth.updateUser({ data: { master_key_hint: null } });
+      }
+    } catch {
+      // Best-effort - a stale hint just means the user should set a new one.
+    }
+
     const committed = setMasterKey(newPassword, authenticatedUserId);
     setIsRotating(false);
     reset();
@@ -102,12 +118,15 @@ export function ChangeMasterPasswordSheet({ open, onOpenChange }: { open: boolea
       toast("Master key changed, but your session changed during the process - sign in again to continue.", "error");
       return;
     }
-    toast(
-      hadPinLock || hadBiometrics
-        ? "Master key changed. PIN and Face ID / Touch ID were turned off - set them up again from Settings if you'd like."
-        : "Master key changed.",
-      "success",
-    );
+    let message = "Master key changed.";
+    if (hadHint && (hadPinLock || hadBiometrics)) {
+      message = "Master key changed. Your master key hint and this device's PIN/Face ID/Touch ID were all cleared since they no longer match - set new ones from Settings if you'd like.";
+    } else if (hadHint) {
+      message = "Master key changed. Your master key hint was cleared since it no longer matches - set a new one from Settings if you'd like.";
+    } else if (hadPinLock || hadBiometrics) {
+      message = "Master key changed. PIN and Face ID / Touch ID were turned off - set them up again from Settings if you'd like.";
+    }
+    toast(message, "success");
   };
 
   return (

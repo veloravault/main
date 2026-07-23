@@ -556,6 +556,7 @@ textarea.account-field-input.is-large { min-height: 150px; }
 .settings-avatar.is-hero { width: 132px; height: 132px; }
 .settings-avatar.is-hero > span svg { width: 22px; height: 22px; }
 
+.account-settings-section { max-width: 640px; }
 .profile-hero { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 12px 4px 40px; }
 .profile-hero-avatar-btn { padding: 0; border: 0; background: none; border-radius: 999px; cursor: pointer; margin-bottom: 18px; }
 .profile-hero-avatar-btn:focus-visible { outline: 3px solid color-mix(in srgb, var(--system-blue) 45%, transparent); outline-offset: 4px; border-radius: 999px; }

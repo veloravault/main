@@ -121,7 +121,7 @@ The exact row-count-matched-per-update verification (not just total array length
 
 - Does not touch the Supabase Auth sign-in password.
 - Does not attempt to carry over PIN/biometric unlock automatically - both are cleared and must be re-enabled manually afterward (simpler and safer than re-deriving trust without re-proving the PIN/biometric).
-- Does not modify or clear the master key hint automatically.
+- ~~Does not modify or clear the master key hint automatically.~~ Reversed 2026-07-23 at the user's request: the hint describes the OLD key, so leaving it in place after rotation is actively misleading rather than merely unhelpful. `ChangeMasterPasswordSheet.tsx` now clears it (best-effort, same as PIN/biometric cleanup) when one exists, and tells the user so in the success toast.
 - Does not add a cross-device or cross-tab warning system beyond what already exists (PIN/biometric are already per-device, so other devices simply keep needing their own re-setup after this, same as any other device losing its local PIN/biometric wrapper).
 
 ## 7. Testing Considerations

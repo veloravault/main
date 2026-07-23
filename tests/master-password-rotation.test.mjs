@@ -122,6 +122,29 @@ test("ChangeMasterPasswordSheet verifies the current password locally, and only 
   assert.match(source, /newPassword\.length < 8/);
 });
 
+test("ChangeMasterPasswordSheet clears a stale master key hint after rotation succeeds, best-effort, and tells the user", () => {
+  const source = read("src/components/settings/ChangeMasterPasswordSheet.tsx");
+
+  // The hint is cleared server-side (it describes the OLD key), not just left stale.
+  assert.match(source, /master_key_hint: null/);
+
+  // Only cleared after rotation succeeds, same as PIN/biometric cleanup, and
+  // wrapped so a failure here can't be mistaken for "nothing was changed".
+  const rotateIndex = source.indexOf("await rotateMasterPassword(");
+  const hadHintIndex = source.indexOf("hadHint = Boolean(");
+  const clearHintIndex = source.indexOf("master_key_hint: null");
+  const setMasterKeyIndex = source.indexOf("setMasterKey(newPassword");
+  assert.ok(rotateIndex > -1 && hadHintIndex > rotateIndex, "hint must only be checked after rotation succeeds");
+  assert.ok(clearHintIndex > hadHintIndex, "hint must only be cleared after checking it existed");
+  assert.ok(setMasterKeyIndex > clearHintIndex, "in-memory master key updates after hint cleanup, not before");
+
+  // The success toast tells the user their hint (and/or PIN/biometrics) was
+  // cleared - it must not just say "Master key changed" unconditionally
+  // when something was actually turned off.
+  assert.match(source, /Your master key hint was cleared/);
+  assert.match(source, /hadHint && \(hadPinLock \|\| hadBiometrics\)/);
+});
+
 test("SecuritySettings renders an entry point for changing the master password", () => {
   const source = read("src/components/settings/SecuritySettings.tsx");
   assert.match(source, /import \{ ChangeMasterPasswordSheet \} from "@\/components\/settings\/ChangeMasterPasswordSheet";/);
