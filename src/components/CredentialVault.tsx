@@ -132,7 +132,7 @@ export function CredentialVault({ config, masterPassword, focusedItemId, refresh
   });
 
   useEffect(() => {
-    setIsSecretRevealed(false);
+    queueMicrotask(() => setIsSecretRevealed(false));
   }, [expandedId]);
 
   useEffect(() => {

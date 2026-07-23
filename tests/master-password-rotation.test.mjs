@@ -167,3 +167,10 @@ test("masterPasswordRotation now touches secure_credentials as a fifth table, in
   const rpcIndex = source.indexOf("supabase.rpc(\"rotate_master_key_ciphertexts\"");
   assert.ok(rpcIndex > credentialsBlockStart, "credentials must be rotated before the rpc commit call");
 });
+
+test("ChangeMasterPasswordSheet's stageLabel has a distinct case for every rotation stage, including credentials", () => {
+  const source = read("src/components/settings/ChangeMasterPasswordSheet.tsx");
+  for (const stage of ["items", "notes", "wallet", "documents", "credentials", "committing"]) {
+    assert.match(source, new RegExp(`stage === "${stage}"`), `expected a stageLabel case for "${stage}"`);
+  }
+});

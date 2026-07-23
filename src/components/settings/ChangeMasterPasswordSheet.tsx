@@ -17,6 +17,7 @@ function stageLabel(stage: RotationProgress["stage"]): string {
   if (stage === "notes") return "Re-encrypting secure notes";
   if (stage === "wallet") return "Re-encrypting wallet & bank records";
   if (stage === "documents") return "Re-encrypting documents";
+  if (stage === "credentials") return "Re-encrypting credentials";
   if (stage === "committing") return "Saving changes";
   return "Cleaning up";
 }
