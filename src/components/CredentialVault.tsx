@@ -446,8 +446,8 @@ export function CredentialVault({ config, masterPassword, focusedItemId, refresh
                               {isSelected ? <CheckSquareIcon strokeWidth={2.5} className="w-5 h-5" /> : <SquareIcon strokeWidth={2} className="w-5 h-5 text-muted-foreground/50" />}
                             </div>
                           )}
-                          <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center shrink-0 border border-border">
-                            <Icon strokeWidth={1.75} className="w-5 h-5 text-foreground/80" />
+                          <div className={`w-10 h-10 bg-gradient-to-b ${config.iconGradient} rounded-xl flex items-center justify-center shrink-0 shadow-sm`}>
+                            <Icon strokeWidth={2} className="w-5 h-5 text-white" />
                           </div>
                           <span className={`text-[18px] font-semibold truncate tracking-tight ${isExpanded ? "text-primary" : "text-foreground"}`}>{item.title}</span>
                         </div>

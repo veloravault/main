@@ -29,6 +29,9 @@ export interface CredentialTypeConfig {
   label: string;
   itemNoun: string;
   icon: LucideIcon;
+  /** Tailwind gradient classes ("from-X to-Y") for the list-row icon badge -
+   * matches the color already used for this type in GlobalSearch results. */
+  iconGradient: string;
   primaryFieldKey: string;
   fields: CredentialFieldSchema[];
 }
@@ -38,6 +41,7 @@ export const SSH_KEY_CONFIG: CredentialTypeConfig = {
   label: "SSH Keys",
   itemNoun: "SSH key",
   icon: TerminalIcon,
+  iconGradient: "from-slate-400 to-slate-600",
   primaryFieldKey: "privateKey",
   fields: [
     { key: "privateKey", label: "Private key", type: "textarea", required: true, placeholder: "-----BEGIN OPENSSH PRIVATE KEY-----" },
@@ -53,6 +57,7 @@ export const CRYPTO_WALLET_CONFIG: CredentialTypeConfig = {
   label: "Crypto Passphrases",
   itemNoun: "crypto passphrase",
   icon: BitcoinIcon,
+  iconGradient: "from-orange-400 to-orange-600",
   primaryFieldKey: "seedPhrase",
   fields: [
     { key: "seedPhrase", label: "Seed / recovery phrase", type: "textarea", required: true, placeholder: "word1 word2 word3 ..." },
@@ -66,6 +71,7 @@ export const API_CREDENTIAL_CONFIG: CredentialTypeConfig = {
   label: "API Credentials",
   itemNoun: "API credential",
   icon: KeySquareIcon,
+  iconGradient: "from-cyan-400 to-cyan-600",
   primaryFieldKey: "apiSecret",
   fields: [
     { key: "serviceName", label: "Service name", type: "text", required: false, placeholder: "e.g. Stripe, AWS" },
@@ -80,6 +86,7 @@ export const WIFI_CREDENTIAL_CONFIG: CredentialTypeConfig = {
   label: "WiFi Passwords",
   itemNoun: "WiFi password",
   icon: WifiIcon,
+  iconGradient: "from-teal-400 to-teal-600",
   primaryFieldKey: "password",
   fields: [
     { key: "networkName", label: "Network name (SSID)", type: "text", required: true, placeholder: "e.g. Home-5G" },
@@ -93,6 +100,7 @@ export const TWO_FACTOR_BACKUP_CONFIG: CredentialTypeConfig = {
   label: "2FA Backup Codes",
   itemNoun: "2FA backup code set",
   icon: ShieldEllipsisIcon,
+  iconGradient: "from-rose-400 to-rose-600",
   primaryFieldKey: "codes",
   fields: [
     { key: "serviceName", label: "Service name", type: "text", required: false, placeholder: "e.g. GitHub, Google" },
