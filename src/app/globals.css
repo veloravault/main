@@ -531,6 +531,7 @@ html {
 .account-identity strong { overflow: hidden; font-size: 19px; font-weight: 720; letter-spacing: -0.02em; color: var(--foreground); text-overflow: ellipsis; white-space: nowrap; }
 .account-identity span { overflow: hidden; font-size: 13px; color: var(--muted-foreground); text-overflow: ellipsis; white-space: nowrap; }
 .account-field { padding: 20px 24px; border-top: 1px solid var(--separator); }
+.account-field.no-top-border { border-top: 0; }
 .account-field-label { display: block; margin-bottom: 10px; font-size: 13px; font-weight: 650; color: var(--foreground); }
 .account-field-input { display: block; width: 100%; max-width: 420px; min-height: 46px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--input); color: var(--foreground); font-size: 15px; transition: border-color 140ms ease, box-shadow 140ms ease; }
 .account-field-input::placeholder { color: var(--muted-foreground); }

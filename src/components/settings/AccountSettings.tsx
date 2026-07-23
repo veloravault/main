@@ -117,6 +117,7 @@ export function AccountSettings({ masterPassword }: { masterPassword: string }) 
   return (
     <section className="settings-detail-section" aria-labelledby="settings-account-title">
       <header><p className="type-group-label">Account</p><h2 id="settings-account-title">Your account</h2><p>Manage the identity shown across Velora Vault.</p></header>
+
       <div className="settings-group">
         <div className="account-profile-header">
           <div className="settings-avatar" aria-hidden="true">
@@ -140,10 +141,13 @@ export function AccountSettings({ masterPassword }: { masterPassword: string }) 
             </Button>
           </div>
         </div>
+      </div>
 
+      <div className="settings-section-label">Avatar</div>
+      <div className="settings-group">
         <div className="settings-section-head">
-          <strong>Avatar</strong>
-          <span>Choose how you appear - no photo needed.</span>
+          <strong>Choose how you appear</strong>
+          <span>No photo needed - pick a preset avatar or use your initials.</span>
         </div>
         <div className="settings-avatar-picker" role="radiogroup" aria-label="Avatar style">
           {AVATAR_OPTIONS.map((option) => {
@@ -171,12 +175,13 @@ export function AccountSettings({ masterPassword }: { masterPassword: string }) 
         </div>
       </div>
 
-      <div className="settings-group" style={{ marginTop: 20 }}>
+      <div className="settings-section-label">Master key hint</div>
+      <div className="settings-group">
         <div className="settings-section-head">
-          <strong>Master key hint</strong>
-          <span>A reminder shown at unlock - never the key itself.</span>
+          <strong>A reminder, not a backup</strong>
+          <span>Shown at unlock to jog your memory - it can never contain the key itself.</span>
         </div>
-        <div className="account-field">
+        <div className="account-field no-top-border">
           <label>
             <span className="account-field-label">Hint</span>
             <input
