@@ -3,7 +3,7 @@ import { encryptText, decryptText, encryptFile, decryptFile } from "@/lib/crypto
 import { requestDownloadUrl, downloadFromPresignedUrl, requestUploadUrl, uploadToPresignedUrl, deleteObjects } from "@/lib/r2Client";
 import { chunkKeys } from "@/lib/chunkKeys";
 
-export type RotationStage = "items" | "notes" | "wallet" | "documents" | "committing" | "cleanup";
+export type RotationStage = "items" | "notes" | "wallet" | "documents" | "credentials" | "committing" | "cleanup";
 
 export interface RotationProgress {
   stage: RotationStage;
@@ -17,6 +17,7 @@ type ItemRow = { id: string; encrypted_data: string; iv: string; salt: string };
 type NoteRow = { id: string; encrypted_content: string; iv: string; salt: string };
 type WalletRow = { id: string; encrypted_content: string; iv: string; salt: string };
 type DocumentRow = { id: string; storage_path: string; iv: string; salt: string };
+type CredentialRow = { id: string; encrypted_content: string; iv: string; salt: string };
 
 /**
  * Re-encrypts the entire vault (passwords, notes, wallet/bank, documents)
@@ -33,13 +34,14 @@ export async function rotateMasterPassword(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new MasterPasswordRotationError("Sign in again before changing your master key.");
 
-  const [itemsRes, notesRes, walletRes, documentsRes] = await Promise.all([
+  const [itemsRes, notesRes, walletRes, documentsRes, credentialsRes] = await Promise.all([
     supabase.from("vault_items").select("id,encrypted_data,iv,salt"),
     supabase.from("secure_notes").select("id,encrypted_content,iv,salt"),
     supabase.from("secure_wallet").select("id,encrypted_content,iv,salt"),
     supabase.from("vault_documents").select("id,storage_path,iv,salt"),
+    supabase.from("secure_credentials").select("id,encrypted_content,iv,salt"),
   ]);
-  if (itemsRes.error || notesRes.error || walletRes.error || documentsRes.error) {
+  if (itemsRes.error || notesRes.error || walletRes.error || documentsRes.error || credentialsRes.error) {
     throw new MasterPasswordRotationError("Could not read your vault. Nothing was changed.");
   }
 
@@ -47,7 +49,8 @@ export async function rotateMasterPassword(
   const notes = (notesRes.data ?? []) as NoteRow[];
   const wallet = (walletRes.data ?? []) as WalletRow[];
   const documents = (documentsRes.data ?? []) as DocumentRow[];
-  const totalRows = items.length + notes.length + wallet.length + documents.length;
+  const credentials = (credentialsRes.data ?? []) as CredentialRow[];
+  const totalRows = items.length + notes.length + wallet.length + documents.length + credentials.length;
   let completed = 0;
 
   const rotatedItems = [];
@@ -92,12 +95,22 @@ export async function rotateMasterPassword(
     onProgress?.({ stage: "documents", completed, total: totalRows });
   }
 
+  const rotatedCredentials = [];
+  for (const row of credentials) {
+    const plaintext = await decryptText(row.encrypted_content, row.salt, row.iv, oldPassword);
+    const encrypted = await encryptText(plaintext, newPassword);
+    rotatedCredentials.push({ id: row.id, encrypted_content: encrypted.ciphertext, iv: encrypted.iv, salt: encrypted.salt });
+    completed += 1;
+    onProgress?.({ stage: "credentials", completed, total: totalRows });
+  }
+
   onProgress?.({ stage: "committing", completed: totalRows, total: totalRows });
   const { error: rpcError } = await supabase.rpc("rotate_master_key_ciphertexts", {
     p_items: rotatedItems,
     p_notes: rotatedNotes,
     p_wallet: rotatedWallet,
     p_documents: rotatedDocuments,
+    p_credentials: rotatedCredentials,
   });
   if (rpcError) {
     if (rpcError.code === "P0001") {

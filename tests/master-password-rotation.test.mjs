@@ -127,3 +127,43 @@ test("SecuritySettings renders an entry point for changing the master password",
   assert.match(source, /import \{ ChangeMasterPasswordSheet \} from "@\/components\/settings\/ChangeMasterPasswordSheet";/);
   assert.match(source, /<ChangeMasterPasswordSheet open=\{isChangingMasterPassword\} onOpenChange=\{setIsChangingMasterPassword\} \/>/);
 });
+
+test("rotate_master_key_ciphertexts v2 migration adds secure_credentials as a fifth table, replacing the old 4-parameter function", () => {
+  const sql = read("supabase/migrations/20260723160000_rotate_master_key_ciphertexts_v2.sql");
+
+  // The old 4-parameter overload is dropped outright, not left dangling with stale grants.
+  assert.match(sql, /drop function if exists public\.rotate_master_key_ciphertexts\(jsonb, jsonb, jsonb, jsonb\);/);
+
+  assert.match(sql, /security definer/);
+  assert.match(sql, /set search_path = ''/);
+
+  assert.match(sql, /jsonb_array_length\(p_credentials\)\s*!=\s*v_expected_credentials/);
+  assert.match(sql, /update public\.secure_credentials as t/);
+  assert.match(sql, /from jsonb_to_recordset\(p_credentials\) as r\(id uuid, encrypted_content text, iv text, salt text\)/);
+  assert.match(sql, /where t\.id = r\.id and t\.user_id = auth\.uid\(\);/);
+
+  const diagnosticsCount = (sql.match(/get diagnostics v_updated = row_count/g) ?? []).length;
+  assert.equal(diagnosticsCount, 5, "expected one row-count check per table (items, notes, wallet, documents, credentials)");
+
+  assert.match(sql, /revoke all on function public\.rotate_master_key_ciphertexts\(jsonb, jsonb, jsonb, jsonb, jsonb\) from public, anon, authenticated;/);
+  assert.match(sql, /grant execute on function public\.rotate_master_key_ciphertexts\(jsonb, jsonb, jsonb, jsonb, jsonb\) to authenticated;/);
+  assert.doesNotMatch(sql, /grant execute[^;]*to[^;]*anon/);
+});
+
+test("masterPasswordRotation now touches secure_credentials as a fifth table, in the same old-then-new password order", () => {
+  const source = read("src/lib/masterPasswordRotation.ts");
+
+  assert.match(source, /from\("secure_credentials"\)/);
+  assert.match(source, /p_credentials:/);
+
+  // The credentials loop decrypts with the old password and re-encrypts with the new one, same as every other table.
+  const credentialsBlockStart = source.indexOf("for (const row of credentials)");
+  assert.ok(credentialsBlockStart > -1, "expected a decrypt/re-encrypt loop over `credentials`");
+  const credentialsBlock = source.slice(credentialsBlockStart, source.indexOf("onProgress?.({ stage: \"committing\""));
+  assert.match(credentialsBlock, /decryptText\([^)]*oldPassword\)/);
+  assert.match(credentialsBlock, /encryptText\([^)]*newPassword\)/);
+
+  // The RPC call is still made exactly once, with all five payloads, after every loop.
+  const rpcIndex = source.indexOf("supabase.rpc(\"rotate_master_key_ciphertexts\"");
+  assert.ok(rpcIndex > credentialsBlockStart, "credentials must be rotated before the rpc commit call");
+});
