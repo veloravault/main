@@ -2,9 +2,10 @@
 // the section components stay presentational.
 
 export type PublicNavIcon =
+  | "api"
   | "bank-card"
   | "contact"
-  | "credential"
+  | "crypto"
   | "document"
   | "faq"
   | "help"
@@ -13,8 +14,11 @@ export type PublicNavIcon =
   | "password"
   | "passphrase"
   | "security"
+  | "ssh"
   | "strength"
+  | "twofa"
   | "username"
+  | "wifi"
   | "workflow";
 
 type PublicNavLink = {
@@ -64,10 +68,34 @@ export const PRODUCT_LINKS = [
     icon: "import",
   },
   {
-    label: "Credential Vault",
-    href: "/features/credential-vault",
-    description: "Store SSH keys, API credentials, WiFi passwords, and more.",
-    icon: "credential",
+    label: "SSH Keys",
+    href: "/features/ssh-keys",
+    description: "Store private keys, hosts, and passphrases together.",
+    icon: "ssh",
+  },
+  {
+    label: "Crypto Passphrases",
+    href: "/features/crypto-passphrases",
+    description: "Protect a seed phrase and wallet address, encrypted.",
+    icon: "crypto",
+  },
+  {
+    label: "API Credentials",
+    href: "/features/api-credentials",
+    description: "Keep a service name, key, and secret together.",
+    icon: "api",
+  },
+  {
+    label: "WiFi Passwords",
+    href: "/features/wifi-passwords",
+    description: "Save a network name and password once, encrypted.",
+    icon: "wifi",
+  },
+  {
+    label: "2FA Backup Codes",
+    href: "/features/2fa-backup-codes",
+    description: "Keep one-time recovery codes ready when you need them.",
+    icon: "twofa",
   },
 ] as const satisfies readonly PublicNavLink[];
 
@@ -138,7 +166,7 @@ export const PRODUCT_NAV_SECTIONS = [
   },
   {
     heading: "Vault features",
-    links: [PRODUCT_LINKS[2], PRODUCT_LINKS[3], PRODUCT_LINKS[5]],
+    links: [PRODUCT_LINKS[2], PRODUCT_LINKS[3], PRODUCT_LINKS[5], PRODUCT_LINKS[6], PRODUCT_LINKS[7], PRODUCT_LINKS[8], PRODUCT_LINKS[9]],
   },
   {
     heading: "Explore Velora",
@@ -212,7 +240,11 @@ export const SEARCH_ITEMS = [
   { label: "Secure documents", href: "/features/secure-documents", keywords: "files upload identity storage", popular: false },
   { label: "Digital wallet", href: "/features/digital-wallet", keywords: "cards bank accounts financial records", popular: false },
   { label: "Magic Import", href: "/features/magic-import", keywords: "ai extract migrate paste review", popular: false },
-  { label: "Credential vault", href: "/features/credential-vault", keywords: "ssh keys api credentials wifi password 2fa backup codes crypto passphrase", popular: false },
+  { label: "SSH keys", href: "/features/ssh-keys", keywords: "private key public key host passphrase server", popular: false },
+  { label: "Crypto passphrases", href: "/features/crypto-passphrases", keywords: "seed phrase wallet address crypto", popular: false },
+  { label: "API credentials", href: "/features/api-credentials", keywords: "api key secret service credential", popular: false },
+  { label: "WiFi passwords", href: "/features/wifi-passwords", keywords: "network ssid router password", popular: false },
+  { label: "2FA backup codes", href: "/features/2fa-backup-codes", keywords: "two factor recovery codes authenticator", popular: false },
   { label: "Help center", href: "/help", keywords: "support recovery setup answers", popular: true },
   { label: "FAQ", href: "/faq", keywords: "frequently asked questions answers", popular: true },
   { label: "Security", href: "/security", keywords: "encryption privacy master key", popular: true },
@@ -305,7 +337,16 @@ export const FOOTER_COLUMNS = [
       { label: "Secure documents", href: "/features/secure-documents" },
       { label: "Digital wallet", href: "/features/digital-wallet" },
       { label: "Magic Import", href: "/features/magic-import" },
-      { label: "Credential vault", href: "/features/credential-vault" },
+    ],
+  },
+  {
+    heading: "Credentials",
+    links: [
+      { label: "SSH keys", href: "/features/ssh-keys" },
+      { label: "Crypto passphrases", href: "/features/crypto-passphrases" },
+      { label: "API credentials", href: "/features/api-credentials" },
+      { label: "WiFi passwords", href: "/features/wifi-passwords" },
+      { label: "2FA backup codes", href: "/features/2fa-backup-codes" },
     ],
   },
   {

@@ -22,7 +22,11 @@ const VISUAL_LABELS: Record<ProductPageId, string> = {
   "secure-documents": "Velora Vault secure document workspace preview",
   "digital-wallet": "Velora Vault digital wallet preview",
   "magic-import": "Velora Vault Magic Import review flow",
-  "credential-vault": "Velora Vault credential vault preview",
+  "ssh-keys": "Velora Vault SSH keys preview",
+  "crypto-passphrases": "Velora Vault crypto passphrases preview",
+  "api-credentials": "Velora Vault API credentials preview",
+  "wifi-passwords": "Velora Vault WiFi passwords preview",
+  "2fa-backup-codes": "Velora Vault 2FA backup codes preview",
 };
 
 function VisualHeader({ title }: { title: string }) {
@@ -141,17 +145,17 @@ function ImportVisual() {
   );
 }
 
-function CredentialVaultVisual() {
+function SshKeysVisual() {
   return (
     <>
-      <VisualHeader title="Credential vault" />
-      <div className={styles.visualSearch}><SearchIcon /> Search everything</div>
+      <VisualHeader title="SSH Keys" />
+      <div className={styles.visualSearch}><SearchIcon /> Search SSH keys</div>
       <div className={styles.passwordVisualGrid}>
         <div className={styles.visualNav}>
-          <span data-active><TerminalIcon /> SSH Keys <b>4</b></span>
-          <span><BitcoinIcon /> Crypto <b>1</b></span>
-          <span><KeySquareIcon /> API Keys <b>6</b></span>
-          <span><WifiIcon /> WiFi <b>2</b></span>
+          <span data-active><TerminalIcon /> Production server</span>
+          <span><TerminalIcon /> Staging box</span>
+          <span><TerminalIcon /> Personal laptop</span>
+          <span><TerminalIcon /> Backup server</span>
         </div>
         <article className={styles.passwordDetail}>
           <small>Selected record</small>
@@ -159,6 +163,107 @@ function CredentialVaultVisual() {
           <dl>
             <div><dt>Host</dt><dd>deploy.internal</dd></div>
             <div><dt>Private key</dt><dd>••••••••••••••</dd></div>
+          </dl>
+          <span><ShieldCheckIcon /> Rotates with your master key</span>
+        </article>
+      </div>
+    </>
+  );
+}
+
+function CryptoPassphrasesVisual() {
+  return (
+    <>
+      <VisualHeader title="Crypto Passphrases" />
+      <div className={styles.visualSearch}><SearchIcon /> Search wallets</div>
+      <div className={styles.passwordVisualGrid}>
+        <div className={styles.visualNav}>
+          <span data-active><BitcoinIcon /> Hardware wallet</span>
+          <span><BitcoinIcon /> Exchange backup</span>
+          <span><BitcoinIcon /> Cold storage</span>
+        </div>
+        <article className={styles.passwordDetail}>
+          <small>Selected record</small>
+          <h3>Hardware wallet</h3>
+          <dl>
+            <div><dt>Wallet address</dt><dd>bc1q...4f2a</dd></div>
+            <div><dt>Seed phrase</dt><dd>••••••••••••••</dd></div>
+          </dl>
+          <span><ShieldCheckIcon /> Rotates with your master key</span>
+        </article>
+      </div>
+    </>
+  );
+}
+
+function ApiCredentialsVisual() {
+  return (
+    <>
+      <VisualHeader title="API Credentials" />
+      <div className={styles.visualSearch}><SearchIcon /> Search API credentials</div>
+      <div className={styles.passwordVisualGrid}>
+        <div className={styles.visualNav}>
+          <span data-active><KeySquareIcon /> Stripe</span>
+          <span><KeySquareIcon /> AWS</span>
+          <span><KeySquareIcon /> SendGrid</span>
+          <span><KeySquareIcon /> Twilio</span>
+        </div>
+        <article className={styles.passwordDetail}>
+          <small>Selected record</small>
+          <h3>Stripe</h3>
+          <dl>
+            <div><dt>Key</dt><dd>pk_live_51H...</dd></div>
+            <div><dt>Secret</dt><dd>••••••••••••••</dd></div>
+          </dl>
+          <span><ShieldCheckIcon /> Rotates with your master key</span>
+        </article>
+      </div>
+    </>
+  );
+}
+
+function WifiPasswordsVisual() {
+  return (
+    <>
+      <VisualHeader title="WiFi Passwords" />
+      <div className={styles.visualSearch}><SearchIcon /> Search networks</div>
+      <div className={styles.passwordVisualGrid}>
+        <div className={styles.visualNav}>
+          <span data-active><WifiIcon /> Home-5G</span>
+          <span><WifiIcon /> Office guest</span>
+          <span><WifiIcon /> Studio</span>
+        </div>
+        <article className={styles.passwordDetail}>
+          <small>Selected record</small>
+          <h3>Home-5G</h3>
+          <dl>
+            <div><dt>Network</dt><dd>Home-5G</dd></div>
+            <div><dt>Password</dt><dd>••••••••••••••</dd></div>
+          </dl>
+          <span><ShieldCheckIcon /> Rotates with your master key</span>
+        </article>
+      </div>
+    </>
+  );
+}
+
+function TwoFactorBackupCodesVisual() {
+  return (
+    <>
+      <VisualHeader title="2FA Backup Codes" />
+      <div className={styles.visualSearch}><SearchIcon /> Search backup codes</div>
+      <div className={styles.passwordVisualGrid}>
+        <div className={styles.visualNav}>
+          <span data-active><ShieldCheckIcon /> GitHub</span>
+          <span><ShieldCheckIcon /> Google</span>
+          <span><ShieldCheckIcon /> Dropbox</span>
+        </div>
+        <article className={styles.passwordDetail}>
+          <small>Selected record</small>
+          <h3>GitHub</h3>
+          <dl>
+            <div><dt>Codes remaining</dt><dd>8 of 10</dd></div>
+            <div><dt>Backup codes</dt><dd>••••••••••••••</dd></div>
           </dl>
           <span><ShieldCheckIcon /> Rotates with your master key</span>
         </article>
@@ -176,7 +281,11 @@ export function ProductPageVisual({ page }: { page: ProductPageId }) {
         {page === "secure-documents" && <DocumentsVisual />}
         {page === "digital-wallet" && <WalletVisual />}
         {page === "magic-import" && <ImportVisual />}
-        {page === "credential-vault" && <CredentialVaultVisual />}
+        {page === "ssh-keys" && <SshKeysVisual />}
+        {page === "crypto-passphrases" && <CryptoPassphrasesVisual />}
+        {page === "api-credentials" && <ApiCredentialsVisual />}
+        {page === "wifi-passwords" && <WifiPasswordsVisual />}
+        {page === "2fa-backup-codes" && <TwoFactorBackupCodesVisual />}
       </div>
     </div>
   );

@@ -4,7 +4,11 @@ export type ProductPageId =
   | "secure-documents"
   | "digital-wallet"
   | "magic-import"
-  | "credential-vault";
+  | "ssh-keys"
+  | "crypto-passphrases"
+  | "api-credentials"
+  | "wifi-passwords"
+  | "2fa-backup-codes";
 
 export type ProductIcon =
   | "bank"
@@ -387,71 +391,335 @@ export const PRODUCT_PAGES: Record<ProductPageId, ProductPageConfig> = {
     finalTitle: "Move data without giving up the review step.",
     finalBody: "Create your vault, submit only what you choose, and approve every record that enters it.",
   },
-  "credential-vault": {
-    eyebrow: "Credential vault",
+  "ssh-keys": {
+    eyebrow: "SSH keys",
     title: "Stop pasting SSH keys into notes apps. Start protecting them properly.",
     lead:
-      "Keep SSH keys, crypto passphrases, API credentials, WiFi passwords, and 2FA backup codes in purpose-built records - encrypted the same way as every other item in your vault.",
+      "Keep private keys, public keys, hosts, and passphrases together in one encrypted record - never scattered across config files, chat threads, or plaintext notes.",
     heroNote: "Not plan-limited - unlimited on Free and Plus.",
-    secondaryAction: { label: "See the full vault", href: "/password-manager" },
+    secondaryAction: { label: "See API credentials", href: "/features/api-credentials" },
     audience: [
-      { title: "Developers and admins", body: "Stop pasting SSH private keys and API secrets into notes apps or shared documents." },
-      { title: "Anyone with a home network", body: "Save a WiFi password once instead of reading it off the bottom of a router." },
-      { title: "Crypto holders", body: "Protect a seed phrase the same way you protect a password - encrypted, not photographed." },
+      { title: "Developers and admins", body: "Stop pasting private keys into notes apps or shared documents when you provision a new server." },
+      { title: "Anyone managing multiple servers", body: "Keep a key, its host, and its passphrase together instead of guessing which file goes with which machine." },
+      { title: "Teams handing off access", body: "Store a key with enough context that the next person doesn't have to ask you where it lives." },
     ],
     problem: {
       eyebrow: "Beyond the usual login",
-      title: "Not every secret fits in a username-and-password field.",
+      title: "A private key doesn't fit in a username-and-password field.",
       body:
-        "SSH keys, API secrets, WiFi passwords, and recovery codes end up scattered across notes apps, chat threads, and screenshots because most vaults only understand one shape: a login.",
-      solutionTitle: "Five purpose-built record types, one vault.",
+        "SSH keys end up in config folders, zipped archives, and pasted into chat threads because most vaults only understand one shape: a login. The key works, but nothing protects it once it leaves the terminal.",
+      solutionTitle: "A record built around what a key actually needs.",
       solutionBody:
-        "Velora Vault adds SSH Keys, Crypto Passphrases, API Credentials, WiFi Passwords, and 2FA Backup Codes as their own record types, each with only the fields that type actually needs, encrypted the same way as everything else you store.",
+        "Velora Vault's SSH Key record holds a private key, its matching public key, the host it unlocks, and an optional passphrase - encrypted together the same way as every other item in your vault.",
     },
-    featuresTitle: "Built for the credentials logins can't hold",
-    featuresLead: "Each type keeps only the fields it needs, with the one truly sensitive value masked until you choose to reveal it.",
+    featuresTitle: "Built around how SSH keys are actually used",
+    featuresLead: "Every field a key needs, and nothing it doesn't - with the private key masked until you choose to reveal it.",
     features: [
-      { icon: "key", title: "SSH keys", body: "Store a private key, its matching public key, host, and passphrase together instead of scattered across config files." },
-      { icon: "lock", title: "Crypto passphrases", body: "Protect a seed phrase and wallet address without a screenshot or a sticky note near your desk." },
-      { icon: "shield", title: "API credentials", body: "Keep a service name, key, and secret together so a rotated credential has one obvious place to update." },
-      { icon: "device", title: "WiFi passwords", body: "Save a network name and password once, and stop reading them off the bottom of a router." },
-      { icon: "check", title: "2FA backup codes", body: "Keep one-time recovery codes ready for the moment your authenticator app isn't available." },
-      { icon: "eye", title: "Masked by default", body: "The one truly secret field in each record - private key, seed phrase, secret, password, or code - stays hidden until you reveal it." },
+      { icon: "key", title: "Private and public key together", body: "Store both halves of the key pair in one record instead of hunting through two files." },
+      { icon: "device", title: "Host, right where you need it", body: "Note which server or service the key unlocks so you're never guessing which key goes where." },
+      { icon: "lock", title: "Passphrase included", body: "If the key itself is passphrase-protected, keep that passphrase in the same record." },
+      { icon: "eye", title: "Masked by default", body: "The private key stays hidden until you choose to reveal it - never shown in a list view." },
+      { icon: "search", title: "Find it by name", body: "Search your SSH keys the same way you already search passwords and notes." },
+      { icon: "shield", title: "Encrypted like everything else", body: "AES-256-GCM in your browser, before the key ever reaches storage." },
     ],
     workflow: {
-      eyebrow: "Same vault, right shape",
-      title: "Add it once, in the type it actually is.",
-      body: "Every credential type lives in the same encrypted vault as your passwords, with its own place and its own fields.",
+      eyebrow: "Add it once",
+      title: "Save a key in the shape it actually is.",
+      body: "SSH Keys live in the same encrypted vault as your passwords, with their own place and their own fields.",
       steps: [
-        { title: "Pick the type", body: "Choose SSH Key, Crypto Passphrase, API Credential, WiFi Password, or 2FA Backup Code from the vault sidebar." },
-        { title: "Fill in what matters", body: "Each type shows only its own fields - a private key and host, or a network name and password, not a generic login form." },
-        { title: "Encrypt before saving", body: "Velora Vault encrypts the record in your browser before it reaches storage, exactly like a password or note." },
-        { title: "Find it later", body: "Search across every credential type from the same vault-wide search you already use for passwords." },
+        { title: "Open SSH Keys", body: "Choose SSH Keys from the vault sidebar - a dedicated space, not a generic notes field." },
+        { title: "Paste the key pair", body: "Add the private key and, if you have it, the matching public key." },
+        { title: "Add context", body: "Note the host and passphrase so future-you knows exactly what this key is for." },
+        { title: "Encrypt and save", body: "Velora Vault encrypts the record in your browser before it reaches storage." },
       ],
     },
     security: {
       eyebrow: "Same encryption, no exceptions",
       title: "A new record type, not a new security model.",
       body:
-        "SSH keys, crypto passphrases, API credentials, WiFi passwords, and 2FA backup codes are encrypted with the same AES-256-GCM process as every other vault record, and included in the same master key rotation if you ever change your master key.",
+        "SSH keys are encrypted with the same AES-256-GCM process as every other vault record, and included automatically if you ever rotate your master key.",
       points: [
-        "Encrypted in the browser before storage, per record",
+        "Encrypted in the browser before storage",
         "Included automatically when you rotate your master key",
         "Not limited by plan - unlimited on Free and Plus",
       ],
     },
     related: [
-      { label: "Complete vault", title: "Password manager", body: "See how credentials sit alongside passwords, documents, and wallet records.", href: "/password-manager" },
-      { label: "Change your key", title: "Security architecture", body: "Understand encryption, recovery limits, and what master key rotation does.", href: "/security" },
-      { label: "Move records in", title: "Magic Import", body: "Extract password, card, and bank candidates for review before saving.", href: "/features/magic-import" },
+      { label: "More credential types", title: "API credentials", body: "Keep service keys and secrets in their own purpose-built record.", href: "/features/api-credentials" },
+      { label: "Complete vault", title: "Password manager", body: "See how SSH keys sit alongside passwords, documents, and wallet records.", href: "/password-manager" },
+      { label: "Change your key", title: "Security architecture", body: "Understand encryption and what master key rotation does.", href: "/security" },
     ],
     faq: [
-      { question: "Do these count toward my plan's record limits?", answer: "No. SSH keys, crypto passphrases, API credentials, WiFi passwords, and 2FA backup codes are unlimited on both Free and Plus." },
-      { question: "What happens to them if I change my master key?", answer: "They're re-encrypted automatically, in the same rotation that covers your passwords, notes, documents, and wallet records - nothing is left behind on the old key." },
-      { question: "Can Magic Import extract these from pasted text?", answer: "Not yet. Magic Import currently proposes passwords, notes, cards, and bank records; the five credential types are added manually for now." },
+      { question: "Does this count toward my plan's record limits?", answer: "No. SSH keys are unlimited on both Free and Plus." },
+      { question: "What happens to my SSH keys if I change my master key?", answer: "They're re-encrypted automatically, in the same rotation that covers your passwords, notes, documents, and wallet records." },
+      { question: "Can Magic Import extract SSH keys from pasted text?", answer: "Not yet. Magic Import currently proposes passwords, notes, cards, and bank records; SSH keys are added manually for now." },
     ],
-    finalTitle: "Give every credential a proper home, not a screenshot.",
-    finalBody: "Create your vault and add your first SSH key, API credential, or WiFi password in under a minute.",
+    finalTitle: "Give every SSH key a proper home, not a screenshot.",
+    finalBody: "Create your vault and add your first SSH key in under a minute.",
+  },
+  "crypto-passphrases": {
+    eyebrow: "Crypto passphrases",
+    title: "Stop photographing your seed phrase. Start encrypting it.",
+    lead:
+      "Keep a wallet's seed phrase and address in one encrypted record - protected the same way as every other item in your vault, not a photo in your camera roll.",
+    heroNote: "Not plan-limited - unlimited on Free and Plus.",
+    secondaryAction: { label: "See WiFi passwords", href: "/features/wifi-passwords" },
+    audience: [
+      { title: "Crypto holders", body: "Protect a seed phrase the same way you protect a password - encrypted, not photographed." },
+      { title: "Anyone with more than one wallet", body: "Keep each wallet's phrase and address together instead of guessing which sticky note belongs to which wallet." },
+      { title: "People who've outgrown a paper backup", body: "Move a seed phrase out of a drawer and into a vault you can actually search." },
+    ],
+    problem: {
+      eyebrow: "Beyond the usual login",
+      title: "A seed phrase isn't a password, and it deserves better than a photo.",
+      body:
+        "Twelve or twenty-four words are usually written on paper, photographed on a phone, or typed into a plain notes app - each one a way for that phrase to end up somewhere you didn't intend.",
+      solutionTitle: "A record built for exactly one purpose.",
+      solutionBody:
+        "Velora Vault's Crypto Passphrase record holds the seed phrase and wallet address together, encrypted the same way as every other item in your vault - no camera roll, no paper drawer.",
+    },
+    featuresTitle: "Built around what a wallet actually needs",
+    featuresLead: "One record, encrypted, with the phrase masked until you choose to reveal it.",
+    features: [
+      { icon: "key", title: "Seed phrase, encrypted", body: "Store the full recovery phrase as its own field, not buried in a generic note." },
+      { icon: "bank", title: "Wallet address included", body: "Keep the public address beside the phrase so you always know which wallet it belongs to." },
+      { icon: "eye", title: "Masked by default", body: "The seed phrase stays hidden until you choose to reveal it - never shown in a list view." },
+      { icon: "search", title: "Find it by name", body: "Search your crypto passphrases the same way you already search passwords and notes." },
+      { icon: "document", title: "Room for notes", body: "Add context - which exchange, which hardware wallet, which purpose - beside the phrase itself." },
+      { icon: "shield", title: "Encrypted like everything else", body: "AES-256-GCM in your browser, before the phrase ever reaches storage." },
+    ],
+    workflow: {
+      eyebrow: "Add it once",
+      title: "Save a seed phrase in the shape it actually is.",
+      body: "Crypto Passphrases live in the same encrypted vault as your passwords, with their own place and their own fields.",
+      steps: [
+        { title: "Open Crypto Passphrases", body: "Choose Crypto Passphrases from the vault sidebar - a dedicated space, not a generic note." },
+        { title: "Enter the seed phrase", body: "Add the full recovery phrase exactly as your wallet generated it." },
+        { title: "Add the wallet address", body: "Note the public address so you always know which wallet this phrase unlocks." },
+        { title: "Encrypt and save", body: "Velora Vault encrypts the record in your browser before it reaches storage." },
+      ],
+    },
+    security: {
+      eyebrow: "Same encryption, no exceptions",
+      title: "A new record type, not a new security model.",
+      body:
+        "Crypto passphrases are encrypted with the same AES-256-GCM process as every other vault record, and included automatically if you ever rotate your master key.",
+      points: [
+        "Encrypted in the browser before storage",
+        "Included automatically when you rotate your master key",
+        "Not limited by plan - unlimited on Free and Plus",
+      ],
+    },
+    related: [
+      { label: "More credential types", title: "WiFi passwords", body: "Keep network credentials in their own purpose-built record.", href: "/features/wifi-passwords" },
+      { label: "Complete vault", title: "Password manager", body: "See how crypto passphrases sit alongside passwords, documents, and wallet records.", href: "/password-manager" },
+      { label: "Change your key", title: "Security architecture", body: "Understand encryption and what master key rotation does.", href: "/security" },
+    ],
+    faq: [
+      { question: "Does this count toward my plan's record limits?", answer: "No. Crypto passphrases are unlimited on both Free and Plus." },
+      { question: "What happens to my seed phrase if I change my master key?", answer: "It's re-encrypted automatically, in the same rotation that covers your passwords, notes, documents, and wallet records." },
+      { question: "Is this a crypto wallet or exchange?", answer: "No. Velora Vault stores and encrypts the seed phrase and address you give it - it doesn't hold funds, sign transactions, or connect to any blockchain." },
+    ],
+    finalTitle: "Give your seed phrase a proper home, not a photo.",
+    finalBody: "Create your vault and add your first crypto passphrase in under a minute.",
+  },
+  "api-credentials": {
+    eyebrow: "API credentials",
+    title: "Stop hardcoding secrets in Slack messages. Start encrypting them.",
+    lead:
+      "Keep a service name, key, and secret together in one encrypted record - so a rotated credential has one obvious place to update, not five chat threads to search.",
+    heroNote: "Not plan-limited - unlimited on Free and Plus.",
+    secondaryAction: { label: "See 2FA backup codes", href: "/features/2fa-backup-codes" },
+    audience: [
+      { title: "Developers and admins", body: "Stop pasting API secrets into Slack, email, or shared docs when a teammate needs access." },
+      { title: "Anyone juggling several services", body: "Keep each service's key and secret in its own record instead of one long note." },
+      { title: "Teams that rotate credentials", body: "Give a rotated credential one obvious place to update instead of five places to remember." },
+    ],
+    problem: {
+      eyebrow: "Beyond the usual login",
+      title: "An API key isn't a username and password, but it still needs a home.",
+      body:
+        "Service keys and secrets end up in Slack messages, shared spreadsheets, and .env files committed by accident, because most vaults only understand one shape: a login.",
+      solutionTitle: "A record built around what an API credential needs.",
+      solutionBody:
+        "Velora Vault's API Credential record holds a service name, key, and secret together, encrypted the same way as every other item in your vault.",
+    },
+    featuresTitle: "Built around how API credentials are actually used",
+    featuresLead: "Every field a credential needs, with the secret masked until you choose to reveal it.",
+    features: [
+      { icon: "document", title: "Service name included", body: "Label each credential by the service it belongs to, so you're never guessing which key goes where." },
+      { icon: "key", title: "Key and secret together", body: "Keep the public key or client ID beside the secret key or client secret in one record." },
+      { icon: "eye", title: "Masked by default", body: "The secret stays hidden until you choose to reveal it - never shown in a list view." },
+      { icon: "search", title: "Find it by name", body: "Search your API credentials the same way you already search passwords and notes." },
+      { icon: "document", title: "Room for notes", body: "Add context - which environment, which permission scope - beside the credential itself." },
+      { icon: "shield", title: "Encrypted like everything else", body: "AES-256-GCM in your browser, before the credential ever reaches storage." },
+    ],
+    workflow: {
+      eyebrow: "Add it once",
+      title: "Save a credential in the shape it actually is.",
+      body: "API Credentials live in the same encrypted vault as your passwords, with their own place and their own fields.",
+      steps: [
+        { title: "Open API Credentials", body: "Choose API Credentials from the vault sidebar - a dedicated space, not a generic note." },
+        { title: "Name the service", body: "Label the credential so you always know which service it belongs to." },
+        { title: "Add the key and secret", body: "Enter the public key or client ID, and the secret key or client secret." },
+        { title: "Encrypt and save", body: "Velora Vault encrypts the record in your browser before it reaches storage." },
+      ],
+    },
+    security: {
+      eyebrow: "Same encryption, no exceptions",
+      title: "A new record type, not a new security model.",
+      body:
+        "API credentials are encrypted with the same AES-256-GCM process as every other vault record, and included automatically if you ever rotate your master key.",
+      points: [
+        "Encrypted in the browser before storage",
+        "Included automatically when you rotate your master key",
+        "Not limited by plan - unlimited on Free and Plus",
+      ],
+    },
+    related: [
+      { label: "More credential types", title: "SSH keys", body: "Keep private keys and hosts in their own purpose-built record.", href: "/features/ssh-keys" },
+      { label: "Complete vault", title: "Password manager", body: "See how API credentials sit alongside passwords, documents, and wallet records.", href: "/password-manager" },
+      { label: "Change your key", title: "Security architecture", body: "Understand encryption and what master key rotation does.", href: "/security" },
+    ],
+    faq: [
+      { question: "Does this count toward my plan's record limits?", answer: "No. API credentials are unlimited on both Free and Plus." },
+      { question: "What happens to my API credentials if I change my master key?", answer: "They're re-encrypted automatically, in the same rotation that covers your passwords, notes, documents, and wallet records." },
+      { question: "Can Magic Import extract API credentials from pasted text?", answer: "Not yet. Magic Import currently proposes passwords, notes, cards, and bank records; API credentials are added manually for now." },
+    ],
+    finalTitle: "Give every API credential a proper home, not a Slack thread.",
+    finalBody: "Create your vault and add your first API credential in under a minute.",
+  },
+  "wifi-passwords": {
+    eyebrow: "WiFi passwords",
+    title: "Stop reading passwords off the router. Start saving them properly.",
+    lead:
+      "Keep a network name and password in one encrypted record - saved once, found instantly, instead of read off a sticker every time a guest asks.",
+    heroNote: "Not plan-limited - unlimited on Free and Plus.",
+    secondaryAction: { label: "See 2FA backup codes", href: "/features/2fa-backup-codes" },
+    audience: [
+      { title: "Anyone with a home network", body: "Save a WiFi password once instead of reading it off the bottom of a router." },
+      { title: "Hosts and housemates", body: "Share the network name and password from your vault instead of a sticky note by the door." },
+      { title: "People who manage more than one network", body: "Keep home, office, and guest networks each in their own record." },
+    ],
+    problem: {
+      eyebrow: "Beyond the usual login",
+      title: "A WiFi password doesn't have a username, but it still needs a home.",
+      body:
+        "Network passwords live on router stickers, in group chats, and on sticky notes near the desk, because most vaults are built around a login, not a network.",
+      solutionTitle: "A record built around exactly what a network needs.",
+      solutionBody:
+        "Velora Vault's WiFi Password record holds the network name and password together, encrypted the same way as every other item in your vault.",
+    },
+    featuresTitle: "Built around how WiFi passwords are actually used",
+    featuresLead: "Just the two fields a network actually needs, with the password masked until you choose to reveal it.",
+    features: [
+      { icon: "device", title: "Network name and password", body: "Keep the SSID and password together in one record, not scattered between a sticker and a note." },
+      { icon: "eye", title: "Masked by default", body: "The password stays hidden until you choose to reveal it - never shown in a list view." },
+      { icon: "search", title: "Find it by name", body: "Search your WiFi passwords the same way you already search passwords and notes." },
+      { icon: "document", title: "Room for notes", body: "Add context - which room, which router, which guest network - beside the password itself." },
+      { icon: "shield", title: "Encrypted like everything else", body: "AES-256-GCM in your browser, before the password ever reaches storage." },
+      { icon: "check", title: "Quick to share", body: "Reveal and copy the password in seconds the next time someone asks for it." },
+    ],
+    workflow: {
+      eyebrow: "Add it once",
+      title: "Save a network in the shape it actually is.",
+      body: "WiFi Passwords live in the same encrypted vault as your passwords, with their own place and their own fields.",
+      steps: [
+        { title: "Open WiFi Passwords", body: "Choose WiFi Passwords from the vault sidebar - a dedicated space, not a generic note." },
+        { title: "Name the network", body: "Enter the network name (SSID) so you always know which network this record is for." },
+        { title: "Add the password", body: "Enter the network password once, so you never have to read it off the router again." },
+        { title: "Encrypt and save", body: "Velora Vault encrypts the record in your browser before it reaches storage." },
+      ],
+    },
+    security: {
+      eyebrow: "Same encryption, no exceptions",
+      title: "A new record type, not a new security model.",
+      body:
+        "WiFi passwords are encrypted with the same AES-256-GCM process as every other vault record, and included automatically if you ever rotate your master key.",
+      points: [
+        "Encrypted in the browser before storage",
+        "Included automatically when you rotate your master key",
+        "Not limited by plan - unlimited on Free and Plus",
+      ],
+    },
+    related: [
+      { label: "More credential types", title: "2FA backup codes", body: "Keep one-time recovery codes in their own purpose-built record.", href: "/features/2fa-backup-codes" },
+      { label: "Complete vault", title: "Password manager", body: "See how WiFi passwords sit alongside passwords, documents, and wallet records.", href: "/password-manager" },
+      { label: "Change your key", title: "Security architecture", body: "Understand encryption and what master key rotation does.", href: "/security" },
+    ],
+    faq: [
+      { question: "Does this count toward my plan's record limits?", answer: "No. WiFi passwords are unlimited on both Free and Plus." },
+      { question: "What happens to my WiFi passwords if I change my master key?", answer: "They're re-encrypted automatically, in the same rotation that covers your passwords, notes, documents, and wallet records." },
+      { question: "Can Magic Import extract WiFi passwords from pasted text?", answer: "Not yet. Magic Import currently proposes passwords, notes, cards, and bank records; WiFi passwords are added manually for now." },
+    ],
+    finalTitle: "Give every network password a proper home, not a sticker.",
+    finalBody: "Create your vault and add your first WiFi password in under a minute.",
+  },
+  "2fa-backup-codes": {
+    eyebrow: "2FA backup codes",
+    title: "Stop screenshotting your backup codes. Start encrypting them.",
+    lead:
+      "Keep one-time recovery codes in one encrypted record, ready for the moment your authenticator app is unavailable - not buried in a screenshots folder.",
+    heroNote: "Not plan-limited - unlimited on Free and Plus.",
+    secondaryAction: { label: "See SSH keys", href: "/features/ssh-keys" },
+    audience: [
+      { title: "Anyone with two-factor enabled", body: "Keep recovery codes ready for the moment your authenticator app or phone is unavailable." },
+      { title: "People switching phones", body: "Move backup codes into your vault instead of a screenshot that has to be re-copied every time you upgrade." },
+      { title: "Teams managing shared logins", body: "Store a shared account's backup codes somewhere more durable than one person's camera roll." },
+    ],
+    problem: {
+      eyebrow: "Beyond the usual login",
+      title: "Backup codes are meant for an emergency - so where are yours right now?",
+      body:
+        "Two-factor backup codes get screenshotted, printed, or left in a downloads folder, because most vaults are built around a login, not a one-time list of codes.",
+      solutionTitle: "A record built around exactly what a backup code list needs.",
+      solutionBody:
+        "Velora Vault's 2FA Backup Code record holds the service name and the full list of codes together, encrypted the same way as every other item in your vault.",
+    },
+    featuresTitle: "Built around how backup codes are actually used",
+    featuresLead: "One record per service, with the codes masked until the moment you actually need them.",
+    features: [
+      { icon: "document", title: "Service name included", body: "Label each code list by the service it belongs to, so you can find the right one under pressure." },
+      { icon: "key", title: "The full code list, together", body: "Keep every one-time code in a single record instead of a scattered screenshot." },
+      { icon: "eye", title: "Masked by default", body: "Codes stay hidden until you choose to reveal them - never shown in a list view." },
+      { icon: "search", title: "Find it by name", body: "Search your backup codes the same way you already search passwords and notes." },
+      { icon: "document", title: "Room for notes", body: "Add context - which account, which device they were generated for - beside the codes themselves." },
+      { icon: "shield", title: "Encrypted like everything else", body: "AES-256-GCM in your browser, before the codes ever reach storage." },
+    ],
+    workflow: {
+      eyebrow: "Add it once",
+      title: "Save backup codes in the shape they actually are.",
+      body: "2FA Backup Codes live in the same encrypted vault as your passwords, with their own place and their own fields.",
+      steps: [
+        { title: "Open 2FA Backup Codes", body: "Choose 2FA Backup Codes from the vault sidebar - a dedicated space, not a screenshot." },
+        { title: "Name the service", body: "Label the record so you always know which account these codes unlock." },
+        { title: "Paste the codes", body: "Add the full list of one-time codes exactly as the service generated them." },
+        { title: "Encrypt and save", body: "Velora Vault encrypts the record in your browser before it reaches storage." },
+      ],
+    },
+    security: {
+      eyebrow: "Same encryption, no exceptions",
+      title: "A new record type, not a new security model.",
+      body:
+        "2FA backup codes are encrypted with the same AES-256-GCM process as every other vault record, and included automatically if you ever rotate your master key.",
+      points: [
+        "Encrypted in the browser before storage",
+        "Included automatically when you rotate your master key",
+        "Not limited by plan - unlimited on Free and Plus",
+      ],
+    },
+    related: [
+      { label: "More credential types", title: "Crypto passphrases", body: "Keep a seed phrase and wallet address in their own purpose-built record.", href: "/features/crypto-passphrases" },
+      { label: "Complete vault", title: "Password manager", body: "See how backup codes sit alongside passwords, documents, and wallet records.", href: "/password-manager" },
+      { label: "Change your key", title: "Security architecture", body: "Understand encryption and what master key rotation does.", href: "/security" },
+    ],
+    faq: [
+      { question: "Does this count toward my plan's record limits?", answer: "No. 2FA backup codes are unlimited on both Free and Plus." },
+      { question: "What happens to my backup codes if I change my master key?", answer: "They're re-encrypted automatically, in the same rotation that covers your passwords, notes, documents, and wallet records." },
+      { question: "Can Magic Import extract backup codes from pasted text?", answer: "Not yet. Magic Import currently proposes passwords, notes, cards, and bank records; 2FA backup codes are added manually for now." },
+    ],
+    finalTitle: "Give every backup code a proper home, not a screenshot.",
+    finalBody: "Create your vault and add your first set of 2FA backup codes in under a minute.",
   },
 };
 

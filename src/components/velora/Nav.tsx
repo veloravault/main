@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer-motion";
 import {
   ArrowUpRightIcon,
+  BitcoinIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   CircleHelpIcon,
@@ -19,10 +20,13 @@ import {
   NewspaperIcon,
   SearchIcon,
   ShieldCheckIcon,
+  ShieldEllipsisIcon,
   SparklesIcon,
   SunIcon,
+  TerminalIcon,
   TextCursorInputIcon,
   UserRoundIcon,
+  WifiIcon,
   WorkflowIcon,
   XIcon,
 } from "lucide-react";
@@ -41,9 +45,10 @@ import { useTheme } from "@/components/ThemeProvider";
 import { supabase } from "@/lib/supabase";
 
 const NAV_ICONS: Record<PublicNavIcon, typeof KeyRoundIcon> = {
+  api: KeySquareIcon,
   "bank-card": CreditCardIcon,
   contact: ContactRoundIcon,
-  credential: KeySquareIcon,
+  crypto: BitcoinIcon,
   document: FileTextIcon,
   faq: MessageCircleQuestionIcon,
   help: CircleHelpIcon,
@@ -52,8 +57,11 @@ const NAV_ICONS: Record<PublicNavIcon, typeof KeyRoundIcon> = {
   password: KeyRoundIcon,
   passphrase: TextCursorInputIcon,
   security: ShieldCheckIcon,
+  ssh: TerminalIcon,
   strength: GaugeIcon,
+  twofa: ShieldEllipsisIcon,
   username: UserRoundIcon,
+  wifi: WifiIcon,
   workflow: WorkflowIcon,
 };
 

@@ -23,7 +23,7 @@ const TOPICS = [
   { title: "Documents", body: "Upload, label, search, preview, and remove protected files.", href: "/features/secure-documents", icon: FileTextIcon },
   { title: "Wallet and bank", body: "Keep cards, bank accounts, and login credentials in the right record types.", href: "/features/digital-wallet", icon: CreditCardIcon },
   { title: "Magic Import", body: "Review extraction privacy, usage limits, candidates, and saving.", href: "/features/magic-import", icon: SparklesIcon },
-  { title: "Credential vault", body: "Store SSH keys, crypto passphrases, API credentials, WiFi passwords, and 2FA backup codes.", href: "/features/credential-vault", icon: KeySquareIcon },
+  { title: "Credential vault", body: "Store SSH keys, crypto passphrases, API credentials, WiFi passwords, and 2FA backup codes.", href: "/features/ssh-keys", icon: KeySquareIcon },
 ] as const;
 
 const ANSWERS = [
