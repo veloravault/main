@@ -16,12 +16,12 @@ export default function PrivacyPage() {
       <article className={styles.article}>
         <div className={rootStyles.container}>
           <h1 className={styles.title}>Privacy Policy</h1>
-          <p className={styles.updated}>Last updated: July 22, 2026</p>
+          <p className={styles.updated}>Last updated: July 23, 2026</p>
           <p className={styles.intro}>
             Velora Vault is a private, encrypted home for your passwords,
-            documents, notes, and financial essentials. This policy explains
-            what we collect, what we can and cannot see, and how your data is
-            protected.
+            documents, notes, technical credentials, and financial essentials.
+            This policy explains what we collect, what we can and cannot see,
+            and how your data is protected.
           </p>
 
           <section className={styles.section}>
@@ -37,7 +37,8 @@ export default function PrivacyPage() {
               </li>
               <li>
                 <strong>Encrypted vault contents</strong> - your passwords,
-                documents, notes, cards, and bank details, but only in
+                documents, notes, cards, bank details, and technical
+                credentials like SSH keys and API secrets, but only in
                 encrypted form. See below for what this means in practice.
               </li>
               <li>

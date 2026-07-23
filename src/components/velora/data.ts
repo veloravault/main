@@ -4,6 +4,7 @@
 export type PublicNavIcon =
   | "bank-card"
   | "contact"
+  | "credential"
   | "document"
   | "faq"
   | "help"
@@ -61,6 +62,12 @@ export const PRODUCT_LINKS = [
     href: "/features/magic-import",
     description: "Turn submitted source text into reviewable records.",
     icon: "import",
+  },
+  {
+    label: "Credential Vault",
+    href: "/features/credential-vault",
+    description: "Store SSH keys, API credentials, WiFi passwords, and more.",
+    icon: "credential",
   },
 ] as const satisfies readonly PublicNavLink[];
 
@@ -131,7 +138,7 @@ export const PRODUCT_NAV_SECTIONS = [
   },
   {
     heading: "Vault features",
-    links: [PRODUCT_LINKS[2], PRODUCT_LINKS[3]],
+    links: [PRODUCT_LINKS[2], PRODUCT_LINKS[3], PRODUCT_LINKS[5]],
   },
   {
     heading: "Explore Velora",
@@ -205,6 +212,7 @@ export const SEARCH_ITEMS = [
   { label: "Secure documents", href: "/features/secure-documents", keywords: "files upload identity storage", popular: false },
   { label: "Digital wallet", href: "/features/digital-wallet", keywords: "cards bank accounts financial records", popular: false },
   { label: "Magic Import", href: "/features/magic-import", keywords: "ai extract migrate paste review", popular: false },
+  { label: "Credential vault", href: "/features/credential-vault", keywords: "ssh keys api credentials wifi password 2fa backup codes crypto passphrase", popular: false },
   { label: "Help center", href: "/help", keywords: "support recovery setup answers", popular: true },
   { label: "FAQ", href: "/faq", keywords: "frequently asked questions answers", popular: true },
   { label: "Security", href: "/security", keywords: "encryption privacy master key", popular: true },
@@ -237,7 +245,7 @@ export const SMALL_FEATURES = [
   {
     icon: "organize" as const,
     title: "Organize it your way",
-    body: "Tag, categorize, and search across passwords, documents, notes, and cards from one unified view.",
+    body: "Tag, categorize, and search across passwords, documents, notes, cards, and technical credentials from one unified view.",
   },
 ];
 
@@ -297,6 +305,7 @@ export const FOOTER_COLUMNS = [
       { label: "Secure documents", href: "/features/secure-documents" },
       { label: "Digital wallet", href: "/features/digital-wallet" },
       { label: "Magic Import", href: "/features/magic-import" },
+      { label: "Credential vault", href: "/features/credential-vault" },
     ],
   },
   {

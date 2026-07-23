@@ -18,7 +18,7 @@ const ESSENTIALS = [
   {
     icon: FileKeyIcon,
     title: "Keep important details together",
-    body: "Organize passwords, secure notes, documents, cards, and account details.",
+    body: "Organize passwords, secure notes, documents, cards, account details, and technical credentials.",
   },
   {
     icon: LockKeyholeIcon,
@@ -33,7 +33,7 @@ const ESSENTIALS = [
   {
     icon: SearchIcon,
     title: "Find saved information quickly",
-    body: "Search across the vault and move directly to the password, note, document, or card you need.",
+    body: "Search across the vault and move directly to the password, note, document, card, or credential you need.",
   },
   {
     icon: FingerprintIcon,

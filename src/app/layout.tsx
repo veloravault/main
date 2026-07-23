@@ -60,7 +60,7 @@ const ORGANIZATION_JSON_LD = {
     height: 512,
   },
   description:
-    "A private, encrypted home for passwords, documents, notes and financial essentials.",
+    "A private, encrypted home for passwords, documents, notes, credentials, and financial essentials.",
 };
 
 const WEBSITE_JSON_LD = {
@@ -80,7 +80,7 @@ export const metadata: Metadata = {
     template: "%s - Velora Vault",
   },
   description:
-    "A private, encrypted home for passwords, documents, notes and financial essentials.",
+    "A private, encrypted home for passwords, documents, notes, credentials, and financial essentials.",
   icons: {
     icon: [
       { url: "/brand/velora-favicon-light.png", media: "(prefers-color-scheme: light)", type: "image/png" },

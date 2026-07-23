@@ -41,6 +41,11 @@ export default function ContactPage() {
               Ask about your account, privacy, or Velora Vault. For anything
               sensitive, choose the security channel below.
             </p>
+            <p className={styles.intro}>
+              Already signed in? Open a ticket from Settings &gt; Support
+              instead - replies happen in a real conversation thread with our
+              team, without leaving the vault.
+            </p>
           </header>
 
           <div className={styles.layout}>

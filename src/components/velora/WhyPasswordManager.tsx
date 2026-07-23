@@ -16,7 +16,7 @@ const REASONS = [
   },
   {
     title: "Keep private details organized",
-    body: "Passwords, documents, cards, and secure notes stay in one encrypted workspace instead of being spread across browsers and devices.",
+    body: "Passwords, documents, cards, secure notes, and technical credentials stay in one encrypted workspace instead of being spread across browsers and devices.",
   },
 ] as const;
 

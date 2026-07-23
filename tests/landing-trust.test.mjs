@@ -391,7 +391,7 @@ test("security explainer documents shipped device, access, and billing controls"
     "bound to the authenticated account",
     "auto-lock",
     "clipboard",
-    "Sign out other devices",
+    "sign it out individually",
     "row-level security",
     "webhook signature",
     "idempotent",

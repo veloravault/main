@@ -117,8 +117,9 @@ export function SecurityPageContent() {
             <p>
               Supabase row-level security, active-membership gates, and private
               document storage policies limit access to owned ciphertext and files.
-              “Sign out other devices” revokes other refresh sessions while keeping
-              the current browser signed in.
+              Settings lists each active session by device, so you can recognize
+              one you don&rsquo;t and sign it out individually - or sign out every
+              other device at once, while the current browser stays signed in.
             </p>
           </motion.article>
           <motion.article className={styles.controlCard} variants={staggerItem}>
@@ -234,6 +235,14 @@ export function SecurityPageContent() {
             not change, reveal, or recover the vault master key. Without the same
             master key, previously encrypted contents cannot be decrypted by you
             or by Velora.
+          </p>
+          <p>
+            Changing your master key on purpose is different, and it is
+            supported: Settings &gt; Security includes a rotation flow that
+            decrypts every vault record with your current master key and
+            re-encrypts it under a new one, committed atomically so nothing is
+            left partially rotated. It still requires the current master key
+            to start - it changes a known key, it does not recover a lost one.
           </p>
           <p className={styles.warning}>
             Keep a protected offline copy of the master key. Do not store it in the

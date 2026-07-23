@@ -23,7 +23,7 @@ export const FAQ_CATEGORIES: readonly FaqCategory[] = [
       {
         question: "What is Velora Vault?",
         answer:
-          "A private, encrypted home for the things you'd otherwise scatter across browser-saved passwords, notes apps, and sticky notes: passwords, secure notes, documents, and wallet & bank records, all unlocked with one master key.",
+          "A private, encrypted home for the things you'd otherwise scatter across browser-saved passwords, notes apps, and sticky notes: passwords, secure notes, documents, wallet & bank records, and technical credentials like SSH keys, API keys, WiFi passwords, and 2FA backup codes - all unlocked with one master key.",
         href: "/password-manager",
         linkLabel: "See what's inside the vault",
       },
@@ -65,6 +65,13 @@ export const FAQ_CATEGORIES: readonly FaqCategory[] = [
           "Because we never have access to it, we can't reset or recover it for you. An optional hint can jog your memory, but it's a reminder, not a backup - keep a protected offline copy of your master key somewhere outside the vault it unlocks.",
         href: "/help",
         linkLabel: "Read the recovery boundaries",
+      },
+      {
+        question: "Can I change my master key if I already know it?",
+        answer:
+          "Yes - that's different from recovery. Settings > Security includes a \"Change master password\" flow that re-encrypts your entire vault under a new master key in one atomic step. It requires your current master key, so it can't help if you've actually lost it.",
+        href: "/security",
+        linkLabel: "Read the security architecture",
       },
     ],
   },
@@ -121,6 +128,13 @@ export const FAQ_CATEGORIES: readonly FaqCategory[] = [
         question: "Can I use Velora Vault on more than one device?",
         answer:
           "Yes. Your encrypted vault is tied to your account, not to one device or browser - sign in anywhere and enter your master key to unlock it.",
+      },
+      {
+        question: "Can I see which devices are signed in to my account?",
+        answer:
+          "Yes. Settings > Security lists your active sessions per device, so you can spot one you don't recognize and sign it out individually - no need to sign out everywhere just to remove one.",
+        href: "/security",
+        linkLabel: "Read the security architecture",
       },
       {
         question: "How do I get help if something goes wrong?",

@@ -16,7 +16,7 @@ export default function TermsPage() {
       <article className={styles.article}>
         <div className={rootStyles.container}>
           <h1 className={styles.title}>Terms of Use</h1>
-          <p className={styles.updated}>Last updated: July 17, 2026</p>
+          <p className={styles.updated}>Last updated: July 23, 2026</p>
           <p className={styles.intro}>
             These terms govern your access to and use of Velora Vault. By
             creating an account or using the service, you agree to them.
@@ -26,8 +26,9 @@ export default function TermsPage() {
             <h2 className={styles.sectionTitle}>The service</h2>
             <p>
               Velora Vault is a private vault for storing passwords,
-              documents, notes, and financial essentials. We may suspend or
-              revoke access for accounts that violate these terms.
+              documents, notes, technical credentials, and financial
+              essentials. We may suspend or revoke access for accounts that
+              violate these terms.
             </p>
           </section>
 

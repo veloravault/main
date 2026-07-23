@@ -16,7 +16,7 @@ import { DOCUMENT_PILLS, PROJECT_PILLS, FINANCE_PILLS } from "@/components/velor
 
 const TITLE = "Velora Vault - One private vault for everything that matters";
 const DESCRIPTION =
-  "A private, encrypted home for passwords, documents, notes and financial essentials. Your master key never leaves your device.";
+  "A private, encrypted home for passwords, documents, notes, credentials, and financial essentials. Your master key never leaves your device.";
 
 export const metadata: Metadata = {
   ...pageMetadata({ title: TITLE, description: DESCRIPTION, path: "/" }),

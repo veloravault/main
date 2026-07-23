@@ -1,13 +1,17 @@
 import {
   BanknoteIcon,
+  BitcoinIcon,
   CheckIcon,
   CreditCardIcon,
   FileTextIcon,
+  KeySquareIcon,
   KeyRoundIcon,
   LockKeyholeIcon,
   SearchIcon,
   ShieldCheckIcon,
   SparklesIcon,
+  TerminalIcon,
+  WifiIcon,
 } from "lucide-react";
 import type { ProductPageId } from "./product-page-data";
 import styles from "./product-pages.module.css";
@@ -18,6 +22,7 @@ const VISUAL_LABELS: Record<ProductPageId, string> = {
   "secure-documents": "Velora Vault secure document workspace preview",
   "digital-wallet": "Velora Vault digital wallet preview",
   "magic-import": "Velora Vault Magic Import review flow",
+  "credential-vault": "Velora Vault credential vault preview",
 };
 
 function VisualHeader({ title }: { title: string }) {
@@ -136,6 +141,32 @@ function ImportVisual() {
   );
 }
 
+function CredentialVaultVisual() {
+  return (
+    <>
+      <VisualHeader title="Credential vault" />
+      <div className={styles.visualSearch}><SearchIcon /> Search everything</div>
+      <div className={styles.passwordVisualGrid}>
+        <div className={styles.visualNav}>
+          <span data-active><TerminalIcon /> SSH Keys <b>4</b></span>
+          <span><BitcoinIcon /> Crypto <b>1</b></span>
+          <span><KeySquareIcon /> API Keys <b>6</b></span>
+          <span><WifiIcon /> WiFi <b>2</b></span>
+        </div>
+        <article className={styles.passwordDetail}>
+          <small>Selected record</small>
+          <h3>Production server</h3>
+          <dl>
+            <div><dt>Host</dt><dd>deploy.internal</dd></div>
+            <div><dt>Private key</dt><dd>••••••••••••••</dd></div>
+          </dl>
+          <span><ShieldCheckIcon /> Rotates with your master key</span>
+        </article>
+      </div>
+    </>
+  );
+}
+
 export function ProductPageVisual({ page }: { page: ProductPageId }) {
   return (
     <div className={styles.productVisual} data-page={page} role="img" aria-label={VISUAL_LABELS[page]}>
@@ -145,6 +176,7 @@ export function ProductPageVisual({ page }: { page: ProductPageId }) {
         {page === "secure-documents" && <DocumentsVisual />}
         {page === "digital-wallet" && <WalletVisual />}
         {page === "magic-import" && <ImportVisual />}
+        {page === "credential-vault" && <CredentialVaultVisual />}
       </div>
     </div>
   );

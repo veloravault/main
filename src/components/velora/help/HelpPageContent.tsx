@@ -7,6 +7,7 @@ import {
   CreditCardIcon,
   FileTextIcon,
   KeyRoundIcon,
+  KeySquareIcon,
   LifeBuoyIcon,
   LockKeyholeIcon,
   SearchIcon,
@@ -22,6 +23,7 @@ const TOPICS = [
   { title: "Documents", body: "Upload, label, search, preview, and remove protected files.", href: "/features/secure-documents", icon: FileTextIcon },
   { title: "Wallet and bank", body: "Keep cards, bank accounts, and login credentials in the right record types.", href: "/features/digital-wallet", icon: CreditCardIcon },
   { title: "Magic Import", body: "Review extraction privacy, usage limits, candidates, and saving.", href: "/features/magic-import", icon: SparklesIcon },
+  { title: "Credential vault", body: "Store SSH keys, crypto passphrases, API credentials, WiFi passwords, and 2FA backup codes.", href: "/features/credential-vault", icon: KeySquareIcon },
 ] as const;
 
 const ANSWERS = [
@@ -41,6 +43,18 @@ const ANSWERS = [
     category: "Security",
     title: "What happens when the vault locks?",
     body: "Readable key material is cleared from the active vault session. Enter the Master key again, or use an enrolled account-bound local unlock method, to reopen it.",
+    href: "/security",
+  },
+  {
+    category: "Security",
+    title: "Can I change my Master key without losing my data?",
+    body: "Yes. Settings > Security includes a Change master password flow that decrypts your whole vault with the current Master key and re-encrypts it under a new one in one atomic step. It requires the current key, so it's a change, not a recovery.",
+    href: "/security",
+  },
+  {
+    category: "Security",
+    title: "Can I see and sign out individual devices?",
+    body: "Yes. Settings > Security lists each active session by device, so you can sign out just the one you don't recognize instead of every device at once.",
     href: "/security",
   },
   {

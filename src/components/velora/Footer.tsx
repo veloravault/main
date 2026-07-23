@@ -35,7 +35,7 @@ export function Footer() {
             </motion.a>
             <p className={styles.promise}>Encrypted before storage. Yours to unlock.</p>
             <p className={styles.desc}>
-              A private home for passwords, documents, notes, and financial essentials.
+              A private home for passwords, documents, notes, credentials, and financial essentials.
             </p>
           </div>
 

@@ -13,6 +13,7 @@ import {
   FileTextIcon,
   GaugeIcon,
   KeyRoundIcon,
+  KeySquareIcon,
   MessageCircleQuestionIcon,
   MoonIcon,
   NewspaperIcon,
@@ -42,6 +43,7 @@ import { supabase } from "@/lib/supabase";
 const NAV_ICONS: Record<PublicNavIcon, typeof KeyRoundIcon> = {
   "bank-card": CreditCardIcon,
   contact: ContactRoundIcon,
+  credential: KeySquareIcon,
   document: FileTextIcon,
   faq: MessageCircleQuestionIcon,
   help: CircleHelpIcon,

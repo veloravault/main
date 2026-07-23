@@ -3,7 +3,8 @@ export type ProductPageId =
   | "how-it-works"
   | "secure-documents"
   | "digital-wallet"
-  | "magic-import";
+  | "magic-import"
+  | "credential-vault";
 
 export type ProductIcon =
   | "bank"
@@ -64,7 +65,7 @@ export const PRODUCT_PAGES: Record<ProductPageId, ProductPageConfig> = {
     secondaryAction: { label: "See how it works", href: "/how-it-works" },
     audience: [
       { title: "Too many accounts", body: "Replace reused passwords with unique credentials you do not need to memorize." },
-      { title: "Important details everywhere", body: "Bring logins, private notes, documents, cards, and bank records into one searchable vault." },
+      { title: "Important details everywhere", body: "Bring logins, private notes, documents, cards, bank records, and technical credentials into one searchable vault." },
       { title: "Privacy matters", body: "Encrypt vault contents in the browser before they are sent to storage." },
     ],
     problem: {
@@ -80,7 +81,7 @@ export const PRODUCT_PAGES: Record<ProductPageId, ProductPageConfig> = {
     featuresLead: "The essentials stay together without pretending every secret is the same kind of record.",
     features: [
       { icon: "key", title: "Strong password records", body: "Save usernames, passwords, URLs, and private details with weak and reused password signals." },
-      { icon: "search", title: "Fast private search", body: "Find a login, document, note, card, or bank record from one organized workspace." },
+      { icon: "search", title: "Fast private search", body: "Find a login, document, note, card, bank record, or credential from one organized workspace." },
       { icon: "document", title: "More than logins", body: "Keep identity files and document details beside passwords instead of scattering them across apps." },
       { icon: "card", title: "Wallet and bank records", body: "Store cards and account details in purpose-built views with sensitive values masked by default." },
       { icon: "device", title: "Convenient local unlock", body: "Use a PIN or supported biometric wrapper on a trusted device after the master key is enrolled." },
@@ -93,7 +94,7 @@ export const PRODUCT_PAGES: Record<ProductPageId, ProductPageConfig> = {
       steps: [
         { title: "Create your account", body: "Confirm your email and choose an account password used only for signing in." },
         { title: "Set a master key", body: "Choose the separate secret that encrypts and unlocks vault contents in your browser." },
-        { title: "Add organized records", body: "Save logins, notes, documents, cards, and bank details in their proper views." },
+        { title: "Add organized records", body: "Save logins, notes, documents, cards, bank details, and technical credentials in their proper views." },
         { title: "Lock when finished", body: "Use auto-lock or lock manually so readable values leave the active vault session." },
       ],
     },
@@ -116,7 +117,7 @@ export const PRODUCT_PAGES: Record<ProductPageId, ProductPageConfig> = {
     faq: [
       { question: "Is the account password the master key?", answer: "No. The account password signs you in. The master key separately encrypts and unlocks vault contents." },
       { question: "Can Velora recover my master key?", answer: "No. A hint can help you remember it, but Velora cannot reveal or reset the key that decrypts existing contents." },
-      { question: "What can I store?", answer: "Velora Vault currently supports passwords, secure notes, documents, payment cards, and bank account records." },
+      { question: "What can I store?", answer: "Velora Vault currently supports passwords, secure notes, documents, payment cards, bank account records, SSH keys, crypto passphrases, API credentials, WiFi passwords, and 2FA backup codes." },
     ],
     finalTitle: "Give every important record one protected home.",
     finalBody: "Create a free account, set your master key, and build your vault at your own pace.",
@@ -385,6 +386,72 @@ export const PRODUCT_PAGES: Record<ProductPageId, ProductPageConfig> = {
     ],
     finalTitle: "Move data without giving up the review step.",
     finalBody: "Create your vault, submit only what you choose, and approve every record that enters it.",
+  },
+  "credential-vault": {
+    eyebrow: "Credential vault",
+    title: "Stop pasting SSH keys into notes apps. Start protecting them properly.",
+    lead:
+      "Keep SSH keys, crypto passphrases, API credentials, WiFi passwords, and 2FA backup codes in purpose-built records - encrypted the same way as every other item in your vault.",
+    heroNote: "Not plan-limited - unlimited on Free and Plus.",
+    secondaryAction: { label: "See the full vault", href: "/password-manager" },
+    audience: [
+      { title: "Developers and admins", body: "Stop pasting SSH private keys and API secrets into notes apps or shared documents." },
+      { title: "Anyone with a home network", body: "Save a WiFi password once instead of reading it off the bottom of a router." },
+      { title: "Crypto holders", body: "Protect a seed phrase the same way you protect a password - encrypted, not photographed." },
+    ],
+    problem: {
+      eyebrow: "Beyond the usual login",
+      title: "Not every secret fits in a username-and-password field.",
+      body:
+        "SSH keys, API secrets, WiFi passwords, and recovery codes end up scattered across notes apps, chat threads, and screenshots because most vaults only understand one shape: a login.",
+      solutionTitle: "Five purpose-built record types, one vault.",
+      solutionBody:
+        "Velora Vault adds SSH Keys, Crypto Passphrases, API Credentials, WiFi Passwords, and 2FA Backup Codes as their own record types, each with only the fields that type actually needs, encrypted the same way as everything else you store.",
+    },
+    featuresTitle: "Built for the credentials logins can't hold",
+    featuresLead: "Each type keeps only the fields it needs, with the one truly sensitive value masked until you choose to reveal it.",
+    features: [
+      { icon: "key", title: "SSH keys", body: "Store a private key, its matching public key, host, and passphrase together instead of scattered across config files." },
+      { icon: "lock", title: "Crypto passphrases", body: "Protect a seed phrase and wallet address without a screenshot or a sticky note near your desk." },
+      { icon: "shield", title: "API credentials", body: "Keep a service name, key, and secret together so a rotated credential has one obvious place to update." },
+      { icon: "device", title: "WiFi passwords", body: "Save a network name and password once, and stop reading them off the bottom of a router." },
+      { icon: "check", title: "2FA backup codes", body: "Keep one-time recovery codes ready for the moment your authenticator app isn't available." },
+      { icon: "eye", title: "Masked by default", body: "The one truly secret field in each record - private key, seed phrase, secret, password, or code - stays hidden until you reveal it." },
+    ],
+    workflow: {
+      eyebrow: "Same vault, right shape",
+      title: "Add it once, in the type it actually is.",
+      body: "Every credential type lives in the same encrypted vault as your passwords, with its own place and its own fields.",
+      steps: [
+        { title: "Pick the type", body: "Choose SSH Key, Crypto Passphrase, API Credential, WiFi Password, or 2FA Backup Code from the vault sidebar." },
+        { title: "Fill in what matters", body: "Each type shows only its own fields - a private key and host, or a network name and password, not a generic login form." },
+        { title: "Encrypt before saving", body: "Velora Vault encrypts the record in your browser before it reaches storage, exactly like a password or note." },
+        { title: "Find it later", body: "Search across every credential type from the same vault-wide search you already use for passwords." },
+      ],
+    },
+    security: {
+      eyebrow: "Same encryption, no exceptions",
+      title: "A new record type, not a new security model.",
+      body:
+        "SSH keys, crypto passphrases, API credentials, WiFi passwords, and 2FA backup codes are encrypted with the same AES-256-GCM process as every other vault record, and included in the same master key rotation if you ever change your master key.",
+      points: [
+        "Encrypted in the browser before storage, per record",
+        "Included automatically when you rotate your master key",
+        "Not limited by plan - unlimited on Free and Plus",
+      ],
+    },
+    related: [
+      { label: "Complete vault", title: "Password manager", body: "See how credentials sit alongside passwords, documents, and wallet records.", href: "/password-manager" },
+      { label: "Change your key", title: "Security architecture", body: "Understand encryption, recovery limits, and what master key rotation does.", href: "/security" },
+      { label: "Move records in", title: "Magic Import", body: "Extract password, card, and bank candidates for review before saving.", href: "/features/magic-import" },
+    ],
+    faq: [
+      { question: "Do these count toward my plan's record limits?", answer: "No. SSH keys, crypto passphrases, API credentials, WiFi passwords, and 2FA backup codes are unlimited on both Free and Plus." },
+      { question: "What happens to them if I change my master key?", answer: "They're re-encrypted automatically, in the same rotation that covers your passwords, notes, documents, and wallet records - nothing is left behind on the old key." },
+      { question: "Can Magic Import extract these from pasted text?", answer: "Not yet. Magic Import currently proposes passwords, notes, cards, and bank records; the five credential types are added manually for now." },
+    ],
+    finalTitle: "Give every credential a proper home, not a screenshot.",
+    finalBody: "Create your vault and add your first SSH key, API credential, or WiFi password in under a minute.",
   },
 };
 

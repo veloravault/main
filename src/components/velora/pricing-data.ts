@@ -25,6 +25,7 @@ export const PRICING_TIERS: PricingTier[] = [
     features: [
       "Unlimited passwords & secure notes",
       "Up to 3 wallet & bank records",
+      "Unlimited SSH keys, API credentials, WiFi passwords & 2FA codes",
       "Password health monitoring - weak & reused alerts",
       "Face ID / Touch ID and PIN unlock",
       "5 AI-assisted imports per month",
@@ -62,6 +63,7 @@ export interface ComparisonRow {
 export const PRICING_COMPARISON: ComparisonRow[] = [
   { label: "Passwords & secure notes", values: ["Unlimited", "Unlimited"] },
   { label: "Wallet & bank records", values: ["Up to 3", "Unlimited"] },
+  { label: "SSH keys, API credentials, WiFi & 2FA codes", values: ["Unlimited", "Unlimited"] },
   { label: "Document storage", values: ["Not included", "5 GB"] },
   { label: "AI-assisted imports", values: ["5 / month", "Unlimited"] },
   { label: "Password health monitoring", values: [true, true] },

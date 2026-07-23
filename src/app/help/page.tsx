@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   title: "Help center",
-  description: "Find guidance for account setup, unlocking, recovery, passwords, documents, wallet records, Magic Import, and billing.",
+  description: "Find guidance for account setup, unlocking, recovery, passwords, documents, wallet records, credentials, Magic Import, and billing.",
   path: "/help",
 });
 

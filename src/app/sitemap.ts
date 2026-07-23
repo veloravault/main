@@ -7,22 +7,23 @@ const BASE_URL = "https://veloravault.in";
 // actually changes. Don't swap for `new Date()`: a sitemap where every
 // lastmod is today's build timestamp stops being a freshness signal.
 const LAST_MODIFIED = {
-  home: "2026-07-17",
-  pricing: "2026-07-17",
-  security: "2026-07-17",
-  contact: "2026-07-18",
+  home: "2026-07-23",
+  pricing: "2026-07-23",
+  security: "2026-07-23",
+  contact: "2026-07-23",
   blogIndex: "2026-07-17",
-  privacy: "2026-07-17", // matches "Last updated: July 17, 2026" on the page
-  terms: "2026-07-17", // matches "Last updated: July 17, 2026" on the page
+  privacy: "2026-07-23", // matches "Last updated: July 23, 2026" on the page
+  terms: "2026-07-23", // matches "Last updated: July 23, 2026" on the page
   login: "2026-07-17",
   signup: "2026-07-17",
-  passwordManager: "2026-07-22",
+  passwordManager: "2026-07-23",
   howItWorks: "2026-07-22",
   secureDocuments: "2026-07-22",
   digitalWallet: "2026-07-22",
   magicImport: "2026-07-22",
-  help: "2026-07-22",
-  faq: "2026-07-22",
+  credentialVault: "2026-07-23",
+  help: "2026-07-23",
+  faq: "2026-07-23",
   passwordGenerator: "2026-07-22",
   passphraseGenerator: "2026-07-22",
   usernameGenerator: "2026-07-22",
@@ -39,6 +40,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE_URL}/features/secure-documents`, lastModified: LAST_MODIFIED.secureDocuments, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE_URL}/features/digital-wallet`, lastModified: LAST_MODIFIED.digitalWallet, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE_URL}/features/magic-import`, lastModified: LAST_MODIFIED.magicImport, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${BASE_URL}/features/credential-vault`, lastModified: LAST_MODIFIED.credentialVault, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE_URL}/help`, lastModified: LAST_MODIFIED.help, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE_URL}/faq`, lastModified: LAST_MODIFIED.faq, changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE_URL}/utilities/password-generator`, lastModified: LAST_MODIFIED.passwordGenerator, changeFrequency: "monthly", priority: 0.6 },

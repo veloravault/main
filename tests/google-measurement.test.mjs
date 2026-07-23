@@ -57,7 +57,7 @@ test("CSP permits only the Google origins needed by gtag", () => {
   assert.match(proxy, /connect-src[^\n]*https:\/\/\*\.google-analytics\.com/);
 });
 
-test("contact sitemap date reflects the public form release", () => {
+test("contact sitemap date reflects its most recent content edit", () => {
   const sitemap = read("src/app/sitemap.ts");
-  assert.match(sitemap, /contact:\s*["']2026-07-18["']/);
+  assert.match(sitemap, /contact:\s*["']2026-07-23["']/);
 });

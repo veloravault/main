@@ -46,7 +46,7 @@ export function HeroVaultMedia() {
     <div className={styles.media} data-playing={playing && !shouldUsePoster}>
       <Image
         src={POSTER}
-        alt="Velora Vault overview showing protected passwords, documents, and wallet records"
+        alt="Velora Vault overview showing protected passwords, documents, wallet records, and credentials"
         fill
         priority
         sizes="(max-width: 760px) 100vw, 1040px"
