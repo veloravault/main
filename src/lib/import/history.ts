@@ -4,7 +4,7 @@ import { decryptText } from "@/lib/crypto";
 import { supabase } from "@/lib/supabase";
 import type { ImportSource } from "@/lib/import/types";
 
-export type ImportTargetTable = "vault_items" | "secure_notes" | "secure_wallet";
+export type ImportTargetTable = "vault_items" | "secure_notes" | "secure_wallet" | "secure_credentials";
 
 export interface ImportHistoryOperation {
   table: ImportTargetTable;

@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   title: "Magic Import",
-  description: "Extract editable password, note, card, and bank record candidates from explicitly submitted source text, then review before saving.",
+  description: "Extract editable candidates for passwords, notes, cards, banks, SSH keys, crypto wallets, API keys, WiFi, and 2FA codes from source text, then review before saving.",
   path: "/features/magic-import",
 });
 

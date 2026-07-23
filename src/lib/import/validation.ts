@@ -5,6 +5,11 @@ const requiredFields: Record<ImportItemType, string[]> = {
   note: ["content"],
   bank_account: ["account"],
   card: ["number"],
+  ssh_key: ["privateKey"],
+  crypto_wallet: ["seedPhrase"],
+  api_credential: ["apiKey"],
+  wifi_credential: ["networkName", "password"],
+  two_factor_backup: ["codes"],
 };
 
 export function validateDraft(draft: ImportDraft): string[] {

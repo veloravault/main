@@ -146,11 +146,17 @@ async function loadExistingItems(masterPassword: string): Promise<ExistingImport
     ...(getCache<{ id: string; title: string; plaintext?: string }>("vault_items") ?? []).map((item) => ({ id: item.id, title: item.title, type: "password" as const, fields: parsePayload(item.plaintext) })),
     ...(getCache<{ id: string; title: string; plaintext?: string }>("secure_notes") ?? []).map((item) => ({ id: item.id, title: item.title, type: "note" as const, fields: { content: item.plaintext ?? "" } })),
   ];
-  const [passwords, notes, wallet] = await Promise.all([supabase.from("vault_items").select("id,title,encrypted_data,iv,salt"), supabase.from("secure_notes").select("id,title,encrypted_content,iv,salt"), supabase.from("secure_wallet").select("id,title,type,encrypted_content,iv,salt")]);
+  const [passwords, notes, wallet, credentials] = await Promise.all([
+    supabase.from("vault_items").select("id,title,encrypted_data,iv,salt"),
+    supabase.from("secure_notes").select("id,title,encrypted_content,iv,salt"),
+    supabase.from("secure_wallet").select("id,title,type,encrypted_content,iv,salt"),
+    supabase.from("secure_credentials").select("id,title,type,encrypted_content,iv,salt"),
+  ]);
   const existing: ExistingImportItem[] = [...cached];
   for (const item of passwords.data ?? []) try { existing.push({ id: item.id, title: item.title, type: "password", fields: parsePayload(await decryptText(item.encrypted_data, item.salt, item.iv, masterPassword)) }); } catch {}
   for (const item of notes.data ?? []) try { existing.push({ id: item.id, title: item.title, type: "note", fields: { content: await decryptText(item.encrypted_content, item.salt, item.iv, masterPassword) } }); } catch {}
   for (const item of wallet.data ?? []) try { existing.push({ id: item.id, title: item.title, type: item.type === "bank_account" ? "bank_account" : "card", fields: parsePayload(await decryptText(item.encrypted_content, item.salt, item.iv, masterPassword)) }); } catch {}
+  for (const item of credentials.data ?? []) try { existing.push({ id: item.id, title: item.title, type: item.type as ExistingImportItem["type"], fields: parsePayload(await decryptText(item.encrypted_content, item.salt, item.iv, masterPassword)) }); } catch {}
   return [...new Map(existing.map((item) => [`${item.type}:${item.id}`, item])).values()];
 }
 

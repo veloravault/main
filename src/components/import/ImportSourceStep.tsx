@@ -43,7 +43,7 @@ export function ImportSourceStep(props: {
 
       <div className="import-paste-panel">
         <label htmlFor="magic-import-paste">Paste anything</label>
-        <textarea id="magic-import-paste" value={props.text} onChange={(event) => props.onTextChange(event.target.value)} placeholder="Paste passwords, notes, bank details or card details…" />
+        <textarea id="magic-import-paste" value={props.text} onChange={(event) => props.onTextChange(event.target.value)} placeholder="Paste passwords, notes, bank or card details, SSH keys, crypto seed phrases, API keys, WiFi passwords or 2FA backup codes…" />
         <button type="button" className="import-primary-action system-interactive" disabled={!props.text.trim()} onClick={() => props.onAnalyze({ kind: "paste", text: props.text })}><UploadIcon aria-hidden="true" />Analyze pasted data</button>
       </div>
 

@@ -5,9 +5,13 @@ import { AlertTriangleIcon, CheckCircleIcon, ChevronRightIcon, CopyIcon, Edit3Ic
 import { AdaptiveSheet, AdaptiveSheetBody, AdaptiveSheetFooter } from "@/components/ui/adaptive-sheet";
 import { Button } from "@/components/ui/button";
 import { ImportEditor } from "@/components/import/ImportEditor";
+import { CREDENTIAL_TYPE_CONFIGS } from "@/lib/credentialTypes";
 import type { DuplicateResolution, ImportDraft, ImportItemType } from "@/lib/import/types";
 
-const labels: Record<ImportItemType, string> = { password: "Passwords", note: "Notes", bank_account: "Bank Accounts", card: "Cards" };
+const labels: Record<ImportItemType, string> = {
+  password: "Passwords", note: "Notes", bank_account: "Bank Accounts", card: "Cards",
+  ...Object.fromEntries(CREDENTIAL_TYPE_CONFIGS.map((config) => [config.type, config.label])),
+} as Record<ImportItemType, string>;
 
 export function ImportReviewStep(props: { drafts: ImportDraft[]; onChange: (drafts: ImportDraft[]) => void; onBack: () => void; onSave: () => void }) {
   const [selectedId, setSelectedId] = useState(props.drafts[0]?.clientId ?? "");

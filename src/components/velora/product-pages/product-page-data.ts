@@ -329,7 +329,7 @@ export const PRODUCT_PAGES: Record<ProductPageId, ProductPageConfig> = {
     eyebrow: "Magic Import",
     title: "Turn messy source text into records you can review.",
     lead:
-      "Paste supported source content, let assisted extraction propose passwords, notes, cards, and bank records, then edit every candidate before anything is saved.",
+      "Paste supported source content, let assisted extraction propose passwords, notes, cards, bank records, SSH keys, crypto passphrases, API credentials, WiFi passwords, and 2FA backup codes, then edit every candidate before anything is saved.",
     heroNote: "AI-assisted extraction is explicit, metered, and review-first.",
     secondaryAction: { label: "See wallet records", href: "/features/digital-wallet" },
     audience: [
@@ -350,7 +350,7 @@ export const PRODUCT_PAGES: Record<ProductPageId, ProductPageConfig> = {
     featuresLead: "The important interaction is the pause between extraction and save.",
     features: [
       { icon: "upload", title: "Paste-to-extract", body: "Submit a bounded text source only when you are ready to request assisted extraction." },
-      { icon: "sparkles", title: "Typed candidates", body: "Receive proposed passwords, notes, cards, and bank account records in separate groups." },
+      { icon: "sparkles", title: "Typed candidates", body: "Receive proposed passwords, notes, cards, bank accounts, and the five credential types in separate groups." },
       { icon: "eye", title: "Full review step", body: "Inspect and edit titles, fields, and extra details before approving a record." },
       { icon: "check", title: "Selective saving", body: "Save approved candidates and leave unwanted or incorrect suggestions behind." },
       { icon: "shield", title: "Authenticated and metered", body: "Import requests require an active member and consume the plan's available AI usage." },
@@ -386,7 +386,7 @@ export const PRODUCT_PAGES: Record<ProductPageId, ProductPageConfig> = {
     faq: [
       { question: "Does Magic Import run entirely on my device?", answer: "No. The source content you explicitly submit is sent to the configured AI provider for extraction." },
       { question: "Are extracted records saved automatically?", answer: "No. Velora presents editable candidates first. Only approved records are saved." },
-      { question: "What record types can be proposed?", answer: "The current flow can propose password records, secure notes, payment cards, and bank account records." },
+      { question: "What record types can be proposed?", answer: "The current flow can propose password records, secure notes, payment cards, bank account records, SSH keys, crypto passphrases, API credentials, WiFi passwords, and 2FA backup codes." },
     ],
     finalTitle: "Move data without giving up the review step.",
     finalBody: "Create your vault, submit only what you choose, and approve every record that enters it.",

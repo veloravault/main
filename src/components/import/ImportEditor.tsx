@@ -5,7 +5,8 @@ import { EyeIcon, EyeOffIcon } from "lucide-react";
 import type { ImportDraft } from "@/lib/import/types";
 import { withValidation } from "@/lib/import/validation";
 
-const secureFields = new Set(["password", "cvv", "pin", "upi_pin"]);
+const secureFields = new Set(["password", "cvv", "pin", "upi_pin", "passphrase", "apiSecret"]);
+const multilineFields = new Set(["content", "notes", "privateKey", "publicKey", "seedPhrase", "codes"]);
 
 export function ImportEditor({ draft, onChange }: { draft: ImportDraft; onChange: (draft: ImportDraft) => void }) {
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
@@ -18,7 +19,11 @@ export function ImportEditor({ draft, onChange }: { draft: ImportDraft; onChange
         const secure = secureFields.has(field);
         const visible = !secure || revealed.has(field);
         const confidence = draft.confidence[field];
-        return <label key={field}><span>{field.replaceAll("_", " ")}{confidence !== "high" && <i className={`is-${confidence}`}>{confidence} confidence</i>}</span><div><input type={visible ? "text" : "password"} value={value} onChange={(event) => updateField(field, event.target.value)} />{secure && <button type="button" aria-label={`${visible ? "Hide" : "Show"} ${field}`} onClick={() => setRevealed((current) => { const next = new Set(current); if (next.has(field)) next.delete(field); else next.add(field); return next; })}>{visible ? <EyeOffIcon /> : <EyeIcon />}</button>}</div></label>;
+        const labelRow = <span>{field.replaceAll("_", " ")}{confidence !== "high" && <i className={`is-${confidence}`}>{confidence} confidence</i>}</span>;
+        if (multilineFields.has(field)) {
+          return <label key={field}>{labelRow}<textarea value={value} onChange={(event) => updateField(field, event.target.value)} rows={4} /></label>;
+        }
+        return <label key={field}>{labelRow}<div><input type={visible ? "text" : "password"} value={value} onChange={(event) => updateField(field, event.target.value)} />{secure && <button type="button" aria-label={`${visible ? "Hide" : "Show"} ${field}`} onClick={() => setRevealed((current) => { const next = new Set(current); if (next.has(field)) next.delete(field); else next.add(field); return next; })}>{visible ? <EyeOffIcon /> : <EyeIcon />}</button>}</div></label>;
       })}
       {draft.issues.length > 0 && <div className="import-editor-issues" role="alert">{draft.issues.map((issue) => <p key={issue}>{issue}</p>)}</div>}
     </div>

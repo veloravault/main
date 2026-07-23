@@ -4,14 +4,22 @@ import { encryptText } from "@/lib/crypto";
 import { invalidateCache } from "@/lib/vaultCache";
 import { supabase } from "@/lib/supabase";
 import { createImportHistoryEntry, saveImportHistory, type ImportHistoryEntry, type ImportHistoryOperation, type ImportTargetTable } from "@/lib/import/history";
+import { CREDENTIAL_TYPE_CONFIGS, type CredentialType } from "@/lib/credentialTypes";
 import type { ImportDraft, ImportSource } from "@/lib/import/types";
 
 export interface ImportSaveFailure { clientId: string; title: string; message: string; }
 export interface ImportSaveResult { history: ImportHistoryEntry; failures: ImportSaveFailure[]; }
 
+const CREDENTIAL_TYPES = new Set(CREDENTIAL_TYPE_CONFIGS.map((config) => config.type));
+
+function isCredentialType(type: ImportDraft["type"]): type is CredentialType {
+  return CREDENTIAL_TYPES.has(type as CredentialType);
+}
+
 function targetFor(draft: ImportDraft): ImportTargetTable {
   if (draft.type === "password") return "vault_items";
   if (draft.type === "note") return "secure_notes";
+  if (isCredentialType(draft.type)) return "secure_credentials";
   return "secure_wallet";
 }
 
@@ -23,6 +31,12 @@ async function encryptedMutation(draft: ImportDraft, masterPassword: string, use
   if (draft.type === "note") {
     const encrypted = await encryptText(draft.fields.content || "", masterPassword);
     return { user_id: userId, title: draft.title, category: draft.fields.category || "Uncategorized", encrypted_content: encrypted.ciphertext, iv: encrypted.iv, salt: encrypted.salt };
+  }
+  if (isCredentialType(draft.type)) {
+    const config = CREDENTIAL_TYPE_CONFIGS.find((candidate) => candidate.type === draft.type)!;
+    const payload = Object.fromEntries(config.fields.map((field) => [field.key, draft.fields[field.key] || ""]));
+    const encrypted = await encryptText(JSON.stringify(payload), masterPassword);
+    return { user_id: userId, title: draft.title, type: draft.type, encrypted_content: encrypted.ciphertext, iv: encrypted.iv, salt: encrypted.salt };
   }
   const payload = draft.type === "bank_account"
     ? { account: draft.fields.account || "", routing: draft.fields.routing || "", name: draft.fields.name || "", extra_details: draft.fields.extra_details || "" }
@@ -71,6 +85,9 @@ export async function saveImportDrafts(options: {
 
   const history = createImportHistoryEntry({ sourceKind: options.sourceKind, summary: { total: options.drafts.length, saved: operations.length, failed: failures.length, skipped }, operations });
   saveImportHistory(history);
-  ["vault_items", "vault_items_titles", "secure_notes", "secure_wallet_cards", "secure_wallet_banks"].forEach(invalidateCache);
+  [
+    "vault_items", "vault_items_titles", "secure_notes", "secure_wallet_cards", "secure_wallet_banks",
+    ...CREDENTIAL_TYPE_CONFIGS.map((config) => `secure_credentials:${config.type}`),
+  ].forEach(invalidateCache);
   return { history, failures };
 }

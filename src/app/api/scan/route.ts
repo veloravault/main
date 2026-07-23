@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     let prompt;
 
     if (type === "global_import") {
-      prompt = "Extract every password, secure note, bank account, and payment card visible in this image. Use empty strings for missing values and never invent values.";
+      prompt = "Extract every password, secure note, bank account, payment card, SSH key, crypto wallet seed phrase, API credential, WiFi network password, and 2FA backup code list visible in this image. Use empty strings for missing values and never invent values.";
       schema = {
         type: Type.OBJECT,
         properties: {
@@ -53,8 +53,13 @@ export async function POST(req: NextRequest) {
           notes: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, content: { type: Type.STRING }, category: { type: Type.STRING } } } },
           bank_accounts: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, account: { type: Type.STRING }, routing: { type: Type.STRING }, name: { type: Type.STRING }, extra_details: { type: Type.STRING } } } },
           credit_cards: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, number: { type: Type.STRING }, expiry: { type: Type.STRING }, cvv: { type: Type.STRING }, name: { type: Type.STRING }, pin: { type: Type.STRING }, upi_pin: { type: Type.STRING }, extra_details: { type: Type.STRING } } } },
+          ssh_keys: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, privateKey: { type: Type.STRING }, publicKey: { type: Type.STRING }, host: { type: Type.STRING }, passphrase: { type: Type.STRING } } } },
+          crypto_wallets: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, seedPhrase: { type: Type.STRING }, walletAddress: { type: Type.STRING } } } },
+          api_credentials: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, serviceName: { type: Type.STRING }, apiKey: { type: Type.STRING }, apiSecret: { type: Type.STRING } } } },
+          wifi_credentials: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, networkName: { type: Type.STRING }, password: { type: Type.STRING } } } },
+          two_factor_backups: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { title: { type: Type.STRING }, serviceName: { type: Type.STRING }, codes: { type: Type.STRING } } } },
         },
-        required: ["passwords", "notes", "bank_accounts", "credit_cards"],
+        required: ["passwords", "notes", "bank_accounts", "credit_cards", "ssh_keys", "crypto_wallets", "api_credentials", "wifi_credentials", "two_factor_backups"],
       };
     } else if (type === "credit_card") {
       prompt = "Extract the credit card details from this image. If you cannot find a value, return empty string. Do not hallucinate values. Format the card number without spaces.";
