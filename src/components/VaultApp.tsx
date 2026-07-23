@@ -26,7 +26,7 @@ import {
   KeyRoundIcon,
   FileTextIcon,
   LogOutIcon,
-  SparklesIcon,
+  DiamondIcon,
   FileIcon,
   UserCircleIcon,
   CreditCardIcon,
@@ -42,6 +42,7 @@ import {
 import { VeloraMark } from "@/components/VeloraMark";
 import { PresetAvatar, isAvatarKind } from "@/components/PresetAvatar";
 import type { SettingsAutoUpgrade } from "@/components/settings/settings-types";
+import { isPlanId, type PlanId } from "@/lib/plans";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { createPortal } from "react-dom";
 
@@ -83,6 +84,7 @@ export default function VaultApp() {
   const [sessionUser, setSessionUser] = useState<User | null>(null);
   const { authenticatedUserId, masterKey: masterPassword, setMasterKey, clearMasterKey } = useVaultKey();
   const [loading, setLoading] = useState(true);
+  const [currentPlan, setCurrentPlan] = useState<PlanId | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
   const [showPinLock, setShowPinLock] = useState(false);
   const [showFullAuth, setShowFullAuth] = useState(false);
@@ -165,6 +167,20 @@ export default function VaultApp() {
     });
     return () => subscription.unsubscribe();
   }, [clearMasterKey]);
+
+  // Drives whether the sidebar's "Upgrade plan" button shows at all - only
+  // meaningful for free-plan accounts, so paid accounts don't see a button
+  // that always points at the same upsell regardless of their actual plan.
+  useEffect(() => {
+    if (!sessionUser) return;
+    let active = true;
+    void supabase.rpc("get_account_usage").then(({ data }) => {
+      if (!active) return;
+      const row = Array.isArray(data) ? data[0] : data;
+      setCurrentPlan(isPlanId(row?.plan) ? row.plan : null);
+    });
+    return () => { active = false; };
+  }, [sessionUser]);
 
   // ?upgrade=plus&period=monthly -> land straight on Plan & usage with
   // checkout auto-triggered, instead of the plain dashboard. Set by the
@@ -414,21 +430,23 @@ export default function VaultApp() {
               )}
             </AnimatePresence>
           </div>
-          <button
-            onClick={() => { requestSettingsSection("plan"); handleNavigate("profile"); }}
-            aria-label="Upgrade plan"
-            title={sidebarCollapsed ? "Upgrade plan" : undefined}
-            className={`relative w-full flex items-center gap-2.5 py-[7px] rounded-[8px] text-[14px] transition-colors sidebar-upgrade-btn ${sidebarCollapsed ? "justify-center px-0" : "px-2.5"}`}
-          >
-            <SparklesIcon className="w-[16px] h-[16px] shrink-0" strokeWidth={1.75} />
-            <AnimatePresence initial={false}>
-              {!sidebarCollapsed && (
-                <motion.span key="label" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="whitespace-nowrap">
-                  Upgrade plan
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </button>
+          {currentPlan === "free" && (
+            <button
+              onClick={() => { requestSettingsSection("plan"); handleNavigate("profile"); }}
+              aria-label="Upgrade plan"
+              title={sidebarCollapsed ? "Upgrade plan" : undefined}
+              className={`relative w-full flex items-center gap-2.5 py-[7px] rounded-[8px] text-[14px] transition-colors sidebar-upgrade-btn ${sidebarCollapsed ? "justify-center px-0" : "px-2.5"}`}
+            >
+              <DiamondIcon className="w-[16px] h-[16px] shrink-0" strokeWidth={1.75} />
+              <AnimatePresence initial={false}>
+                {!sidebarCollapsed && (
+                  <motion.span key="label" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="whitespace-nowrap">
+                    Upgrade plan
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </button>
+          )}
           <button
             onClick={handleLogout}
             aria-label="Sign Out"
