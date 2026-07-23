@@ -51,6 +51,7 @@ export function DangerSettings({ masterPassword }: { masterPassword: string }) {
         userClient.from("vault_items").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
         userClient.from("secure_notes").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
         userClient.from("secure_wallet").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
+        userClient.from("secure_credentials").delete().neq("id", "00000000-0000-0000-0000-000000000000"),
       ]);
       const deletionError = deletions.find((result) => result.error)?.error;
       if (deletionError) throw deletionError;
@@ -85,7 +86,7 @@ export function DangerSettings({ masterPassword }: { masterPassword: string }) {
     <section className="settings-detail-section" aria-labelledby="settings-danger-title">
       <header><p className="type-group-label settings-danger-label">Danger Zone</p><h2 id="settings-danger-title">Destructive actions</h2><p>These actions cannot be undone after local verification.</p></header>
       <div className="settings-group settings-danger-group">
-        <DangerRow title="Clear vault data" description="Permanently erase passwords, notes, documents, cards and bank accounts." label="Clear data" onClick={() => open("clear")} />
+        <DangerRow title="Clear vault data" description="Permanently erase every item in the vault - passwords, notes, documents, cards, bank accounts, SSH keys, crypto passphrases, API credentials, WiFi passwords, and 2FA backup codes." label="Clear data" onClick={() => open("clear")} />
         <DangerRow title="Delete account" description="Permanently remove your account and all associated vault data." label="Delete account" onClick={() => open("account")} />
       </div>
       <AdaptiveSheet open={Boolean(action)} onOpenChange={(openState) => { if (!working && !openState) setAction(null); }} title={actionLabel} description="This action requires typed confirmation and fresh local verification." size="sm">

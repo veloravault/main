@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       avatarFiles.filter((file) => file.name).map((file) => `${user.id}/${file.name}`),
     );
 
-    for (const table of ["vault_documents", "vault_items", "secure_notes", "secure_wallet"] as const) {
+    for (const table of ["vault_documents", "vault_items", "secure_notes", "secure_wallet", "secure_credentials"] as const) {
       const { error } = await admin.from(table).delete().eq("user_id", user.id);
       if (error) throw error;
     }

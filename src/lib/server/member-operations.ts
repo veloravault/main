@@ -14,6 +14,7 @@ export type AdminMemberUsage = {
   notes: number;
   walletRecords: number;
   bankAccounts: number;
+  credentials: number;
   supportTickets: number;
 };
 
@@ -74,17 +75,18 @@ export async function getMemberDetailAdmin(memberId: string): Promise<AdminMembe
   const monthStart = new Date();
   monthStart.setUTCDate(1);
   monthStart.setUTCHours(0, 0, 0, 0);
-  const [documents, aiEvents, passwords, notes, wallet, banks, tickets, documentBytes] = await Promise.all([
+  const [documents, aiEvents, passwords, notes, wallet, banks, credentials, tickets, documentBytes] = await Promise.all([
     admin.from("vault_documents").select("id", { count: "exact", head: true }).eq("user_id", memberId),
     admin.from("ai_usage_events").select("id", { count: "exact", head: true }).eq("user_id", memberId).gte("created_at", monthStart.toISOString()),
     admin.from("vault_items").select("id", { count: "exact", head: true }).eq("user_id", memberId),
     admin.from("secure_notes").select("id", { count: "exact", head: true }).eq("user_id", memberId),
     admin.from("secure_wallet").select("id", { count: "exact", head: true }).eq("user_id", memberId).neq("type", "bank_account"),
     admin.from("secure_wallet").select("id", { count: "exact", head: true }).eq("user_id", memberId).eq("type", "bank_account"),
+    admin.from("secure_credentials").select("id", { count: "exact", head: true }).eq("user_id", memberId),
     admin.from("support_tickets").select("id", { count: "exact", head: true }).eq("user_id", memberId),
     memberDocumentBytes(memberId),
   ]);
-  if ([documents, aiEvents, passwords, notes, wallet, banks, tickets].some((result) => result.error)) {
+  if ([documents, aiEvents, passwords, notes, wallet, banks, credentials, tickets].some((result) => result.error)) {
     throw new Error("ADMIN_MEMBER_USAGE_FAILED");
   }
 
@@ -107,6 +109,7 @@ export async function getMemberDetailAdmin(memberId: string): Promise<AdminMembe
       notes: notes.count ?? 0,
       walletRecords: wallet.count ?? 0,
       bankAccounts: banks.count ?? 0,
+      credentials: credentials.count ?? 0,
       supportTickets: tickets.count ?? 0,
     },
   };

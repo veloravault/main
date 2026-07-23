@@ -42,6 +42,7 @@ export type AdminMemberUsage = {
   notes: number;
   walletRecords: number;
   bankAccounts: number;
+  credentials: number;
   supportTickets: number;
 };
 
