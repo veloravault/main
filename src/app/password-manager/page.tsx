@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   title: "Personal password manager",
-  description: "Create strong credentials and keep passwords, notes, documents, cards, and bank records in one private encrypted vault.",
+  description: "Create strong credentials and keep passwords, notes, documents, cards, bank records, and technical credentials in one private encrypted vault.",
   path: "/password-manager",
 });
 
