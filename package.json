@@ -8,10 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test tests/*.test.mjs",
-    "media:studio": "remotion studio remotion/index.ts",
-    "media:render": "remotion render remotion/index.ts VeloraVaultWalkthrough public/videos/velora-vault-walkthrough.mp4 --codec=h264 --crf=22 --muted --overwrite",
-    "media:poster": "remotion still remotion/index.ts VeloraVaultWalkthrough public/videos/velora-vault-walkthrough-poster.png --frame=254 --overwrite"
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -37,7 +34,6 @@
     "postcss": "8.5.19"
   },
   "devDependencies": {
-    "@remotion/cli": "4.0.490",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/papaparse": "^5.5.2",
@@ -46,7 +42,6 @@
     "@types/zxcvbn": "^4.4.5",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
-    "remotion": "4.0.490",
     "tailwindcss": "^4",
     "typescript": "^5",
     "zod": "4.3.6"

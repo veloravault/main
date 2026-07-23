@@ -55,6 +55,7 @@ test("every product story uses a matching deterministic vault preview", () => {
   assert.match(preview, /"overview" \| "passwords" \| "documents" \| "wallet" \| "mobile"/);
   assert.match(preview, /function Documents\(\)/);
   assert.doesNotMatch(preview, /https?:\/\//);
+  assert.doesNotMatch(preview, /from "\.\/VeloraBrand"|from "next\/image"|from "@\//);
 });
 
 test("hero walkthrough is poster-first and respects motion and data preferences", () => {

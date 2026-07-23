@@ -12,7 +12,6 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     ".worktrees/**",
-    "remotion-video/**",
     "test-*.js",
     "list-models.js",
     "next-env.d.ts",
