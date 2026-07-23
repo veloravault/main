@@ -6,13 +6,12 @@ import { getCache } from "@/lib/vaultCache";
 import { getVaultHealthScore } from "@/lib/passwordHealth";
 import { isBiometricsSupported, hasBiometricsEnabled, enableBiometrics } from "@/lib/biometrics";
 import { DashboardSkeleton } from "@/components/Skeleton";
-import { 
-  KeyRoundIcon, 
-  FileTextIcon, 
-  FileIcon, 
+import {
+  KeyRoundIcon,
+  FileTextIcon,
+  FileIcon,
   CreditCardIcon,
   StarIcon,
-  BuildingIcon,
   ActivityIcon,
   PencilIcon,
   CheckIcon,
@@ -24,6 +23,8 @@ import {
 import { FaceIdIcon } from "@/components/Icons";
 import { useVaultKey } from "@/components/auth/VaultKeyProvider";
 import { useToast } from "@/components/Toast";
+import { VAULT_TYPE_META, type VaultKind } from "@/lib/vaultTypeMeta";
+import type { CredentialType } from "@/lib/credentialTypes";
 
 interface DashboardProps {
   masterPassword: string;
@@ -37,6 +38,7 @@ interface DashboardPassword {
   category?: string;
   is_favorite: boolean;
   plaintext?: string;
+  created_at: string;
 }
 
 interface DashboardPasswordRow {
@@ -48,6 +50,7 @@ interface DashboardPasswordRow {
   encrypted_data: string;
   iv: string;
   salt: string;
+  created_at: string;
 }
 
 interface DashboardDocument {
@@ -69,6 +72,23 @@ interface DashboardWalletRow {
   encrypted_content: string;
   iv: string;
   salt: string;
+  created_at: string;
+}
+
+interface DashboardCredential {
+  id: string;
+  title: string;
+  type: CredentialType;
+  created_at: string;
+}
+
+interface RecentEntry {
+  id: string;
+  title: string;
+  kind: VaultKind;
+  createdAt: string;
+  subtitle?: string;
+  domain?: string | null;
 }
 
 interface DashboardWalletItem {
@@ -92,7 +112,7 @@ export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
     credentials: 0,
   });
 
-  const [recentPasswords, setRecentPasswords] = useState<DashboardPassword[]>([]);
+  const [recentActivity, setRecentActivity] = useState<RecentEntry[]>([]);
   const [favoritePasswords, setFavoritePasswords] = useState<DashboardPassword[]>([]);
   const [recentWallet, setRecentWallet] = useState<DashboardWalletItem[]>([]);
   const [recentNotes, setRecentNotes] = useState<DashboardNote[]>([]);
@@ -125,7 +145,7 @@ export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
         supabase.from("vault_documents").select("id, title, created_at").order("created_at", { ascending: false }),
         supabase.from("secure_notes").select("id, title, created_at").order("created_at", { ascending: false }),
         supabase.from("secure_wallet").select("*").order("created_at", { ascending: false }),
-        supabase.from("secure_credentials").select("id")
+        supabase.from("secure_credentials").select("id, title, type, created_at").order("created_at", { ascending: false })
       ]);
 
       let passList: DashboardPassword[];
@@ -137,17 +157,17 @@ export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
         for (const row of rawPasswords) {
           try {
             const plaintext = await decryptText(row.encrypted_data, row.salt, row.iv, masterPassword);
-            passList.push({ id: row.id, title: row.title, domain: row.domain, category: row.category, is_favorite: row.is_favorite, plaintext });
+            passList.push({ id: row.id, title: row.title, domain: row.domain, category: row.category, is_favorite: row.is_favorite, plaintext, created_at: row.created_at });
           } catch (err: unknown) {
             console.warn(`Failed to decrypt password ${row.title}`, err);
-            passList.push({ id: row.id, title: row.title, domain: row.domain, category: row.category, is_favorite: row.is_favorite, plaintext: "Decryption Failed" });
+            passList.push({ id: row.id, title: row.title, domain: row.domain, category: row.category, is_favorite: row.is_favorite, plaintext: "Decryption Failed", created_at: row.created_at });
           }
         }
       }
       const docList = (docData.data || []) as DashboardDocument[];
       const notesList = (notesData.data || []) as DashboardNote[];
       const walletList = (walletData.data || []) as DashboardWalletRow[];
-      const credentialsList = (credentialsData.data || []) as { id: string }[];
+      const credentialsList = (credentialsData.data || []) as DashboardCredential[];
 
       setStats({
         passwords: passList.length,
@@ -161,8 +181,21 @@ export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
       const favorites = passList.filter(p => p.is_favorite).slice(0, 4);
       setFavoritePasswords(favorites);
 
-      // Recents (Top 3)
-      setRecentPasswords(passList.filter(p => !p.is_favorite).slice(0, 3));
+      // Recently Added - merge every vault type into one recency-sorted feed
+      // (favorited passwords are already surfaced above, so skip them here)
+      const activity: RecentEntry[] = [
+        ...passList.filter(p => !p.is_favorite).map((p): RecentEntry => ({
+          id: p.id, title: p.title, kind: "passwords", createdAt: p.created_at, domain: p.domain, subtitle: p.category || "Password",
+        })),
+        ...docList.map((d): RecentEntry => ({ id: d.id, title: d.title, kind: "documents", createdAt: d.created_at })),
+        ...notesList.map((n): RecentEntry => ({ id: n.id, title: n.title, kind: "notes", createdAt: n.created_at })),
+        ...walletList.map((w): RecentEntry => ({
+          id: w.id, title: w.title, kind: w.type === "bank_account" ? "banks" : "wallet", createdAt: w.created_at,
+        })),
+        ...credentialsList.map((c): RecentEntry => ({ id: c.id, title: c.title, kind: c.type, createdAt: c.created_at })),
+      ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setRecentActivity(activity.slice(0, 6));
+
       setRecentNotes(notesList.slice(0, 3));
       
       // Decrypt top 2 wallet items for preview
@@ -409,33 +442,42 @@ export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
         </div>
       )}
 
-      {/* Recently Added Passwords */}
-      {recentPasswords.length > 0 && (
+      {/* Recently Added - unified feed across every vault type */}
+      {recentActivity.length > 0 && (
         <div>
           <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-[0.06em] mb-2 px-1">Recently Added</p>
           <div className="bg-card rounded-2xl border border-border overflow-hidden">
-            {recentPasswords.map((p, i) => (
-              <div key={p.id} className={`flex items-center gap-3 px-4 py-3 ${i < recentPasswords.length - 1 ? "border-b border-border" : ""}`}>
-                <div className="w-10 h-10 rounded-[10px] bg-secondary flex items-center justify-center shrink-0 border border-border overflow-hidden relative">
-                  <span className="text-[17px] font-bold text-foreground/50">
-                    {p.title?.charAt(0).toUpperCase()}
-                  </span>
-                  {p.domain && (
-                    <img
-                      src={`https://unavatar.io/${p.domain}?fallback=false`}
-                      alt=""
-                      className="absolute inset-0 w-full h-full object-contain bg-white dark:bg-transparent"
-                      onError={e => { e.currentTarget.style.display = "none"; }}
-                    />
+            {recentActivity.map((entry, i) => {
+              const meta = VAULT_TYPE_META[entry.kind];
+              const Icon = meta.icon;
+              return (
+                <div key={`${entry.kind}-${entry.id}`} className={`flex items-center gap-3 px-4 py-3 ${i < recentActivity.length - 1 ? "border-b border-border" : ""}`}>
+                  {entry.kind === "passwords" ? (
+                    <div className="w-10 h-10 rounded-[10px] bg-secondary flex items-center justify-center shrink-0 border border-border overflow-hidden relative">
+                      <span className="text-[17px] font-bold text-foreground/50">
+                        {entry.title?.charAt(0).toUpperCase()}
+                      </span>
+                      {entry.domain && (
+                        <img
+                          src={`https://unavatar.io/${entry.domain}?fallback=false`}
+                          alt=""
+                          className="absolute inset-0 w-full h-full object-contain bg-white dark:bg-transparent"
+                          onError={e => { e.currentTarget.style.display = "none"; }}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <div className={`w-10 h-10 rounded-[10px] bg-gradient-to-b ${meta.gradient} flex items-center justify-center shrink-0 shadow-sm`}>
+                      <Icon className="w-5 h-5 text-white" strokeWidth={2} />
+                    </div>
                   )}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[15px] font-medium text-foreground truncate">{entry.title}</div>
+                    <div className="text-[13px] text-muted-foreground truncate">{entry.subtitle || meta.label}</div>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[15px] font-medium text-foreground truncate">{p.title}</div>
-                  <div className="text-[13px] text-muted-foreground">{p.category || "Password"}</div>
-                </div>
-                <KeyRoundIcon className="w-4 h-4 text-muted-foreground/40 shrink-0" strokeWidth={1.5} />
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -446,13 +488,13 @@ export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
           <div>
             <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-[0.06em] mb-2 px-1">Wallet</p>
             <div className="bg-card rounded-2xl border border-border overflow-hidden">
-              {recentWallet.map((item, i) => (
+              {recentWallet.map((item, i) => {
+                const meta = item.type === "credit_card" ? VAULT_TYPE_META.wallet : VAULT_TYPE_META.banks;
+                const Icon = meta.icon;
+                return (
                 <div key={item.id} className={`flex items-center gap-3 px-4 py-3 ${i < recentWallet.length - 1 ? "border-b border-border" : ""}`}>
-                  <div className="w-10 h-10 rounded-[10px] bg-secondary flex items-center justify-center shrink-0 border border-border">
-                    {item.type === "credit_card"
-                      ? <CreditCardIcon className="w-5 h-5 text-foreground/80" strokeWidth={1.75} />
-                      : <BuildingIcon   className="w-5 h-5 text-foreground/80" strokeWidth={1.75} />
-                    }
+                  <div className={`w-10 h-10 rounded-[10px] bg-gradient-to-b ${meta.gradient} flex items-center justify-center shrink-0 shadow-sm`}>
+                    <Icon className="w-5 h-5 text-white" strokeWidth={2} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[15px] font-medium text-foreground truncate">{item.title}</div>
@@ -464,7 +506,8 @@ export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

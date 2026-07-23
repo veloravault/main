@@ -33,6 +33,7 @@ interface VaultItem {
   category: string;
   domain: string | null;
   is_favorite: boolean;
+  created_at: string;
 }
 
 interface DecryptedItem {
@@ -42,6 +43,7 @@ interface DecryptedItem {
   category: string;
   domain: string | null;
   is_favorite: boolean;
+  created_at: string;
 }
 
 type CsvPasswordRow = Record<string, string | undefined>;
@@ -196,6 +198,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
           category: item.category || "Uncategorized",
           domain: item.domain || null,
           is_favorite: !!item.is_favorite,
+          created_at: item.created_at,
         });
       } catch (err: unknown) {
         console.warn(`Failed to decrypt item ${item.title}`, err);
@@ -206,6 +209,7 @@ export function PasswordVault({ masterPassword, focusedItemId, refreshVersion = 
           category: item.category || "Uncategorized",
           domain: item.domain || null,
           is_favorite: !!item.is_favorite,
+          created_at: item.created_at,
         });
       }
     }
