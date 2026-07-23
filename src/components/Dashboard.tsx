@@ -19,6 +19,7 @@ import {
   XIcon,
   Loader2Icon,
   SparklesIcon,
+  KeySquareIcon,
 } from "lucide-react";
 import { FaceIdIcon } from "@/components/Icons";
 import { useVaultKey } from "@/components/auth/VaultKeyProvider";
@@ -87,7 +88,8 @@ export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
     passwords: 0,
     documents: 0,
     notes: 0,
-    wallet: 0
+    wallet: 0,
+    credentials: 0,
   });
 
   const [recentPasswords, setRecentPasswords] = useState<DashboardPassword[]>([]);
@@ -118,11 +120,12 @@ export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
       // Check password cache first to avoid re-decrypting
       const cachedPasswords = getCache<DashboardPassword>("vault_items");
 
-      const [passData, docData, notesData, walletData] = await Promise.all([
+      const [passData, docData, notesData, walletData, credentialsData] = await Promise.all([
         cachedPasswords ? Promise.resolve({ data: null }) : supabase.from("vault_items").select("*").order("created_at", { ascending: false }),
         supabase.from("vault_documents").select("id, title, created_at").order("created_at", { ascending: false }),
         supabase.from("secure_notes").select("id, title, created_at").order("created_at", { ascending: false }),
-        supabase.from("secure_wallet").select("*").order("created_at", { ascending: false })
+        supabase.from("secure_wallet").select("*").order("created_at", { ascending: false }),
+        supabase.from("secure_credentials").select("id")
       ]);
 
       let passList: DashboardPassword[];
@@ -144,12 +147,14 @@ export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
       const docList = (docData.data || []) as DashboardDocument[];
       const notesList = (notesData.data || []) as DashboardNote[];
       const walletList = (walletData.data || []) as DashboardWalletRow[];
+      const credentialsList = (credentialsData.data || []) as { id: string }[];
 
       setStats({
         passwords: passList.length,
         documents: docList.length,
         notes: notesList.length,
-        wallet: walletList.length
+        wallet: walletList.length,
+        credentials: credentialsList.length
       });
 
       // Favorites
@@ -324,7 +329,7 @@ export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
       )}
 
       {/* Get-started state for a brand-new, empty vault */}
-      {stats.passwords === 0 && stats.documents === 0 && stats.notes === 0 && stats.wallet === 0 && (
+      {stats.passwords === 0 && stats.documents === 0 && stats.notes === 0 && stats.wallet === 0 && stats.credentials === 0 && (
         <div className="bg-card rounded-2xl border border-border p-6 text-center">
           <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
             <SparklesIcon className="w-6 h-6 text-primary" />
@@ -349,6 +354,7 @@ export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
           { label: "Documents",  value: stats.documents,  icon: FileTextIcon  },
           { label: "Notes",      value: stats.notes,      icon: FileIcon      },
           { label: "Wallet",     value: stats.wallet,     icon: CreditCardIcon },
+          { label: "Credentials", value: stats.credentials, icon: KeySquareIcon },
         ].map(({ label, value, icon: Icon }, i, arr) => (
           <div key={label} className={`flex items-center justify-between px-5 py-4 ${
             i < arr.length - 1 ? "border-b border-border" : ""
