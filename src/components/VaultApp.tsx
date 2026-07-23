@@ -300,7 +300,7 @@ export default function VaultApp() {
     return <Auth key={authenticatedUserId} onLogin={handleLogin} masterKeyHint={masterKeyHint} />;
   }
 
-  const sharedProps = { masterPassword, focusedItemId, onNavigate: handleNavigate };
+  const sharedProps = { masterPassword, focusedItemId, onNavigate: handleNavigate, sessionUser };
   const refreshableProps = { masterPassword, focusedItemId, refreshVersion };
 
 
@@ -599,7 +599,7 @@ export default function VaultApp() {
                 <CredentialVault config={config} {...refreshableProps} />
               </div>
             ))}
-            <div style={{ display: activeTab === "profile"   ? undefined : "none" }}><Settings masterPassword={masterPassword} onLock={handleLockVault} initialSection={settingsInitialSection} sectionRequestId={settingsSectionRequestId} autoUpgrade={settingsAutoUpgrade} /></div>
+            <div style={{ display: activeTab === "profile"   ? undefined : "none" }}><Settings masterPassword={masterPassword} onLock={handleLockVault} initialSection={settingsInitialSection} sectionRequestId={settingsSectionRequestId} autoUpgrade={settingsAutoUpgrade} sessionUser={sessionUser} /></div>
           </div>
         </div>
 

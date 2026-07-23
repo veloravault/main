@@ -5,7 +5,6 @@ import type { User } from "@supabase/supabase-js";
 import { CheckIcon, Loader2Icon, PencilIcon } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { StateView } from "@/components/ui/state-view";
 import { useToast } from "@/components/Toast";
 import { AdaptiveSheet, AdaptiveSheetBody } from "@/components/ui/adaptive-sheet";
 import { PresetAvatar, isAvatarKind, type AvatarKind } from "@/components/PresetAvatar";
@@ -18,12 +17,14 @@ const AVATAR_OPTIONS: { key: AvatarChoice; label: string }[] = [
   { key: "initials", label: "Initials" },
 ];
 
-export function AccountSettings({ masterPassword }: { masterPassword: string }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [fullName, setFullName] = useState("");
-  const [avatarKind, setAvatarKind] = useState<AvatarKind | null>(null);
-  const [hint, setHint] = useState("");
-  const [loading, setLoading] = useState(true);
+export function AccountSettings({ masterPassword, user }: { masterPassword: string; user: User }) {
+  const nameFromUser = (user.user_metadata?.full_name as string | undefined) ?? "";
+  const avatarFromUser = isAvatarKind(user.user_metadata?.avatar_kind) ? user.user_metadata.avatar_kind : null;
+  const hintFromUser = (user.user_metadata?.master_key_hint as string | undefined) ?? "";
+
+  const [fullName, setFullName] = useState(nameFromUser);
+  const [avatarKind, setAvatarKind] = useState<AvatarKind | null>(avatarFromUser);
+  const [hint, setHint] = useState(hintFromUser);
   const [saving, setSaving] = useState(false);
   const [savingAvatar, setSavingAvatar] = useState<AvatarChoice | null>(null);
   const [savingHint, setSavingHint] = useState(false);
@@ -34,22 +35,13 @@ export function AccountSettings({ masterPassword }: { masterPassword: string }) 
   const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
   const toast = useToast();
 
-  useEffect(() => {
-    let active = true;
-    void supabase.auth.getUser().then(({ data, error: authError }) => {
-      if (!active) return;
-      if (authError || !data.user) {
-        setError(authError?.message ?? "Your account could not be loaded.");
-      } else {
-        setUser(data.user);
-        setFullName((data.user.user_metadata?.full_name as string | undefined) ?? "");
-        setAvatarKind(isAvatarKind(data.user.user_metadata?.avatar_kind) ? data.user.user_metadata.avatar_kind : null);
-        setHint((data.user.user_metadata?.master_key_hint as string | undefined) ?? "");
-      }
-      setLoading(false);
-    });
-    return () => { active = false; };
-  }, []);
+  // Settings is a long-lived instance that can be revisited without
+  // unmounting, so this picks up name/avatar/hint changes saved elsewhere
+  // (e.g. the dashboard greeting's inline rename) - otherwise a stale field
+  // here would silently overwrite the newer value on the next Save.
+  useEffect(() => { queueMicrotask(() => { setFullName(nameFromUser); setSaved(false); }); }, [nameFromUser]);
+  useEffect(() => { queueMicrotask(() => setAvatarKind(avatarFromUser)); }, [avatarFromUser]);
+  useEffect(() => { queueMicrotask(() => { setHint(hintFromUser); setHintSaved(false); }); }, [hintFromUser]);
 
   const saveName = async () => {
     const nextName = fullName.trim();
@@ -111,9 +103,6 @@ export function AccountSettings({ masterPassword }: { masterPassword: string }) 
     setAvatarPickerOpen(false);
     toast("Avatar updated", "success");
   };
-
-  if (loading) return <div className="settings-account-skeleton" aria-label="Loading account settings" />;
-  if (!user) return <StateView kind="error" title="Account unavailable" description={error ?? "Sign in again to load your account."} />;
 
   const currentChoice: AvatarChoice = avatarKind ?? "initials";
 

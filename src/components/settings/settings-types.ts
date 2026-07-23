@@ -1,4 +1,5 @@
 import type { ComponentType } from "react";
+import type { User } from "@supabase/supabase-js";
 import { AlertTriangleIcon, ArchiveIcon, LifeBuoyIcon, PaletteIcon, ShieldCheckIcon, SparklesIcon, UserCircleIcon, ScaleIcon } from "lucide-react";
 
 export type SettingsSection = "account" | "plan" | "security" | "appearance" | "backup" | "support" | "danger" | "legal";
@@ -11,6 +12,10 @@ export interface SettingsAutoUpgrade {
 export interface SettingsProps {
   masterPassword: string;
   onLock: () => void;
+  /** The live, auth-listener-backed session user from VaultApp - passed down
+   *  rather than re-fetched so Account settings can't go stale relative to
+   *  identity changes made elsewhere (e.g. the dashboard's inline rename). */
+  sessionUser: User;
   initialSection?: SettingsSection;
   /** Bumped each time initialSection is (re-)requested, so navigating to the
    *  same section twice in a row (e.g. clicking "Upgrade plan" again after

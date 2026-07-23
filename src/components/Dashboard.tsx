@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { decryptText } from "@/lib/crypto";
 import { getCache } from "@/lib/vaultCache";
@@ -29,6 +30,10 @@ import type { CredentialType } from "@/lib/credentialTypes";
 interface DashboardProps {
   masterPassword: string;
   onNavigate?: (tab: "passwords" | "documents" | "notes" | "wallet") => void;
+  /** The live, auth-listener-backed session user from VaultApp - passed down
+   *  rather than re-fetched so the greeting can't go stale relative to name
+   *  changes made elsewhere (e.g. Settings > Account). */
+  sessionUser: User;
 }
 
 interface DashboardPassword {
@@ -101,7 +106,7 @@ interface DashboardWalletItem {
   };
 }
 
-export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
+export function Dashboard({ masterPassword, onNavigate, sessionUser }: DashboardProps) {
   const toast = useToast();
   const { authenticatedUserId, isAuthenticatedUserCurrent } = useVaultKey();
   const [stats, setStats] = useState({
@@ -118,7 +123,8 @@ export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
   const [recentNotes, setRecentNotes] = useState<DashboardNote[]>([]);
   const [healthPasswords, setHealthPasswords] = useState<{ id: string; plaintext: string }[]>([]);
   const [loading, setLoading] = useState(true);
-  const [fullName, setFullName] = useState("User");
+  const nameFromUser = sessionUser.user_metadata?.full_name || sessionUser.email?.split('@')[0] || "User";
+  const [fullName, setFullName] = useState(nameFromUser);
   const [showBioBanner, setShowBioBanner] = useState(false);
 
   const [isEditingName, setIsEditingName] = useState(false);
@@ -127,14 +133,14 @@ export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
 
   const firstName = fullName.split(' ')[0] || "User";
 
+  // The dashboard greeting and Settings > Account both edit full_name, and
+  // both stay mounted for the whole session (VaultApp hides inactive tabs
+  // rather than unmounting them) - without this, a rename saved on the other
+  // screen would never be picked up here, and a stale Save here could revert it.
+  useEffect(() => { queueMicrotask(() => setFullName(nameFromUser)); }, [nameFromUser]);
+
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
-    
-    // Get user info
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      setFullName(user.user_metadata?.full_name || user.email?.split('@')[0] || "User");
-    }
 
     try {
       // Check password cache first to avoid re-decrypting
@@ -251,14 +257,19 @@ export function Dashboard({ masterPassword, onNavigate }: DashboardProps) {
   }, [authenticatedUserId]);
 
   const handleSaveName = async () => {
-    if (!editNameValue.trim()) return;
+    if (isSavingName) return;
+    const nextName = editNameValue.trim();
+    if (!nextName) {
+      toast("Enter your name before saving.", "error");
+      return;
+    }
     setIsSavingName(true);
     try {
       const { error } = await supabase.auth.updateUser({
-        data: { full_name: editNameValue.trim() }
+        data: { full_name: nextName }
       });
       if (error) throw error;
-      setFullName(editNameValue.trim());
+      setFullName(nextName);
       setIsEditingName(false);
     } catch (error: unknown) {
       toast(error instanceof Error ? error.message : "Failed to update name", "error");

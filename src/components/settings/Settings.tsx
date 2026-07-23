@@ -14,7 +14,7 @@ import { SupportSettings } from "@/components/settings/SupportSettings";
 import { LegalSettings } from "@/components/settings/LegalSettings";
 import { DangerSettings } from "@/components/settings/DangerSettings";
 
-export function Settings({ masterPassword, onLock, initialSection, sectionRequestId, autoUpgrade }: SettingsProps) {
+export function Settings({ masterPassword, onLock, initialSection, sectionRequestId, autoUpgrade, sessionUser }: SettingsProps) {
   const [selected, setSelected] = useState<SettingsSection | null>(initialSection ?? null);
   const active = selected ?? "account";
 
@@ -45,7 +45,7 @@ export function Settings({ masterPassword, onLock, initialSection, sectionReques
               exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.2, ease: "easeInOut" }}
             >
-              {active === "account" && <AccountSettings masterPassword={masterPassword} />}
+              {active === "account" && <AccountSettings masterPassword={masterPassword} user={sessionUser} />}
               {active === "plan" && <PlanSettings autoUpgrade={autoUpgrade} />}
               {active === "appearance" && <AppearanceSettings />}
               {active === "security" && <SecuritySettings masterPassword={masterPassword} onLock={onLock} />}
