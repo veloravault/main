@@ -20,8 +20,9 @@ type DocumentRow = { id: string; storage_path: string; iv: string; salt: string 
 type CredentialRow = { id: string; encrypted_content: string; iv: string; salt: string };
 
 /**
- * Re-encrypts the entire vault (passwords, notes, wallet/bank, documents)
- * under `newPassword` and commits it via a single atomic Postgres function.
+ * Re-encrypts the entire vault (passwords, notes, wallet/bank, documents,
+ * credentials) under `newPassword` and commits it via a single atomic
+ * Postgres function.
  * Nothing is written to the database until every row has been successfully
  * decrypted and re-encrypted in memory - if any decrypt/encrypt/upload step
  * throws, the function throws before the rpc call and nothing changes.
