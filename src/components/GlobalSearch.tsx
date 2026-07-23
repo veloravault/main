@@ -2,13 +2,26 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import { SearchIcon, KeyRoundIcon, FileTextIcon, FileIcon, CreditCardIcon, BuildingIcon, XIcon } from "lucide-react";
+import {
+  SearchIcon,
+  KeyRoundIcon,
+  FileTextIcon,
+  FileIcon,
+  CreditCardIcon,
+  BuildingIcon,
+  XIcon,
+  TerminalIcon,
+  BitcoinIcon,
+  KeySquareIcon,
+  WifiIcon,
+  ShieldEllipsisIcon,
+} from "lucide-react";
 
 interface SearchResult {
   id: string;
   title: string;
   subtitle?: string;
-  vault: "passwords" | "documents" | "notes" | "wallet" | "banks";
+  vault: "passwords" | "documents" | "notes" | "wallet" | "banks" | "ssh_key" | "crypto_wallet" | "api_credential" | "wifi_credential" | "two_factor_backup";
 }
 
 const VAULT_META = {
@@ -17,6 +30,11 @@ const VAULT_META = {
   notes:      { icon: FileIcon,         label: "Note",       color: "text-amber-500",  bg: "bg-amber-500/10" },
   wallet:     { icon: CreditCardIcon,   label: "Wallet",     color: "text-emerald-500",bg: "bg-emerald-500/10" },
   banks:      { icon: BuildingIcon,     label: "Bank",       color: "text-indigo-500", bg: "bg-indigo-500/10" },
+  ssh_key:           { icon: TerminalIcon,       label: "SSH Key",       color: "text-slate-500", bg: "bg-slate-500/10" },
+  crypto_wallet:     { icon: BitcoinIcon,        label: "Crypto",        color: "text-orange-500", bg: "bg-orange-500/10" },
+  api_credential:    { icon: KeySquareIcon,      label: "API Credential", color: "text-cyan-500", bg: "bg-cyan-500/10" },
+  wifi_credential:   { icon: WifiIcon,           label: "WiFi",          color: "text-teal-500", bg: "bg-teal-500/10" },
+  two_factor_backup: { icon: ShieldEllipsisIcon, label: "2FA Backup",    color: "text-rose-500", bg: "bg-rose-500/10" },
 };
 
 interface GlobalSearchProps {
@@ -46,11 +64,12 @@ export function GlobalSearch({ onNavigate, autoFocus }: GlobalSearchProps) {
     setLoading(true);
 
     const pattern = `%${q}%`;
-    const [passRes, docRes, noteRes, walletRes] = await Promise.all([
+    const [passRes, docRes, noteRes, walletRes, credRes] = await Promise.all([
       supabase.from("vault_items").select("id, title, category").ilike("title", pattern).limit(5),
       supabase.from("vault_documents").select("id, title").ilike("title", pattern).limit(5),
       supabase.from("secure_notes").select("id, title").ilike("title", pattern).limit(5),
       supabase.from("secure_wallet").select("id, title, type").ilike("title", pattern).limit(5),
+      supabase.from("secure_credentials").select("id, title, type").ilike("title", pattern).limit(5),
     ]);
 
     const combined: SearchResult[] = [
@@ -59,6 +78,7 @@ export function GlobalSearch({ onNavigate, autoFocus }: GlobalSearchProps) {
       ...(noteRes.data || []).map(r => ({ id: r.id, title: r.title, vault: "notes" as const })),
       ...(walletRes.data || []).filter(r => r.type !== "bank_account").map(r => ({ id: r.id, title: r.title, subtitle: r.type?.replace("_", " "), vault: "wallet" as const })),
       ...(walletRes.data || []).filter(r => r.type === "bank_account").map(r => ({ id: r.id, title: r.title, subtitle: "Bank Account", vault: "banks" as const })),
+      ...(credRes.data || []).map(r => ({ id: r.id, title: r.title, vault: r.type as SearchResult["vault"] })),
     ];
 
     setResults(combined);
