@@ -119,3 +119,23 @@ test("scheduled billing changes reconcile from the subscription updated webhook"
   assert.match(route, /case "subscription\.updated"/);
   assert.match(route, /applySubscriptionState\(admin, sub\.id, sub\.status \|\| "active", occurredAt, "preserve", sub\.current_end, sub\.plan_id\)/);
 });
+
+test("a stale billing reconciliation retry cannot stomp a subscription a newer webhook event already fixed", () => {
+  const migrationName = readdirSync(file("supabase/migrations"), { withFileTypes: true })
+    .find((entry) => entry.isFile() && entry.name.endsWith("_billing_reconciliation_freshness_guard.sql"))?.name;
+  assert.ok(migrationName, "billing_reconciliation_freshness_guard migration must exist");
+  const migration = read(`supabase/migrations/${migrationName}`);
+
+  // The corrective write must be scoped to rows that haven't received a
+  // newer Razorpay event since the issue was queued - the same freshness
+  // guard the webhook itself uses - so a stale retry can't overwrite state a
+  // later, more-authoritative event already applied correctly.
+  assert.match(migration, /where public\.subscriptions\.razorpay_subscription_id = v_issue\.razorpay_subscription_id[\s\S]{0,80}and \(/);
+  assert.match(migration, /public\.subscriptions\.last_razorpay_event_at is null[\s\S]{0,20}or public\.subscriptions\.last_razorpay_event_at <= v_issue\.created_at/);
+
+  // "Subscription row doesn't exist at all" must be checked independently of
+  // the freshness guard, so a merely-stale-but-existing row is never
+  // reported as SUBSCRIPTION_NOT_FOUND.
+  assert.match(migration, /select exists \(\s*select 1 from public\.subscriptions/);
+  assert.match(migration, /if not v_subscription_exists then\s*raise exception 'SUBSCRIPTION_NOT_FOUND' using errcode = 'P0003'/);
+});

@@ -42,6 +42,10 @@ export function AdminMemberDetail(props: {
 
   useEffect(() => {
     const controller = new AbortController();
+    queueMicrotask(() => {
+      setLoading(true);
+      setError(null);
+    });
     fetch(`/api/admin/members/${encodeURIComponent(props.member.id)}`, { signal: controller.signal, headers: { accept: "application/json" } })
       .then(async (response) => {
         if (!response.ok) throw new Error("MEMBER_DETAIL_FAILED");

@@ -6,7 +6,7 @@ import {
   type AdminActivityResult,
 } from "@/lib/server/access-repository";
 
-const CATEGORIES: readonly AdminActivityCategory[] = ["all", "access", "support", "invitation", "billing", "system"];
+const CATEGORIES: readonly AdminActivityCategory[] = ["all", "access", "support", "invitation", "billing", "contact", "system"];
 const RESULTS: readonly AdminActivityResult[] = ["all", "success", "failure"];
 
 export async function GET(request: Request) {

@@ -11,25 +11,11 @@ export type AdminOverviewDto = {
   recentActivity: AdminActivityDto[];
 };
 
-const DOCUMENT_PAGE_SIZE = 1_000;
-
 async function sumDocumentBytes() {
   const admin = createSupabaseAdminClient();
-  let total = 0;
-  let from = 0;
-
-  while (true) {
-    const { data, error } = await admin
-      .from("vault_documents")
-      .select("size_bytes")
-      .range(from, from + DOCUMENT_PAGE_SIZE - 1);
-    if (error) throw new Error("ADMIN_OVERVIEW_DOCUMENTS_FAILED");
-
-    const rows = data ?? [];
-    total += rows.reduce((sum, row) => sum + Number(row.size_bytes ?? 0), 0);
-    if (rows.length < DOCUMENT_PAGE_SIZE) return total;
-    from += DOCUMENT_PAGE_SIZE;
-  }
+  const { data, error } = await admin.rpc("sum_vault_document_bytes");
+  if (error) throw new Error("ADMIN_OVERVIEW_DOCUMENTS_FAILED");
+  return Number(data ?? 0);
 }
 
 export async function getAdminOverview(): Promise<AdminOverviewDto> {

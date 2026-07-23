@@ -13,6 +13,7 @@ export const ADMIN_ACTIVITY_ACTIONS = {
   support: ["support_reply", "support_resolve", "support_reopen"],
   invitation: ["setup_email_resent"],
   billing: ["billing_reconciliation_resolve"],
+  contact: ["contact_resolve", "contact_read", "contact_reopen"],
 } as const;
 export const ADMIN_ACTIVITY_FAILURE_RESULTS = [
   "FAILED",
@@ -22,7 +23,7 @@ export const ADMIN_ACTIVITY_FAILURE_RESULTS = [
   "RATE_LIMITED",
 ] as const;
 
-export type AdminActivityCategory = "all" | "access" | "support" | "invitation" | "billing" | "system";
+export type AdminActivityCategory = "all" | "access" | "support" | "invitation" | "billing" | "contact" | "system";
 export type AdminActivityResult = "all" | "success" | "failure";
 
 export type MemberAdminDto = {
@@ -201,6 +202,7 @@ export async function listAdminActivity(args: {
     ...ADMIN_ACTIVITY_ACTIONS.support,
     ...ADMIN_ACTIVITY_ACTIONS.invitation,
     ...ADMIN_ACTIVITY_ACTIONS.billing,
+    ...ADMIN_ACTIVITY_ACTIONS.contact,
   ];
   if (args.category !== "all" && args.category !== "system") {
     query = query.in("action", [...ADMIN_ACTIVITY_ACTIONS[args.category]]);

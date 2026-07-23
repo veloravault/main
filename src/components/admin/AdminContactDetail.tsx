@@ -81,7 +81,7 @@ export function AdminContactDetail(props: { submissionId: string; onClose: () =>
   }
 
   const replyHref = submission
-    ? `mailto:${submission.email}?subject=${encodeURIComponent(`Re: ${submission.subject}`)}`
+    ? `mailto:${encodeURIComponent(submission.email)}?subject=${encodeURIComponent(`Re: ${submission.subject}`)}`
     : "mailto:";
 
   return (
@@ -97,7 +97,7 @@ export function AdminContactDetail(props: { submissionId: string; onClose: () =>
         <>
           <div className={styles.contactDetailBody}>
             <div className={styles.contactSender}>
-              <span><strong>{submission.name}</strong><a href={`mailto:${submission.email}`}>{submission.email}</a></span>
+              <span><strong>{submission.name}</strong><a href={`mailto:${encodeURIComponent(submission.email)}`}>{submission.email}</a></span>
               <time dateTime={submission.createdAt}>{contactTime(submission.createdAt)}</time>
             </div>
             <article className={styles.contactMessage}><p>{submission.message}</p></article>

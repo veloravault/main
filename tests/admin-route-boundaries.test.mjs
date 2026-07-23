@@ -28,9 +28,23 @@ test("admin overview authorizes before returning narrow operational aggregates",
   assert.match(route, /getAdminOverview/);
   assert.match(repository, /\.from\("app_members"\)/);
   assert.match(repository, /\.from\("support_tickets"\)/);
-  assert.match(repository, /\.select\("size_bytes"\)/);
+  assert.match(repository, /admin\.rpc\("sum_vault_document_bytes"\)/);
   assert.match(repository, /\.from\("ai_usage_events"\)/);
-  assert.doesNotMatch(repository, /ciphertext|encrypted|message.*body|access_token|refresh_token|metadata/i);
+  assert.doesNotMatch(repository, /ciphertext|encrypted|message.*body|access_token|refresh_token|metadata|storage_path/i);
+});
+
+test("total document storage is summed in the database, not paged through row-by-row in JS", () => {
+  const repository = read("src/lib/server/admin-overview-repository.ts");
+  const migrationName = readdirSync(file("supabase/migrations"), { withFileTypes: true })
+    .find((entry) => entry.isFile() && entry.name.endsWith("_sum_vault_document_bytes.sql"))?.name;
+  assert.ok(migrationName, "sum_vault_document_bytes migration must exist");
+  const migration = read(`supabase/migrations/${migrationName}`);
+
+  assert.doesNotMatch(repository, /\.range\(from|DOCUMENT_PAGE_SIZE/);
+  assert.match(migration, /create or replace function public\.sum_vault_document_bytes\(\)/i);
+  assert.match(migration, /select coalesce\(sum\(size_bytes\), 0\)::bigint from public\.vault_documents/i);
+  assert.match(migration, /revoke all on function public\.sum_vault_document_bytes\(\) from public, anon, authenticated/i);
+  assert.match(migration, /grant execute on function public\.sum_vault_document_bytes\(\) to service_role/i);
 });
 
 test("every admin handler authorizes before any privileged repository operation", () => {
@@ -84,6 +98,23 @@ test("activity validates category and result filters and support operations are 
   assert.match(ticketRoute, /adminId:\s*admin\.id/);
   assert.match(supportRepository, /action:\s*"support_reply"/);
   assert.match(supportRepository, /status === "resolved" \? "support_resolve" : "support_reopen"/);
+});
+
+test("contact actions have their own activity category, not the generic system bucket", () => {
+  const repository = read("src/lib/server/access-repository.ts");
+  const route = read("src/app/api/admin/activity/route.ts");
+  const activityComponent = read("src/components/admin/AdminActivity.tsx");
+  const contactRepository = read("src/lib/server/contact-admin-repository.ts");
+
+  assert.match(repository, /contact:\s*\["contact_resolve",\s*"contact_read",\s*"contact_reopen"\]/);
+  assert.match(repository, /AdminActivityCategory\s*=\s*"all" \| "access" \| "support" \| "invitation" \| "billing" \| "contact" \| "system"/);
+  assert.match(repository, /\.\.\.ADMIN_ACTIVITY_ACTIONS\.contact/);
+  assert.match(route, /"all", "access", "support", "invitation", "billing", "contact", "system"/);
+  assert.match(activityComponent, /\{ value: "contact", label: "Contact" \}/);
+  assert.match(activityComponent, /item\.action === "contact_resolve"/);
+  assert.match(activityComponent, /item\.action === "contact_read"/);
+  assert.match(activityComponent, /item\.action === "contact_reopen"/);
+  assert.match(contactRepository, /"contact_resolve"[\s\S]{0,60}"contact_read"[\s\S]{0,20}"contact_reopen"/);
 });
 
 test("updated member DTOs re-read the authoritative plan after the mutation RPC", () => {

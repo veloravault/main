@@ -15,7 +15,7 @@ import { AdminSkeleton } from "./AdminSkeleton";
 import type { AdminActivityItem } from "./types";
 import styles from "@/app/admin/admin.module.css";
 
-type ActivityCategory = "all" | "access" | "support" | "invitation" | "billing" | "system";
+type ActivityCategory = "all" | "access" | "support" | "invitation" | "billing" | "contact" | "system";
 type ActivityResult = "all" | "success" | "failure";
 
 const CATEGORY_OPTIONS: { value: ActivityCategory; label: string }[] = [
@@ -24,6 +24,7 @@ const CATEGORY_OPTIONS: { value: ActivityCategory; label: string }[] = [
   { value: "support", label: "Support" },
   { value: "invitation", label: "Invites" },
   { value: "billing", label: "Billing" },
+  { value: "contact", label: "Contact" },
   { value: "system", label: "System" },
 ];
 const RESULT_OPTIONS: { value: ActivityResult; label: string }[] = [
@@ -52,6 +53,9 @@ function activityCopy(item: AdminActivityItem) {
   if (item.action === "support_reopen") return { label: "Ticket reopened", detail: "A support ticket was reopened", tone: "neutral", Icon: CheckCircle2Icon };
   if (item.action === "setup_email_resent") return { label: "Setup link sent", detail: "A secure account setup link was sent", tone: "success", Icon: ShieldCheckIcon };
   if (item.action === "billing_reconciliation_resolve") return { label: "Billing reconciled", detail: "A billing reconciliation issue was resolved", tone: "success", Icon: CreditCardIcon };
+  if (item.action === "contact_resolve") return { label: "Enquiry resolved", detail: "A public contact submission was resolved", tone: "success", Icon: CheckCircle2Icon };
+  if (item.action === "contact_read") return { label: "Enquiry marked read", detail: "A public contact submission was marked read", tone: "neutral", Icon: CheckCircle2Icon };
+  if (item.action === "contact_reopen") return { label: "Enquiry reopened", detail: "A public contact submission was reopened", tone: "neutral", Icon: CheckCircle2Icon };
   return { label: item.action.replaceAll("_", " "), detail: item.resultCode.replaceAll("_", " "), tone: "neutral", Icon: CheckCircle2Icon };
 }
 

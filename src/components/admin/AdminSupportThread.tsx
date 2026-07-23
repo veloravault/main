@@ -97,11 +97,13 @@ export function AdminSupportThread(props: { ticketId: string; onClose: () => voi
         setAnnouncement("Reply failed. The draft was kept.");
         return;
       }
-      setMessages((current) => [...current, payload.message as AdminSupportMessage]);
-      setTicket((current) => current && { ...current, lastMessageBy: "owner", lastMessageAt: (payload.message as AdminSupportMessage).createdAt });
       setReply("");
       setAnnouncement("Reply sent.");
       props.onChanged();
+      // Reload the full thread rather than appending locally - the member
+      // may have sent a message after this thread was last loaded, and a
+      // local append would show the owner's reply without it.
+      retryLoad();
     } catch {
       setReplyError("The connection dropped before the reply could be confirmed. Your draft was kept.");
       setAnnouncement("Reply failed. The draft was kept.");
