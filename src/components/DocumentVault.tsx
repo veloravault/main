@@ -29,6 +29,7 @@ import { ContextActions } from "@/components/ui/context-actions";
 import { getVaultAccessToken } from "@/lib/authToken";
 import { buildSafeDocumentFilename, getAiRenameEligibility } from "@/lib/documentFilename";
 import {
+  confirmUpload,
   deleteObjects,
   downloadFromPresignedUrl,
   requestDownloadUrl,
@@ -197,9 +198,6 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
       const arrayBuffer = await selectedFile.arrayBuffer();
       const encrypted = await encryptFile(arrayBuffer, masterPassword);
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
-
       // Reserve an R2 key + presigned URL. The server enforces the plan gate
       // here (Free = no documents, over-quota = refused) before minting a URL.
       const { url, key: storagePath } = await requestUploadUrl(encrypted.ciphertextBuffer.byteLength);
@@ -207,22 +205,15 @@ export function DocumentVault({ masterPassword, focusedItemId, refreshVersion = 
 
       const category = await categorizeDocument(accessToken, finalFileName);
 
-      const { error: dbError } = await supabase.from("vault_documents").insert({
-        user_id: user.id,
+      // Re-verifies the real object size in R2 (not encrypted.ciphertextBuffer
+      // .byteLength) and inserts the row server-side - see confirm-upload/route.ts.
+      await confirmUpload({
+        key: storagePath,
         title: finalFileName,
-        storage_path: storagePath,
         iv: encrypted.iv,
         salt: encrypted.salt,
-        category: category,
-        size_bytes: encrypted.ciphertextBuffer.byteLength,
+        category,
       });
-
-      if (dbError) {
-        // The DB quota trigger is the final guard; if it rejects the row after
-        // the blob landed in R2, delete the orphan so storage doesn't leak.
-        await deleteObjects([storagePath]).catch(() => undefined);
-        throw dbError;
-      }
 
       setSelectedFile(null);
       setRenameFeedback(null);

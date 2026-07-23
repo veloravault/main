@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { CheckIcon, FingerprintIcon, GridIcon, LaptopIcon, Loader2Icon, LockIcon, LogOutIcon, TimerResetIcon, ClipboardIcon, XCircleIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import { disableBiometrics, enableBiometrics, hasBiometricsEnabled, isBiometricsSupported } from "@/lib/biometrics";
+import { disableBiometrics, enableBiometrics, hasBiometricsEnabled, isBiometricsSupported, needsBiometricReEnrollment } from "@/lib/biometrics";
 import { clearPinLock, hasPinLock, savePinForMaster } from "@/components/PinLock";
 import { loadVaultPreferences, saveVaultPreferences, subscribeVaultPreferences, type AutoLockMinutes, type ClipboardClearSeconds, type VaultPreferences } from "@/lib/vaultPreferences";
 import { useToast } from "@/components/Toast";
@@ -45,6 +45,7 @@ export function SecuritySettings({ masterPassword, onLock }: { masterPassword: s
   const { authenticatedUserId, isAuthenticatedUserCurrent } = useVaultKey();
   const [preferences, setPreferences] = useState<VaultPreferences>(() => loadVaultPreferences());
   const [bioEnabled, setBioEnabled] = useState(false);
+  const [bioNeedsReEnroll, setBioNeedsReEnroll] = useState(false);
   const [bioSupported, setBioSupported] = useState(false);
   const [bioWorking, setBioWorking] = useState(false);
   const [pinEnabled, setPinEnabled] = useState(false);
@@ -79,6 +80,7 @@ export function SecuritySettings({ masterPassword, onLock }: { masterPassword: s
     queueMicrotask(() => {
       setBioSupported(isBiometricsSupported());
       setBioEnabled(authenticatedUserId ? hasBiometricsEnabled(authenticatedUserId) : false);
+      setBioNeedsReEnroll(authenticatedUserId ? needsBiometricReEnrollment(authenticatedUserId) : false);
       setPinEnabled(authenticatedUserId ? hasPinLock(authenticatedUserId) : false);
     });
     void loadSessions();
@@ -91,14 +93,17 @@ export function SecuritySettings({ masterPassword, onLock }: { masterPassword: s
   // Swapping only takes effect once the new method is confirmed working, so
   // a cancelled/failed setup never leaves the device with neither enabled.
   const toggleBiometrics = async () => {
-    if (!bioEnabled && pinEnabled && !confirm("Switch this device's unlock method to Face ID / Touch ID? PIN unlock will be turned off once it's set up.")) {
+    // A re-enrollment-pending toggle reads as "on" but can't actually unlock
+    // anything - always route it through enrollment, never disable.
+    const shouldDisable = bioEnabled && !bioNeedsReEnroll;
+    if (!shouldDisable && pinEnabled && !confirm("Switch this device's unlock method to Face ID / Touch ID? PIN unlock will be turned off once it's set up.")) {
       return;
     }
     setBioWorking(true);
     setError(null);
     try {
       if (!authenticatedUserId) throw new Error("Your authenticated account could not be verified.");
-      if (bioEnabled) {
+      if (shouldDisable) {
         disableBiometrics(authenticatedUserId);
         setBioEnabled(false);
         toast("Biometric unlock disabled on this device", "info");
@@ -109,6 +114,7 @@ export function SecuritySettings({ masterPassword, onLock }: { masterPassword: s
           setPinEnabled(false);
         }
         setBioEnabled(true);
+        setBioNeedsReEnroll(false);
         toast("Biometric unlock enabled", "success");
       }
     } catch (reason) {
@@ -233,7 +239,7 @@ export function SecuritySettings({ masterPassword, onLock }: { masterPassword: s
             {AUTO_LOCK.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
           </select>
         </SettingsControl>
-        <SettingsControl icon={FingerprintIcon} title="Face ID / Touch ID" description={bioSupported ? (bioEnabled ? "Enabled on this device" : "Use this device to unlock faster") : "Unavailable in this browser or context"}>
+        <SettingsControl icon={FingerprintIcon} title="Face ID / Touch ID" description={bioSupported ? (bioNeedsReEnroll ? "Needs to be set up again after a security update" : bioEnabled ? "Enabled on this device" : "Use this device to unlock faster") : "Unavailable in this browser or context"}>
           <button type="button" className={`settings-toggle system-interactive ${bioEnabled ? "is-on" : ""}`} role="switch" aria-checked={bioEnabled} aria-label="Toggle biometric unlock" disabled={!authenticatedUserId || !bioSupported || bioWorking} onClick={toggleBiometrics}>{bioWorking ? <Loader2Icon className="animate-spin" /> : <span />}</button>
         </SettingsControl>
         <SettingsControl icon={GridIcon} title="PIN unlock" description={pinEnabled ? "Enabled on this device" : "Use a 6-digit PIN to unlock faster"}>

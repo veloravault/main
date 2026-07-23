@@ -8,6 +8,7 @@ import { useVaultKey } from "@/components/auth/VaultKeyProvider";
 import { supabase } from "@/lib/supabase";
 import { getStrength } from "@/lib/passwordHealth";
 import { type AvatarKind } from "@/components/PresetAvatar";
+import { hintLeaksMasterKey } from "@/lib/masterKeyHint";
 import { clearPlanIntentCookie, readPlanIntentCookie } from "@/lib/planIntent";
 import { useToast } from "@/components/Toast";
 import {
@@ -76,7 +77,7 @@ export function OnboardingFlow({ userId, email }: { userId: string; email: strin
       setError("Keep your master key hint within 50 characters.");
       return;
     }
-    if (normalizedHint && normalizedHint.toLocaleLowerCase().includes(masterKey.toLocaleLowerCase())) {
+    if (normalizedHint && hintLeaksMasterKey(normalizedHint, masterKey)) {
       setError("Your hint cannot contain your master key.");
       return;
     }

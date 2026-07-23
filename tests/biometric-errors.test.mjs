@@ -64,7 +64,12 @@ test("maps unknown failures to neutral operation-specific copy", () => {
 test("native WebAuthn calls are normalized inside the biometric boundary", () => {
   const biometrics = read("src/lib/biometrics.ts");
   assert.match(biometrics, /normalizeBiometricError\(reason,\s*"enroll"\)/);
-  assert.match(biometrics, /normalizeBiometricError\(reason,\s*"unlock"\)/);
+  // get() ceremonies (both unlock and the enrollment PRF follow-up) share one
+  // evaluatePrf(credentialId, operation) helper rather than a duplicated
+  // try/catch per call site - assert the shared boundary still normalizes
+  // with whatever operation it's given, and that "unlock" is one of them.
+  assert.match(biometrics, /normalizeBiometricError\(reason,\s*operation\)/);
+  assert.match(biometrics, /evaluatePrf\([\s\S]*?,\s*"unlock"\)/);
   assert.doesNotMatch(biometrics, /operation either timed out or was not allowed/i);
 });
 

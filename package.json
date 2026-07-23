@@ -20,7 +20,7 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.24.0",
-    "next": "16.2.10",
+    "next": "16.2.11",
     "papaparse": "^5.5.4",
     "react": "19.2.7",
     "react-dom": "19.2.7",
@@ -31,7 +31,8 @@
     "zxcvbn": "^4.4.2"
   },
   "overrides": {
-    "postcss": "8.5.19"
+    "postcss": "8.5.19",
+    "sharp": "0.35.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -41,7 +42,7 @@
     "@types/react-dom": "^19",
     "@types/zxcvbn": "^4.4.5",
     "eslint": "^9",
-    "eslint-config-next": "16.2.10",
+    "eslint-config-next": "16.2.11",
     "tailwindcss": "^4",
     "typescript": "^5",
     "zod": "4.3.6"

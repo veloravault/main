@@ -9,6 +9,10 @@ export async function refreshSupabaseSession(request: NextRequest, requestHeader
 
   let response = NextResponse.next({ request: { headers: requestHeaders } });
   const supabase = createServerClient(url, publishableKey, {
+    // Default cookie options set no `secure` attribute at all - explicit here
+    // rather than relying solely on HSTS to keep the session cookie off any
+    // plaintext connection. Off in dev since localhost is typically plain HTTP.
+    cookieOptions: { secure: process.env.NODE_ENV === "production" },
     cookies: {
       getAll() {
         return request.cookies.getAll();

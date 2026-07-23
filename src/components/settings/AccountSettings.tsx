@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/Toast";
 import { AdaptiveSheet, AdaptiveSheetBody } from "@/components/ui/adaptive-sheet";
 import { PresetAvatar, isAvatarKind, type AvatarKind } from "@/components/PresetAvatar";
+import { hintLeaksMasterKey } from "@/lib/masterKeyHint";
 
 type AvatarChoice = AvatarKind | "initials";
 
@@ -71,7 +72,7 @@ export function AccountSettings({ masterPassword, user }: { masterPassword: stri
       setHintError("Keep your master key hint within 50 characters.");
       return;
     }
-    if (nextHint && nextHint.toLocaleLowerCase().includes(masterPassword.toLocaleLowerCase())) {
+    if (nextHint && hintLeaksMasterKey(nextHint, masterPassword)) {
       setHintError("Your hint cannot contain your master key.");
       return;
     }

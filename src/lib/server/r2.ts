@@ -65,6 +65,21 @@ export async function presignGet(key: string, expiresIn = DEFAULT_EXPIRES_IN): P
   return signed.url;
 }
 
+/**
+ * Server-side HEAD check of one object, returning its real size or null if
+ * missing. Used to verify an uploaded object's actual byte count instead of
+ * trusting whatever size the browser claims for it.
+ */
+export async function headObject(key: string): Promise<{ sizeBytes: number } | null> {
+  const cfg = requireConfig();
+  const response = await client(cfg).fetch(objectUrl(cfg, key), { method: "HEAD" });
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error(`R2 head failed for ${key}: ${response.status}`);
+  const sizeBytes = Number(response.headers.get("content-length"));
+  if (!Number.isFinite(sizeBytes)) throw new Error(`R2 head returned no content-length for ${key}`);
+  return { sizeBytes };
+}
+
 /** Server-side delete of one or more objects. R2 does not bill delete ops. */
 export async function deleteObjects(keys: string[]): Promise<void> {
   if (keys.length === 0) return;

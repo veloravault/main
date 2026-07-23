@@ -10,4 +10,8 @@ export const supabasePublishableKey =
 
 export const supabase = createBrowserClient(supabaseUrl, supabasePublishableKey || "placeholder_key", {
   auth: { detectSessionInUrl: false },
+  // Default cookie options set no `secure` attribute at all - explicit here
+  // rather than relying solely on HSTS to keep the session cookie off any
+  // plaintext connection. Off in dev since localhost is typically plain HTTP.
+  cookieOptions: { secure: process.env.NODE_ENV === "production" },
 });

@@ -39,6 +39,16 @@ export async function requestDownloadUrl(key: string): Promise<string> {
   return String(payload.url);
 }
 
+/**
+ * Finish an upload after the encrypted bytes have landed in R2. The server
+ * re-reads the object's real size from R2 (never the byteLength this client
+ * claimed to upload-url) before inserting the vault_documents row - direct
+ * client-side inserts into that table are no longer permitted.
+ */
+export async function confirmUpload(input: { key: string; title: string; iv: string; salt: string; category?: string | null }): Promise<void> {
+  await postJson("/api/storage/confirm-upload", input);
+}
+
 /** Upload already-encrypted bytes to R2 via a presigned PUT URL. */
 export async function uploadToPresignedUrl(url: string, body: ArrayBuffer | Uint8Array): Promise<void> {
   const response = await fetch(url, {

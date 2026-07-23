@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { decryptText } from "@/lib/crypto";
 import { getCache } from "@/lib/vaultCache";
 import { getVaultHealthScore } from "@/lib/passwordHealth";
-import { isBiometricsSupported, hasBiometricsEnabled, enableBiometrics } from "@/lib/biometrics";
+import { isBiometricsSupported, hasBiometricsEnabled, needsBiometricReEnrollment, enableBiometrics } from "@/lib/biometrics";
 import { DashboardSkeleton } from "@/components/Skeleton";
 import {
   KeyRoundIcon,
@@ -126,6 +126,7 @@ export function Dashboard({ masterPassword, onNavigate, sessionUser }: Dashboard
   const nameFromUser = sessionUser.user_metadata?.full_name || sessionUser.email?.split('@')[0] || "User";
   const [fullName, setFullName] = useState(nameFromUser);
   const [showBioBanner, setShowBioBanner] = useState(false);
+  const [showBioReEnrollBanner, setShowBioReEnrollBanner] = useState(false);
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState("");
@@ -253,6 +254,13 @@ export function Dashboard({ masterPassword, onNavigate, sessionUser }: Dashboard
         isBiometricsSupported() &&
         !hasBiometricsEnabled(authenticatedUserId)
       ));
+      // A security fix moved biometric unlock off a non-confidential WebAuthn
+      // field onto the PRF extension - enrollments made before that change
+      // can no longer decrypt anything, so prompt a one-time re-enrollment
+      // instead of leaving Face ID / Touch ID silently broken at unlock time.
+      setShowBioReEnrollBanner(Boolean(
+        authenticatedUserId && needsBiometricReEnrollment(authenticatedUserId)
+      ));
     });
   }, [authenticatedUserId]);
 
@@ -363,6 +371,44 @@ export function Dashboard({ masterPassword, onNavigate, sessionUser }: Dashboard
               </button>
               <button
                 onClick={() => setShowBioBanner(false)}
+                className="px-4 py-2 bg-transparent text-muted-foreground hover:text-foreground text-[13px] font-medium rounded-lg hover:bg-muted transition-colors"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Biometric re-enrollment banner (security fix moved key material off
+          a non-confidential WebAuthn field - old enrollments can't decrypt) */}
+      {showBioReEnrollBanner && (
+        <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-start gap-4">
+          <div className="w-10 h-10 rounded-[12px] bg-primary/20 flex items-center justify-center shrink-0">
+            <FaceIdIcon className="w-[22px] h-[22px] text-primary" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-[15px] font-semibold text-foreground">Update Face ID / Touch ID</h3>
+            <p className="text-[13px] text-muted-foreground mt-0.5 mb-3 leading-relaxed">
+              A security update means your biometric unlock needs to be set up again on this device. Your master key and vault data are unaffected.
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={async () => {
+                  try {
+                    if (!authenticatedUserId) throw new Error("Your authenticated account could not be verified.");
+                    await enableBiometrics(masterPassword, authenticatedUserId, isAuthenticatedUserCurrent);
+                    setShowBioReEnrollBanner(false);
+                  } catch (error: unknown) {
+                    toast(error instanceof Error ? error.message : "Biometric setup could not be completed. Try again or continue with your master key.", "error");
+                  }
+                }}
+                className="px-4 py-2 bg-primary text-primary-foreground text-[13px] font-semibold rounded-lg hover:opacity-90 transition-opacity"
+              >
+                Update Now
+              </button>
+              <button
+                onClick={() => setShowBioReEnrollBanner(false)}
                 className="px-4 py-2 bg-transparent text-muted-foreground hover:text-foreground text-[13px] font-medium rounded-lg hover:bg-muted transition-colors"
               >
                 Dismiss

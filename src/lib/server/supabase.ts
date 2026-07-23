@@ -12,6 +12,10 @@ export async function createServerSupabaseClient() {
   const cookieStore = await cookies();
 
   return createServerClient(url, publishableKey, {
+    // Default cookie options set no `secure` attribute at all - explicit here
+    // rather than relying solely on HSTS to keep the session cookie off any
+    // plaintext connection. Off in dev since localhost is typically plain HTTP.
+    cookieOptions: { secure: process.env.NODE_ENV === "production" },
     cookies: {
       getAll() {
         return cookieStore.getAll();
